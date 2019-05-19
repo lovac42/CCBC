@@ -1,7 +1,38 @@
+Anki is licensed under the GNU Affero General Public License, version 3 or
+later. A full copy of the version 3 license is included below.
+
+You are free to make changes to Anki and distribute those changes under the
+terms of the AGPL listed below. If you would like to contribute changes back
+to the official distribution, I ask that you license your code under the BSD
+three-clause (no advertising) license, as portions of this code are also used
+in the closed-source AnkiWeb. Before sending a patch or pull request for the
+first time, please post a private ticket on our support site that states you
+are happy to license all contributions you submit to the Anki project under
+the three-clause BSD license.
+
+Please see LICENSE.logo for the copyright and license of Anki's logo.
+
+The following included source code items use a license other than AGPL3:
+
+ * Anki's translations: BSD.
+ * Qt's bundled translations: LGPL3.
+ * The anki/template/ folder is based off pystache: MIT.
+ * The SuperMemo importer: GPL3.
+ * The Pauker importer: BSD-3.
+ * mpv.py: MIT.
+ * statsbg.py: CC BY-SA 3.0.
+ * winpaths.py: MIT.
+ * MathJax: Apache 2.
+ * jQuery and jQuery-UI: MIT.
+ * browsersel.js: CC BY 2.5.
+ * plot.js: MIT.
+
+The AGPL3 license follows.
+
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 
- Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
  Everyone is permitted to copy and distribute verbatim copies
  of this license document, but changing it is not allowed.
 
@@ -633,8 +664,8 @@ the "copyright" line and a pointer to where the full notice is found.
     Copyright (C) <year>  <name of author>
 
     This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published
-    by the Free Software Foundation, either version 3 of the License, or
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
@@ -643,7 +674,7 @@ the "copyright" line and a pointer to where the full notice is found.
     GNU Affero General Public License for more details.
 
     You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Also add information on how to contact you by electronic and paper mail.
 
@@ -658,4 +689,4 @@ specific requirements.
   You should also get your employer (if you work as a programmer) or school,
 if any, to sign a "copyright disclaimer" for the program, if necessary.
 For more information on this, and how to apply and follow the GNU AGPL, see
-<https://www.gnu.org/licenses/>.
+<http://www.gnu.org/licenses/>.
