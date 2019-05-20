@@ -21,8 +21,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 ```
 Changes to:
 ```
-from PyQt4 import QtCore, QtGui as QtWidgets
-from PyQt4 import QtGui
+from PyQt4 import QtCore, QtGui as QtWidgets, QtGui
 ```
 
 
@@ -34,8 +33,8 @@ Card Info Bar for Browser, by ijgnd: https://ankiweb.net/shared/info/2140680811
 Frozen Fields, by tmbb: https://github.com/tmbb/FrozenFields  
 Small potatoes, https://ankiweb.net/shared/info/75718778  
 Cacher in the rye, https://ankiweb.net/shared/info/1302452246  
-Hold'em Cardfield,  
-Pennywise,  
+Hold'em Cardfield, https://ankiweb.net/shared/info/363320830  
+Pennywise, https://ankiweb.net/shared/info/1032766035  
 
 
 

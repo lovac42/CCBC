@@ -7,9 +7,9 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
-# from PyQt4 import QtCore, QtGui as QtWidgets
+from PyQt4 import QtCore, QtGui as QtWidgets, QtGui
 from anki.lang import _
+import ccbc.plugins.Card_Info_Bar_for_Browser.browser
 
 
 class Ui_Dialog(object):
@@ -240,16 +240,8 @@ class Ui_Dialog(object):
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuJump.menuAction())
 
-
-
         #Addon: Card Info Bar for Browser, https://ankiweb.net/shared/info/2140680811
-        self.verticalLayout_2.removeWidget(self.tableView)
-        self.infogrid = QtGui.QGridLayout()
-        self.infowidget = QtGui.QWidget()
-        self.infowidget.setLayout(self.infogrid)
-        self.verticalLayout_2.addWidget(self.infowidget)    
-        self.verticalLayout_2.addWidget(self.tableView)
-
+        ccbc.plugins.Card_Info_Bar_for_Browser.browser.menu(self)
 
         self.retranslateUi(Dialog)
         QtCore.QObject.connect(self.actionSelectAll, QtCore.SIGNAL("triggered()"), self.tableView.selectAll)
