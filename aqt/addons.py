@@ -11,8 +11,8 @@ import zipfile
 from collections import defaultdict
 import markdown
 from send2trash import send2trash
-# import jsonschema
-# from jsonschema.exceptions import ValidationError
+import jsonschema
+from jsonschema.exceptions import ValidationError
 
 from aqt.qt import *
 from aqt.utils import showInfo, openFolder, isWin, openLink, \
@@ -77,7 +77,7 @@ class AddonManager:
     def loadAddons(self):
         for dir in self.allAddons():
             meta = self.addonMeta(dir)
-            if meta.get("disabled", False):
+            if meta.get("disabled"):
                 continue
             self.dirty = True
             try:
@@ -174,18 +174,15 @@ and have been disabled: %(found)s") % dict(name=self.addonName(dir), found=addon
     # Installing and deleting add-ons
     ######################################################################
 
-    def _readManifestFile(self, zfile):
+    def readManifestFile(self, zfile):
         try:
             with zfile.open("manifest.json") as f:
                 data = json.loads(f.read())
-            manifest = {}  # build new manifest from recognized keys
-            for key, attrs in self._manifest_schema.items():
-                if not attrs["req"] and key not in data:
-                    continue
-                val = data[key]
-                assert isinstance(val, attrs["type"])
-                manifest[key] = val
-        except (KeyError, json.decoder.JSONDecodeError, AssertionError):
+            jsonschema.validate(data, self._manifest_schema)
+            # build new manifest from recognized keys
+            schema = self._manifest_schema["properties"]
+            manifest = {key: data[key] for key in data.keys() & schema.keys()}
+        except (KeyError, json.decoder.JSONDecodeError, ValidationError):
             # raised for missing manifest, invalid json, missing/invalid keys
             return {}
         return manifest
@@ -200,7 +197,7 @@ and have been disabled: %(found)s") % dict(name=self.addonName(dir), found=addon
             return False, "zip"
         
         with zfile:
-            file_manifest = self._readManifestFile(zfile)
+            file_manifest = self.readManifestFile(zfile)
             if manifest:
                 file_manifest.update(manifest)
             manifest = file_manifest
@@ -213,7 +210,7 @@ and have been disabled: %(found)s") % dict(name=self.addonName(dir), found=addon
             meta = self.addonMeta(package)
             self._install(package, zfile)
         
-        schema = self._manifest_schema
+        schema = self._manifest_schema["properties"]
         manifest_meta = {k: v for k, v in manifest.items()
                          if k in schema and schema[k]["meta"]}
         meta.update(manifest_meta)
@@ -226,7 +223,9 @@ and have been disabled: %(found)s") % dict(name=self.addonName(dir), found=addon
         base = self.addonsFolder(dir)
         if os.path.exists(base):
             self.backupUserFiles(dir)
-            self.deleteAddon(dir)
+            if not self.deleteAddon(dir):
+                self.restoreUserFiles(dir)
+                return
 
         os.mkdir(base)
         self.restoreUserFiles(dir)
@@ -521,7 +520,6 @@ class AddonsDialog(QDialog):
 
         addonList.repaint()
 
-
     def _onAddonItemSelected(self, row_int):
         try:
             addon = self.addons[row_int][1]
@@ -743,7 +741,7 @@ class ConfigEditor(QDialog):
         self.form.setupUi(self)
         restore = self.form.buttonBox.button(QDialogButtonBox.RestoreDefaults)
         restore.clicked.connect(self.onRestoreDefaults)
-        # self.setupFonts()
+        self.setupFonts()
         self.updateHelp()
         self.updateText(self.conf)
         restoreGeom(self, "addonconf")
@@ -755,10 +753,10 @@ class ConfigEditor(QDialog):
         self.updateText(default_conf)
         tooltip(_("Restored defaults"), parent=self)
 
-    # def setupFonts(self):
-        # font_mono = QFontDatabase.systemFont(QFontDatabase.FixedFont)
-        # font_mono.setPointSize(font_mono.pointSize() + 1)
-        # self.form.editor.setFont(font_mono)
+    def setupFonts(self):
+        font_mono = QFontDatabase.systemFont(QFontDatabase.FixedFont)
+        font_mono.setPointSize(font_mono.pointSize() + 1)
+        self.form.editor.setFont(font_mono)
 
     def updateHelp(self):
         txt = self.mgr.addonConfigHelp(self.addon)

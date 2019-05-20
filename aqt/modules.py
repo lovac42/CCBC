@@ -12,6 +12,7 @@ from aqt.qt import *
 from aqt.utils import showInfo, openFolder, isWin, \
     askUser, restoreGeom, saveGeom, showWarning, tooltip
 
+from ccbc.plugins.Advanced_Copy_Fields import advanced_copy_fields
 from ccbc.plugins.Card_Info_Bar_for_Browser import infobar
 
 

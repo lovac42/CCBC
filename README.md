@@ -22,15 +22,22 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 Changes to:
 ```
 from PyQt4 import QtCore, QtGui as QtWidgets
+from PyQt4 import QtGui
 ```
 
 
 ### Included Addons:
 Hierarchical Tags, by Patrice Neff: https://ankiweb.net/shared/download/1089921461  
+Advanced Copy Fields, by Ambriel Angel: https://ankiweb.net/shared/info/1898445115
 Add-on window search bar, by ijgnd: https://ankiweb.net/shared/info/561945101  
 Card Info Bar for Browser, by ijgnd: https://ankiweb.net/shared/info/2140680811  
 Frozen Fields, by tmbb: https://github.com/tmbb/FrozenFields  
 Small potatoes, https://ankiweb.net/shared/info/75718778  
 Cacher in the rye, https://ankiweb.net/shared/info/1302452246  
-Hold'em Cardfield, 
-Pennywise, 
+Hold'em Cardfield,  
+Pennywise,  
+
+
+
+## Sync:
+Sync has been disabled, but can be enabled for custom servers using modules.

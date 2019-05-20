@@ -4,7 +4,7 @@
 /* File has been modified by lovac42 for ccbc project */
 
 html {
-    height: 100%;
+    height: 140%;
     background: -webkit-gradient(linear, left top, left bottom, from(#ddd), to(#fff));
     margin:0; padding:0;
 }
