@@ -754,9 +754,10 @@ class ConfigEditor(QDialog):
         tooltip(_("Restored defaults"), parent=self)
 
     def setupFonts(self):
-        font_mono = QFontDatabase.systemFont(QFontDatabase.FixedFont)
-        font_mono.setPointSize(font_mono.pointSize() + 1)
-        self.form.editor.setFont(font_mono)
+        pass
+        # font_mono = QFontDatabase.systemFont(QFontDatabase.FixedFont)
+        # font_mono.setPointSize(font_mono.pointSize() + 1)
+        # self.form.editor.setFont(font_mono)
 
     def updateHelp(self):
         txt = self.mgr.addonConfigHelp(self.addon)

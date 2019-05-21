@@ -741,15 +741,22 @@ title="%s">%s</button>''' % (
 
     def onAddCard(self):
         from aqt import addcards
-        aqt.dialogs.load("AddCards", addcards.AddCards, self)
+        aqt.dialogs.open("AddCards", self)
 
     def onBrowse(self):
         from aqt import browser
-        aqt.dialogs.load("Browser", browser.Browser, self)
+        aqt.dialogs.open("Browser", self)
+
+    def onStats(self):
+        deck = self._selectedDeck()
+        if not deck:
+            return
+        from aqt import stats
+        aqt.dialogs.open("DeckStats", self)
 
     def onEditCurrent(self):
         from aqt import editcurrent
-        aqt.dialogs.load("EditCurrent", editcurrent.EditCurrent, self)
+        aqt.dialogs.open("EditCurrent", self)
 
     def onDeckConf(self, deck=None):
         if not deck:
@@ -764,14 +771,6 @@ title="%s">%s</button>''' % (
     def onOverview(self):
         self.col.reset()
         self.moveToState("overview")
-
-    def onStats(self):
-        deck = self._selectedDeck()
-        if not deck:
-            return
-        from aqt import stats
-        aqt.dialogs.load("DeckStats", stats.DeckStats, self)
-
 
     def onPrefs(self):
         import aqt.preferences

@@ -45,24 +45,18 @@ from anki.utils import checksum
 
 # Dialog manager - manages modeless windows
 ##########################################################################
-# from aqt import addcards, browser, editcurrent, preferences
-from aqt import preferences
+from aqt import addcards, browser, editcurrent, preferences, stats
 
 
 class DialogManager(object):
 
     _dialogs = {
         "Preferences": [preferences.Preferences, None],
-        # "AddCards": [addcards.AddCards, None],
-        # "EditCurrent": [editcurrent.EditCurrent, None],
-        # "Browser": [browser.Browser, None],
-        # "DeckStats": [stats.DeckStats, None],
+        "AddCards": [addcards.AddCards, None],
+        "EditCurrent": [editcurrent.EditCurrent, None],
+        "Browser": [browser.Browser, None],
+        "DeckStats": [stats.DeckStats, None]
     }
-
-    def load(self, name, module, *args):
-        if not self._dialogs.get(name):
-            self._dialogs[name] = [module, None]
-        return self.open(name, *args)
 
     def open(self, name, *args):
         (creator, instance) = self._dialogs[name]

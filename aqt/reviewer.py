@@ -22,6 +22,7 @@ from aqt.utils import mungeQA, getBase, openLink, tooltip, askUserDialog, \
 from aqt.sound import getAudio
 import aqt
 from anki.lang import _
+from html.parser import HTMLParser
 
 
 class Reviewer(object):
@@ -414,7 +415,7 @@ Please run Tools>Empty Cards""")
         buf = buf.replace("<hr id=answer>", "")
         hadHR = len(buf) != origSize
         # munge correct value
-        parser = HTMLParser.HTMLParser()
+        parser = HTMLParser()
         cor = stripHTML(self.mw.col.media.strip(self.typeCorrect))
         # ensure we don't chomp multiple whitespace
         cor = cor.replace(" ", "&nbsp;")

@@ -57,7 +57,7 @@ class DeckStats(QDialog):
 
     def reject(self):
         saveGeom(self, self.name)
-        # aqt.dialogs.markClosed("DeckStats")
+        aqt.dialogs.markClosed("DeckStats")
         QDialog.reject(self)
 
     def closeWithCallback(self, callback):
