@@ -334,6 +334,8 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         elif url.startswith("typeans:"):
             (cmd, arg) = url.split(":", 1)
             self.typedAnswer = arg
+        elif url.startswith("ankiplay"):
+            play(url[8:])
         else:
             openLink(url)
 
