@@ -395,7 +395,7 @@ class Browser(QMainWindow):
 
     def setupToolbar(self):
         self.toolbarWeb = AnkiWebView()
-        self.toolbarWeb.setFixedHeight(32 + self.mw.fontHeightDelta)
+        self.toolbarWeb.setFixedHeight(25 + self.mw.fontHeightDelta)
         self.toolbar = BrowserToolbar(self.mw, self.toolbarWeb, self)
         self.form.verticalLayout_3.insertWidget(0, self.toolbarWeb)
         self.toolbar.draw()

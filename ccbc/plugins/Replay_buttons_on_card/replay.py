@@ -45,29 +45,3 @@ title="{ttl}" class="replaybutton browserhide"><span><svg viewBox="0 0 32 32">\
 
 addHook("mungeQA", play_button_filter)
 
-
-
-
-# thsi part wraps around anki.card.css
-def svg_css(Card):
-    return """<style scoped>
-.replaybutton span {
-  display: inline-block;
-  vertical-align: middle;
-  padding: 5px;
-}
-
-.replaybutton span svg {
-  stroke: none;
-  fill: black;
-  display: inline;
-  height: 1em;
-  width: 1em;
-  min-width: 12px;
-  min-height: 12px;
-}
-</style>""" + old_css(Card)
-
-old_css = Card.css
-Card.css = svg_css
-

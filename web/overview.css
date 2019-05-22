@@ -31,3 +31,16 @@ h3 {
 .dyn {
     text-align: center;
 }
+
+button{
+    border: solid 2px rgba(0, 0, 0, 0.05);
+    border-radius: 500px;
+    -webkit-appearance: none;
+    outline: none;
+    cursor: pointer;
+    padding: 16px;
+    background-color: #52BE80;
+    color: #EAECEE;
+    font-weight: bold;
+    font-size: 14px;
+}

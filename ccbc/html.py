@@ -9,3 +9,4 @@ editor = readFile("editor.html")
 
 deckbrowser = readFile("deckbrowser.html")
 
+rev_bottombar = readFile("reviewer-bottom.html")

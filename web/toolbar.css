@@ -10,7 +10,7 @@ html {
 }
 
 #header {
-    padding: 3px;
+    padding: 0px;
     font-weight: bold;
     border-bottom: 1px solid #aaa;
 }
@@ -31,14 +31,14 @@ body {
 }
 
 .hitem {
-    padding-right: 8px;
-    padding-left: 8px;
+    padding-right: 10px;
+    padding-left: 10px;
     text-decoration: none;
-    color: #000;
+    color: #c8c8c8;
 }
 
 .hitem:hover {
-    text-decoration: underline;
+    color: #0000c8;
 }
 
 .hitem:focus { outline: 0; }

@@ -514,7 +514,7 @@ title="%s">%s</button>''' % (
         tweb = aqt.webview.AnkiWebView()
         tweb.setObjectName("toolbarWeb")
         tweb.setFocusPolicy(Qt.WheelFocus)
-        tweb.setFixedHeight(32+self.fontHeightDelta)
+        tweb.setFixedHeight(20+self.fontHeightDelta)
         self.toolbar = aqt.toolbar.Toolbar(self, tweb)
         self.toolbar.draw()
         # main area
@@ -787,7 +787,6 @@ title="%s">%s</button>''' % (
         import aqt.importing
         if not os.path.exists(path):
             return showInfo(_("Please use File>Import to import this file."))
-
         aqt.importing.importFile(self, path)
 
     def onImport(self):
@@ -818,8 +817,6 @@ title="%s">%s</button>''' % (
             # user cancelled first config
             self.col.decks.rem(did)
             self.col.decks.select(deck['id'])
-        else:
-            self.moveToState("overview")
 
     # Menu, title bar & status
     ##########################################################################

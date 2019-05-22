@@ -3,6 +3,7 @@
 
 hr {
     background-color: #ccc;
+    margin: 1em;
 }
 
 body {
@@ -33,7 +34,18 @@ img {
 #_mark {
     position: fixed;
     left: 10px;
-    top: 0;
+    top: 5px;
+    font-size: 30px;
+    color: yellow;
+    display: none;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: black;
+}
+
+.marked {
+    position: fixed;
+    left: 10px;
+    top: 5px;
     font-size: 30px;
     color: yellow;
     display: none;
@@ -55,4 +67,37 @@ img {
 
 .typeMissed {
     background: #ccc;
+}
+
+
+/* Replay_buttons_on_card */
+.replaybutton span {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 5px;
+}
+.replaybutton span svg {
+  stroke: none;
+  fill: black;
+  display: inline;
+  height: 1em;
+  width: 1em;
+  min-width: 12px;
+  min-height: 12px;
+}
+
+
+
+/* scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
 }

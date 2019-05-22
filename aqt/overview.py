@@ -10,6 +10,7 @@ from anki.utils import isMac
 import aqt
 from anki.sound import clearAudioQueue
 from anki.lang import _
+import ccbc
 
 
 class Overview(object):
@@ -163,27 +164,7 @@ to their original deck.""")
 <script>$(function () { $("#study").focus(); });</script>
 """
 
-    _css = """
-.smallLink { font-size: 10px; }
-h3 { margin-bottom: 0; }
-.descfont {
-padding: 1em; color: #333;
-}
-.description {
-white-space: pre-wrap;
-}
-#fulldesc {
-display:none;
-}
-.descmid {
-width: 70%;
-margin: 0 auto 0;
-text-align: left;
-}
-.dyn {
-text-align: center;
-}
-"""
+    _css = ccbc.css.overview
 
     # Bottom area
     ######################################################################
