@@ -65,6 +65,14 @@ class AnkiWebView(QWebView):
         self.key = None
         self.setCanFocus(canFocus)
 
+    def wheelEvent(self, evt):
+        runHook("QWebView.wheelEvent",evt)
+        QWebView.wheelEvent(self, evt)
+
+    def mouseReleaseEvent(self, evt):
+        runHook("QWebView.mouseReleaseEvent",evt)
+        QWebView.mouseReleaseEvent(self, evt)
+
     def keyPressEvent(self, evt):
         if evt.matches(QKeySequence.Copy):
             self.triggerPageAction(QWebPage.Copy)

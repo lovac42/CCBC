@@ -17,6 +17,7 @@ from anki.utils import isMac, isWin, joinFields
 from aqt.webview import AnkiWebView
 import ccbc.js
 from anki.lang import ngettext, _
+from anki.sound import play
 
 
 class CardLayout(QDialog):
@@ -134,6 +135,13 @@ class CardLayout(QDialog):
         w.setLayout(l)
         self.forms.append({'tform': tform, 'pform': pform})
         self.tabs.addTab(w, t['name'])
+
+        pform.frontWeb.setLinkHandler(self._linkHandler)
+        pform.backWeb.setLinkHandler(self._linkHandler)
+
+    def _linkHandler(self, url):
+        if url.startswith("ankiplay"):
+            play(url[8:])
 
     def onRemoveTab(self, idx):
         if len(self.model['tmpls']) < 2:

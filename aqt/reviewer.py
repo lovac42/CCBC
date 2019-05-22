@@ -21,7 +21,9 @@ from aqt.utils import mungeQA, getBase, openLink, tooltip, askUserDialog, \
     downArrow
 from aqt.sound import getAudio
 import aqt
+import ccbc
 from anki.lang import _
+from html.parser import HTMLParser
 
 
 class Reviewer(object):
@@ -52,7 +54,7 @@ class Reviewer(object):
         if isMac:
             self.bottom.web.setFixedHeight(46)
         else:
-            self.bottom.web.setFixedHeight(52+self.mw.fontHeightDelta*4)
+            self.bottom.web.setFixedHeight(50+self.mw.fontHeightDelta*4)
         self.bottom.web.setLinkHandler(self._linkHandler)
         self._reps = None
         self.nextCard()
@@ -333,22 +335,15 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         elif url.startswith("typeans:"):
             (cmd, arg) = url.split(":", 1)
             self.typedAnswer = arg
+        elif url.startswith("ankiplay"):
+            play(url[8:])
         else:
             openLink(url)
 
     # CSS
     ##########################################################################
 
-    _css = """
-hr { background-color:#ccc; margin: 1em; }
-body { margin:1.5em; }
-img { max-width: 95%; max-height: 95%; }
-.marked { position:fixed; right: 7px; top: 7px; display: none; }
-#typeans { width: 100%; }
-.typeGood { background: #0f0; }
-.typeBad { background: #f00; }
-.typeMissed { background: #ccc; }
-"""
+    _css = ccbc.css.reviewer
 
     def _styles(self):
         return self._css
@@ -414,7 +409,7 @@ Please run Tools>Empty Cards""")
         buf = buf.replace("<hr id=answer>", "")
         hadHR = len(buf) != origSize
         # munge correct value
-        parser = HTMLParser.HTMLParser()
+        parser = HTMLParser()
         cor = stripHTML(self.mw.col.media.strip(self.typeCorrect))
         # ensure we don't chomp multiple whitespace
         cor = cor.replace(" ", "&nbsp;")
@@ -518,90 +513,16 @@ Please run Tools>Empty Cards""")
     # Bottom bar
     ##########################################################################
 
-    _bottomCSS = """
-body {
-background: -webkit-gradient(linear, left top, left bottom,
-from(#fff), to(#ddd));
-border-bottom: 0;
-border-top: 1px solid #aaa;
-margin: 0;
-padding: 0px;
-padding-left: 5px; padding-right: 5px;
-}
-button {
-min-width: 60px; white-space: nowrap;
-}
-.hitem { margin-top: 2px; }
-.stat { padding-top: 5px; }
-.stat2 { padding-top: 3px; font-weight: normal; }
-.stattxt { padding-left: 5px; padding-right: 5px; white-space: nowrap; }
-.nobold { font-weight: normal; display: inline-block; padding-top: 4px; }
-.spacer { height: 18px; }
-.spacer2 { height: 16px; }
-"""
+    _bottomCSS = ccbc.css.rev_bottombar + ccbc.css.user_rev_bottombar
 
     def _bottomHTML(self):
-        return """
-<table width=100%% cellspacing=0 cellpadding=0>
-<tr>
-<td align=left width=50 valign=top class=stat>
-<br>
-<button title="%(editkey)s" onclick="py.link('edit');">%(edit)s</button></td>
-<td align=center valign=top id=middle>
-</td>
-<td width=50 align=right valign=top class=stat><span id=time class=stattxt>
-</span><br>
-<button onclick="py.link('more');">%(more)s %(downArrow)s</button>
-</td>
-</tr>
-</table>
-<script>
-var time = %(time)d;
-var maxTime = 0;
-$(function () {
-$("#ansbut").focus();
-updateTime();
-setInterval(function () { time += 1; updateTime() }, 1000);
-});
-
-var updateTime = function () {
-    if (!maxTime) {
-        $("#time").text("");
-        return;
-    }
-    time = Math.min(maxTime, time);
-    var m = Math.floor(time / 60);
-    var s = time %% 60;
-    if (s < 10) {
-        s = "0" + s;
-    }
-    var e = $("#time");
-    if (maxTime == time) {
-        e.html("<font color=red>" + m + ":" + s + "</font>");
-    } else {
-        e.text(m + ":" + s);
-    }
-}
-
-function showQuestion(txt, maxTime_) {
-  // much faster than jquery's .html()
-  $("#middle")[0].innerHTML = txt;
-  $("#ansbut").focus();
-  time = 0;
-  maxTime = maxTime_;
-}
-
-function showAnswer(txt) {
-  $("#middle")[0].innerHTML = txt;
-  $("#defease").focus();
-}
-
-</script>
-""" % dict(rem=self._remaining(), edit=_("Edit"),
-           editkey=_("Shortcut key: %s") % "E",
-           more=_("More"),
-           downArrow=downArrow(),
-           time=self.card.timeTaken() // 1000)
+        return ccbc.html.rev_bottombar % dict(
+            rem=self._remaining(), edit=_("Edit"),
+            editkey=_("Shortcut key: %s") % "E",
+            more=_("More"),
+            downArrow=downArrow(),
+            time=self.card.timeTaken() // 1000
+            )
 
     def _showAnswerButton(self):
         self._bottomReady = True

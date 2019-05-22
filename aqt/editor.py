@@ -10,6 +10,7 @@ import os
 # import urllib2
 import ctypes
 import urllib.request, urllib.parse, urllib.error
+from PyQt4 import QtCore
 
 from anki.lang import _
 from aqt.qt import *
@@ -113,6 +114,7 @@ class Editor(object):
                 # plastique was removed in qt5
                 self.plastiqueStyle = QStyleFactory.create("fusion")
             self.widget.setStyle(self.plastiqueStyle)
+            self.widget.setCursor(QtCore.Qt.PointingHandCursor)
         else:
             self.plastiqueStyle = None
         # icons

@@ -33,6 +33,17 @@ body {
     -webkit-user-select: none;
 }
 
+button {
+    border: solid 0px rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    -webkit-appearance: none;
+    outline: none;
+    cursor: pointer;
+    background-color: #e7e7e7;
+    opacity: .5;
+    padding: 5px;
+}
+
 .current {
     background-color: #e7e7e7;
 }
@@ -64,6 +75,20 @@ body {
 .gears {
     width: 1em;
     height: 1em;
-    opacity: .5;
+    opacity: .8;
     padding-top: 0.2em;
+}
+
+/* scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
 }

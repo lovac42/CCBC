@@ -3,10 +3,14 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 # Support: https://github.com/lovac42/CCBC
 
-from ccbc.utils import *
+# For compatibility only
 
-editor = readFile("editor.html")
+from ccbc import js
 
-deckbrowser = readFile("deckbrowser.html")
+jquery = js.jquery
 
-rev_bottombar = readFile("reviewer-bottom.html")
+ui = js.ui
+
+plot = js.browserSel
+
+browserSel = js.browserSel

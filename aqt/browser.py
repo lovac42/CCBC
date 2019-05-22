@@ -10,6 +10,8 @@ import time
 import re
 from operator import  itemgetter
 from anki.lang import ngettext, _
+from bs4 import BeautifulSoup
+from anki.sound import play
 
 from aqt.qt import *
 import anki
@@ -291,6 +293,11 @@ class DataModel(QAbstractTableModel):
         return a
 
     def formatQA(self, txt):
+        soup = BeautifulSoup(txt, 'html.parser')
+        for hide in soup.findAll(True, {'class': re.compile(
+                '\\bbrowserhide\\b')}):
+            hide.extract()
+        txt=str(soup)
         s = txt.replace("<br>", u" ")
         s = s.replace("<br />", u" ")
         s = s.replace("<div>", u" ")
@@ -388,7 +395,7 @@ class Browser(QMainWindow):
 
     def setupToolbar(self):
         self.toolbarWeb = AnkiWebView()
-        self.toolbarWeb.setFixedHeight(32 + self.mw.fontHeightDelta)
+        self.toolbarWeb.setFixedHeight(25 + self.mw.fontHeightDelta)
         self.toolbar = BrowserToolbar(self.mw, self.toolbarWeb, self)
         self.form.verticalLayout_3.insertWidget(0, self.toolbarWeb)
         self.toolbar.draw()
@@ -1065,6 +1072,11 @@ where id in %s""" % ids2str(sf))
         restoreGeom(self._previewWindow, "preview")
         self._previewWindow.show()
         self._renderPreview(True)
+        self._previewWeb.setLinkHandler(self._linkHandler)
+
+    def _linkHandler(self, url):
+        if url.startswith("ankiplay"):
+            play(url[8:])
 
     def _onPreviewFinished(self, ok):
         saveGeom(self._previewWindow, "preview")
@@ -1793,7 +1805,8 @@ a { margin-right: 1em; }
             self.browser.addTags()
         elif l == "deletetag":
             self.browser.deleteTags()
-
+        elif l.startswith("ankiplay"):
+            play(l[8:])
 
 # Favourites button
 ######################################################################

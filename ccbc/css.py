@@ -9,5 +9,13 @@ toolbar = readFile("toolbar.css")
 
 bottombar = readFile("toolbar-bottom.css")
 
+rev_bottombar = readFile("reviewer-bottom.css")
+
+user_rev_bottombar = readFile("user_reviewer-bottom.css")
+
+
 deckbrowser = readFile("deckbrowser.css")
 
+overview = readFile("overview.css")
+
+reviewer = readFile("reviewer.css")
