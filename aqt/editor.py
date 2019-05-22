@@ -24,6 +24,7 @@ from aqt.utils import shortcut, showInfo, showWarning, getBase, getFile, \
 import aqt
 import ccbc.js
 import ccbc.html
+import ccbc.css
 from bs4 import BeautifulSoup
 
 
@@ -299,9 +300,13 @@ class Editor(object):
             self.stealFocus = True
         # change timer
         if self.note:
-            self.web.setHtml(_html % (
-                getBase(self.mw.col), ccbc.js.jquery,
-                _("Show Duplicates")), loadCB=self._loadFinished)
+            self.web.stdHtml(
+                head=getBase(self.mw.col),
+                body=_html,
+                css=ccbc.css.editor,
+                js=ccbc.js.jquery + ccbc.js.editor,
+                loadCB=self._loadFinished,
+                )
             self.updateTags()
             self.updateKeyboard()
         else:

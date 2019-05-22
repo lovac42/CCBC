@@ -9,6 +9,7 @@ from aqt.qt import *
 from anki.hooks import addHook, remHook, runHook
 from aqt.utils import  shortcut
 from anki.lang import _
+from PyQt4 import QtCore
 
 class ModelChooser(QHBoxLayout):
 
@@ -30,6 +31,7 @@ class ModelChooser(QHBoxLayout):
             self.addWidget(self.modelLabel)
         # models box
         self.models = QPushButton()
+        self.models.setCursor(QtCore.Qt.PointingHandCursor)
         #self.models.setStyleSheet("* { text-align: left; }")
         self.models.setToolTip(shortcut(_("Change Note Type (Ctrl+N)")))
         s = QShortcut(QKeySequence(_("Ctrl+N")), self.widget, activated=self.onModelChange)

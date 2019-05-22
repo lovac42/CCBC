@@ -30,7 +30,6 @@ Hierarchical Tags, by Patrice Neff: https://ankiweb.net/shared/download/10899214
 Advanced Copy Fields, by Ambriel Angel: https://ankiweb.net/shared/info/1898445115  
 Add-on window search bar, by ijgnd: https://ankiweb.net/shared/info/561945101  
 Card Info Bar for Browser, by ijgnd: https://ankiweb.net/shared/info/2140680811  
-Large and Colorful Buttons (CSS only): https://ankiweb.net/shared/info/1829090218  
 Frozen Fields, by tmbb: https://github.com/tmbb/FrozenFields  
 Large and Colorful Buttons (css only) by hkr: https://ankiweb.net/shared/info/1829090218  
 Small potatoes, https://ankiweb.net/shared/info/75718778  

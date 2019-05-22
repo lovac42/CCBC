@@ -9,7 +9,7 @@ from aqt.qt import *
 from anki.hooks import addHook, remHook
 from aqt.utils import  shortcut
 from anki.lang import _
-
+from PyQt4 import QtCore
 
 class DeckChooser(QHBoxLayout):
 
@@ -31,6 +31,7 @@ class DeckChooser(QHBoxLayout):
             self.addWidget(self.deckLabel)
         # decks box
         self.deck = QPushButton()
+        self.deck.setCursor(QtCore.Qt.PointingHandCursor)
         self.deck.setToolTip(shortcut(_("Target Deck (Ctrl+D)")))
         s = QShortcut(QKeySequence(_("Ctrl+D")), self.widget)
         s.activated.connect(self.onDeckChange)

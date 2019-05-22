@@ -6,11 +6,11 @@
 
 from aqt.qt import *
 from anki.lang import _
-from ccbc import css
+import ccbc
 
 
 class Toolbar:
-    _css = css.toolbar
+    _css = ccbc.css.toolbar
     _body = """
 <center id=outer>
 <table id=header width=100%%>
@@ -111,7 +111,7 @@ class Toolbar:
 
 
 class BottomBar(Toolbar):
-    _css = css.toolbar+css.bottombar
+    _css = ccbc.css.toolbar+ccbc.css.bottombar
     _centerBody = """
 <center id=outer><table width=100%% id=header><tr><td align=center>
 %s</td></tr></table></center>

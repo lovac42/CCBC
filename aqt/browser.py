@@ -1732,6 +1732,7 @@ Are you sure you want to continue?""")):
 ######################################################################
 
 class BrowserToolbar(Toolbar):
+    _css = ccbc.css.browser_toolbar
 
     def __init__(self, mw, web, browser):
         self.browser = browser

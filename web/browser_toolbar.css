@@ -1,0 +1,44 @@
+/* Copyright: Ankitects Pty Ltd and contributors
+ * License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html */
+
+/* File has been modified by lovac42 for ccbc project */
+
+html {
+    height: 140%;
+    background: -webkit-gradient(linear, left top, left bottom, from(#ddd), to(#fff));
+    margin:0; padding:0;
+}
+
+#header {
+    padding: 0px;
+    font-weight: bold;
+    border-bottom: 2px solid #aaa;
+}
+
+.tdcenter {
+    white-space: nowrap;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    -webkit-user-select: none;
+    overflow: hidden;
+}
+
+* {
+    -webkit-user-drag: none;
+}
+
+.hitem {
+    padding-right: 10px;
+    padding-left: 10px;
+    text-decoration: none;
+    color: black;
+}
+
+.hitem:hover {
+    color: maroon;
+}
+
+.hitem:focus { outline: 0; }
