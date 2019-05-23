@@ -25,6 +25,7 @@ class ExportDialog(QDialog):
         self.frm = aqt.forms.exporting.Ui_ExportDialog()
         self.frm.setupUi(self)
         self.exporter = None
+        self.isVerbatim=False
         self.setup(did)
         self.exec_()
 
