@@ -62,11 +62,15 @@ class ProgressManager:
     # automatically defers until the DB is not busy, and avoids running
     # while a progress window is visible.
 
-    def timer(self, ms, func, repeat):
+    def timer(self, ms, func, repeat, requiresCollection=True):
         def handler():
             if self.inDB or self._levels:
                 # retry in 100ms
-                self.timer(100, func, False)
+                self.timer(100, func, False, requiresCollection)
+            # elif not self.mw.col and requiresCollection:
+                # # ignore timer events that fire after collection has been
+                # # unloaded
+                # print("Ignored progress func as collection unloaded: %s" % repr(func))
             else:
                 func()
         t = QTimer(self.mw)
@@ -79,11 +83,11 @@ class ProgressManager:
     # Creating progress dialogs
     ##########################################################################
 
-    class ProgressDialog(QProgressDialog):
-        def __init__(self, label, txt, min, max, parent):
-            QProgressDialog.__init__(self, label, txt, min, max, parent)
-            # self.form = aqt.forms.progress.Ui_Dialog()
-            # self.form.setupUi(self)
+    class ProgressDialog(QDialog):
+        def __init__(self, parent):
+            QDialog.__init__(self, parent)
+            self.form = aqt.forms.progress.Ui_Dialog()
+            self.form.setupUi(self)
             self._closingDown = False
             self.wantCancel = False
 
@@ -113,21 +117,14 @@ class ProgressManager:
             parent = self.mw
 
         label = label or _("Processing...")
-        self._win = self.ProgressDialog(label, "", min, max, parent)
+        self._win = self.ProgressDialog(parent)
+        self._win.form.progressBar.setMinimum(min)
+        self._win.form.progressBar.setMaximum(max)
+        self._win.form.progressBar.setTextVisible(False)
 
-        # self._win.form.progressBar.setMinimum(min)
-        # self._win.form.progressBar.setMaximum(max)
-        # self._win.form.progressBar.setTextVisible(False)
-        # self._win.form.label.setText(label)
-
+        self._win.form.label.setText(label)
         self._win.setWindowTitle("CCBC")
-        self._win.setCancelButton(None)
-        self._win.setAutoClose(False)
-        self._win.setAutoReset(False)
         self._win.setWindowModality(Qt.ApplicationModal)
-        # we need to manually manage minimum time to show, as qt gets confused
-        # by the db handler
-        self._win.setMinimumDuration(100000)
         self._win.setMinimumWidth(300)
         if immediate:
             self._showWin()
