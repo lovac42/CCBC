@@ -14,7 +14,7 @@ from anki.sound import clearAudioQueue
 from anki.hooks import addHook, remHook, runHook
 from anki.utils import htmlToTextLine, isMac
 import aqt.editor, aqt.modelchooser, aqt.deckchooser
-
+import ccbc
 
 
 
@@ -27,6 +27,9 @@ class AddCards(QDialog):
         self.mw = mw
         self.form = aqt.forms.addcards.Ui_Dialog()
         self.form.setupUi(self)
+        self.setStyleSheet(ccbc.css.editor_ui)
+
+
         self.setWindowTitle(_("Add"))
         self.setMinimumHeight(300)
         self.setMinimumWidth(400)

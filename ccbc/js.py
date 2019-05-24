@@ -12,3 +12,5 @@ ui = readFile("jquery-ui.js")
 plot = readFile("plot.js")
 
 browserSel = readFile("browsersel.js")
+
+editor = readFile("editor.js")

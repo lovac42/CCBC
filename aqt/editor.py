@@ -7,8 +7,8 @@
 
 import re
 import os
-# import urllib2
 import ctypes
+import base64
 import urllib.request, urllib.parse, urllib.error
 from PyQt4 import QtCore
 
@@ -24,6 +24,9 @@ from aqt.utils import shortcut, showInfo, showWarning, getBase, getFile, \
 import aqt
 import ccbc.js
 import ccbc.html
+import ccbc.css
+
+from ccbc.cleaner import Cleaner
 from bs4 import BeautifulSoup
 
 
@@ -274,13 +277,10 @@ class Editor(object):
         else:
             print(str)
 
-
     def mungeHTML(self, txt):
         if txt in ('<br>', '<div><br></div>'):
             return ''
-        # return txt
         return self._filterHTML(txt, localize=False)
-
 
     # Setting/unsetting the current note
     ######################################################################
@@ -299,9 +299,13 @@ class Editor(object):
             self.stealFocus = True
         # change timer
         if self.note:
-            self.web.setHtml(_html % (
-                getBase(self.mw.col), ccbc.js.jquery,
-                _("Show Duplicates")), loadCB=self._loadFinished)
+            self.web.stdHtml(
+                head=getBase(self.mw.col),
+                body=_html,
+                css=ccbc.css.editor,
+                js=ccbc.js.jquery + ccbc.js.editor,
+                loadCB=self._loadFinished,
+                )
             self.updateTags()
             self.updateKeyboard()
         else:
@@ -322,6 +326,7 @@ class Editor(object):
         data = []
         for fld, val in self.note.items():
             s = False
+            #Addon: frozen fields
             for f in self.note.model()["flds"]:
                 if f['name']==fld:
                     s=f['sticky']
@@ -377,9 +382,8 @@ class Editor(object):
         self.web.eval("setBackgrounds(%s);" % json.dumps(cols))
 
     def showDupes(self):
-        from aqt import browser
-        aqt.dialogs.load("Browser", browser.Browser, self.mw)
         contents = stripHTMLMedia(self.note.fields[0])
+        browser = aqt.dialogs.open("Browser", self.mw)
         browser.form.searchEdit.lineEdit().setText(
             '"dupe:%s,%s"' % (self.note.model()['id'],
                               contents))
@@ -411,9 +415,17 @@ class Editor(object):
         form.textEdit.moveCursor(QTextCursor.End)
         d.exec_()
         html = form.textEdit.toPlainText()
-        # filter html through beautifulsoup so we can strip out things like a
-        # leading </div>
-        # html = BeautifulSoup(html, features="html.parser")
+
+        # html, head, and body are auto stripped
+        # meta and other junk will be stripped in
+        # _filterHTML() with BeautifulSoup
+
+        # filter html to strip out things like a leading </div>
+        c = Cleaner(self.mw)
+        c.feed(html)
+        html = c.toString()
+        c.close()
+
         self.note.fields[self.currentField] = html
         self.loadNote()
         # focus field so it's saved
@@ -608,7 +620,7 @@ to a cloze type first, via Edit>Change Note Type."""))
     def fnameToLink(self, fname):
         ext = fname.split(".")[-1].lower()
         if ext in pics:
-            name = urllib.parse.quote(fname.encode("utf8"))
+            name = urllib.parse.quote(fname)
             return '<img src="%s">' % name
         else:
             anki.sound.play(fname)
@@ -651,6 +663,26 @@ to a cloze type first, via Edit>Change Note Type."""))
             self.mw.progress.finish()
         path = urllib.parse.unquote(url)
         return self.mw.col.media.writeData(path, filecontents)
+
+    def inlinedImageToFilename(self, txt):
+        prefix = "data:image/"
+        suffix = ";base64,"
+        for ext in ("jpg", "jpeg", "png", "gif"):
+            fullPrefix = prefix + ext + suffix
+            if txt.startswith(fullPrefix):
+                b64data = txt[len(fullPrefix):].strip()
+                data = base64.b64decode(b64data, validate=True)
+                if ext == "jpeg":
+                    ext = "jpg"
+                return self._addPastedImage(data, "."+ext)
+        return ""
+
+    # ext should include dot
+    def _addPastedImage(self, data, ext):
+        # hash and write
+        csum = checksum(data)
+        fname = "{}-{}{}".format("paste", csum, ext)
+        return self._addMediaFromData(fname, data)
 
     # HTML filtering
     ######################################################################
@@ -704,27 +736,38 @@ to a cloze type first, via Edit>Change Note Type."""))
         for tag in doc("img"):
             # turn file:/// links into relative ones
             try:
-                if tag['src'].lower().startswith("file://"):
-                    tag['src'] = os.path.basename(tag['src'])
-                if localize and self.isURL(tag['src']):
-                    # convert remote image links to local ones
-                    fname = self.urlToFile(tag['src'])
-                    if fname:
-                        tag['src'] = fname
+                src=tag['src']
             except KeyError:
                 # for some bizarre reason, mnemosyne removes src elements
                 # from missing media
-                pass
+                continue
                 # strip all other attributes, including implicit max-width
-            for attr in tag.attrs:
-                if attr != "src":
-                    del tag[attr]
-            # strip superfluous elements
+
+            src=urllib.parse.unquote(src)
+            if src.lower().startswith("file://"):
+                src = tag['src'] = os.path.basename(src)
+            if localize and self.isURL(src):
+                # convert remote image links to local ones
+                fname = self.urlToFile(src)
+                if fname:
+                    tag['src'] = fname
+            # elif src.lower().startswith("data:image/"):
+                # and convert inlined data
+                # tag['src'] = self.inlinedImageToFilename(src)
+
+            #copy image references and strip junk attributes
+            ntag={}
+            for attr, val in tag.attrs.items():
+                if attr == "src":
+                    ntag[attr]=val
+            tag=ntag
+
+        # strip superfluous elements
         for elem in "html", "head", "body", "meta":
             for tag in doc(elem):
                 tag.replaceWithChildren()
 
-        return doc.prettify()
+        return str(doc)
 
 
     # Advanced menu

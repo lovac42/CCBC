@@ -29,6 +29,7 @@ __all__ = [
 	"preferences",
 	"preview",
 	"profiles",
+	"progress",
 	"reposition",
 	"reschedule",
 	"setgroup",
@@ -67,6 +68,7 @@ from . import models
 from . import preferences
 from . import preview
 from . import profiles
+from . import progress
 from . import reposition
 from . import reschedule
 from . import setgroup

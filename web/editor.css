@@ -9,6 +9,15 @@
     overflow-wrap: break-word;
 }
 
+/* prevent floated images from being displayed outside field */
+.field:after {
+    content: "";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
 .clearfix:after {
     content: "";
     display: table;
@@ -18,14 +27,28 @@
 .fname {
     vertical-align: middle;
     padding: 0;
+    cursor: pointer;
 }
+
+.sticky::after {
+    color: blue;
+    content: " *";
+}
+
 
 img {
     max-width: 90%;
+    max-height: 150px
 }
 
 body {
     margin: 5px;
+}
+
+#dupes {
+    position: fixed;
+    top: 4px;
+    background-color: lightgray;
 }
 
 #topbutsOuter {
@@ -65,6 +88,18 @@ body {
     border-bottom: 3px solid #000;
 }
 
-#fields {
-    margin-top: 35px;
+
+/* scrollbar */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}
+::-webkit-scrollbar-thumb {
+    background: #888; 
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #555; 
 }

@@ -85,6 +85,8 @@ class AnkiQt(QMainWindow):
             self.setupHooks()
             self.setupRefreshTimer()
             self.updateTitleBar()
+            # managers
+            self.setupManagers()
             # screens
             self.setupDeckBrowser()
             self.setupOverview()
@@ -539,6 +541,15 @@ title="%s">%s</button>''' % (
 
     def closeAllCollectionWindows(self):
         return aqt.dialogs.closeAll()
+
+
+
+    # Managers setup
+    ##########################################################################
+
+    def setupManagers(self):
+        from aqt.view import ViewManager
+        self.viewmanager = ViewManager(self)
 
     # Components
     ##########################################################################
