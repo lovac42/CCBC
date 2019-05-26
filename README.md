@@ -3,7 +3,15 @@
 This is Anki 2.1.13 with Qt4 & QtWebkit.
 
 ## About:
-The reason for this is because QtWebEngine is too sluggish for ebook reading. After importing any uncompressed 200kb file or "The Complete History of Supermemo" or "Supermemo 20 Rules", the webpage really starts to lag behind and in some cases freeze five seconds after every extraction. This project takes the codes from 2.1 and 2.0 and meshed them together.
+The reason for this is because QWebEngine is too sluggish for ebook reading. After importing any uncompressed 200kb file or "The Complete History of Supermemo" or "Supermemo 20 Rules", the webpage really starts to lag behind and in some cases freeze five seconds after every extraction. This project takes the codes from 2.1 and 2.0 and meshed them together.
+
+
+### Why QWebEngine is bad for IR?
+"setHtml works by converting the html code you provide to percent-encoding, putting data: in front and using it as url which it navigates to, so the html code you provide becomes a url which exceeds the 2mb limit." <a href="https://bugreports.qt.io/browse/QTBUG-59369?focusedCommentId=352654&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-352654">Source</a>
+
+In other words, a 100kb webpage with the space character encoded as "%20", as well as user highlights and annotations added on top could potentially become more than 2MB, freezing Anki as a result.
+
+
 
 ### Naming:
 What does CCBC stand for?  
@@ -41,3 +49,17 @@ Pennywise, https://ankiweb.net/shared/info/1032766035
 
 ## Sync:
 Sync has been disabled, but can be enabled for custom servers using modules.
+
+
+## Screenshots:
+
+<img src="https://github.com/lovac42/CCBC/blob/master/screenshots/Clipboard-1.png?raw=true">  
+
+<img src="https://github.com/lovac42/CCBC/blob/master/screenshots/Clipboard-2.png?raw=true">  
+
+<img src="https://github.com/lovac42/CCBC/blob/master/screenshots/Clipboard-3.png?raw=true">  
+
+<img src="https://github.com/lovac42/CCBC/blob/master/screenshots/Clipboard-4.png?raw=true">  
+
+<img src="https://github.com/lovac42/CCBC/blob/master/screenshots/nm_heatmap.png?raw=true">  
+
