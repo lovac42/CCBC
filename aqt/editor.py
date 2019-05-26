@@ -9,18 +9,20 @@ import re
 import os
 import ctypes
 import base64
+import random
 import urllib.request, urllib.parse, urllib.error
-from PyQt4 import QtCore
+from anki.utils import tmpdir
 
 from anki.lang import _
 from aqt.qt import *
+from PyQt4 import QtCore
 from anki.utils import stripHTML, isWin, isMac, namedtmp, json, stripHTMLMedia
 import anki.sound
 from anki.hooks import runHook, runFilter
 from aqt.sound import getAudio
 from aqt.webview import AnkiWebView
-from aqt.utils import shortcut, showInfo, showWarning, getBase, getFile, \
-    tooltip, downArrow
+from aqt.utils import shortcut, showInfo, showWarning, getBase, getFile, tooltip, downArrow
+
 import aqt
 import ccbc.js
 import ccbc.html
@@ -28,10 +30,13 @@ import ccbc.css
 
 from ccbc.cleaner import Cleaner
 from bs4 import BeautifulSoup
+from anki.utils import checksum
 
 
 pics = ("jpg", "jpeg", "png", "tif", "tiff", "gif", "svg", "webp")
 audio =  ("wav", "mp3", "ogg", "flac", "mp4", "swf", "mov", "mpeg", "mkv", "m4a", "3gp", "spx", "oga")
+
+RE_NAS_URI = re.compile(r"^file://[^/]")
 
 _html = ccbc.html.editor
 
@@ -420,11 +425,19 @@ class Editor(object):
         # meta and other junk will be stripped in
         # _filterHTML() with BeautifulSoup
 
-        # filter html to strip out things like a leading </div>
-        c = Cleaner(self.mw)
-        c.feed(html)
-        html = c.toString()
-        c.close()
+        # self.mw.progress.start(
+            # immediate=True, parent=self.parentWindow)
+        try:
+            # filter html to strip out things like a leading </div>
+            c = Cleaner(self.mw)
+        # TODO: Use HTMLCleaner for IR models
+            c.feed(html)
+            html = c.toString()
+            c.close()
+        except:
+            showWarning(_("An error occurred while parsing html or downloading resources"))
+        # finally:
+            # self.mw.progress.finish()
 
         self.note.fields[self.currentField] = html
         self.loadNote()
@@ -643,6 +656,22 @@ to a cloze type first, via Edit>Change Note Type."""))
 
     def _retrieveURL(self, url):
         "Download file into media folder and return local filename or None."
+
+        # If samba path, copy to temp dir first before import
+        if RE_NAS_URI.search(url):
+            dir = tmpdir()
+            tmp = os.path.join(dir, "img%s%s" % (
+                random.randrange(0, 1000000), os.path.splitext(url)[1]))
+            # print(tmp)
+
+            f = open(tmp, "wb")
+            url=url.replace('file://','\\\\')
+            f.write(open(url, "rb").read())
+            f.close()
+
+            url='file:///'+tmp.replace("\\", "/")
+            # print(url)
+
         # urllib doesn't understand percent-escaped utf8, but requires things like
         # '#' to be escaped. we don't try to unquote the incoming URL, because
         # we should only be receiving file:// urls from url mime, which is unquoted
@@ -751,16 +780,18 @@ to a cloze type first, via Edit>Change Note Type."""))
                 fname = self.urlToFile(src)
                 if fname:
                     tag['src'] = fname
-            # elif src.lower().startswith("data:image/"):
-                # and convert inlined data
-                # tag['src'] = self.inlinedImageToFilename(src)
+            elif src.lower().startswith("data:image/"):
+                # convert inlined data
+                src = re.sub(r'\r|\n|\t','',src)
+                tag['src'] = self.inlinedImageToFilename(src)
 
+            #REMOVE: to keep the formating/alignment of ebooks
             #copy image references and strip junk attributes
-            ntag={}
-            for attr, val in tag.attrs.items():
-                if attr == "src":
-                    ntag[attr]=val
-            tag=ntag
+            # ntag={}
+            # for attr, val in tag.attrs.items():
+                # if attr == "src":
+                    # ntag[attr]=val
+            # tag.attrs=ntag
 
         # strip superfluous elements
         for elem in "html", "head", "body", "meta":

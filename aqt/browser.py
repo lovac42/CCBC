@@ -10,13 +10,13 @@ import time
 import re
 from operator import  itemgetter
 from anki.lang import ngettext, _
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 from anki.sound import play
 
 from aqt.qt import *
 import anki
 import aqt.forms
-from anki.utils import fmtTimeSpan, ids2str, stripHTMLMedia, isWin, intTime, isMac
+from anki.utils import fmtTimeSpan, ids2str, htmlToTextLine, stripHTMLMedia, isWin, intTime, isMac
 from aqt.utils import saveGeom, restoreGeom, saveSplitter, restoreSplitter, \
     saveHeader, restoreHeader, saveState, restoreState, applyStyles, getTag, \
     showInfo, askUser, tooltip, showWarning, shortcut, getBase, mungeQA
@@ -293,20 +293,7 @@ class DataModel(QAbstractTableModel):
         return a
 
     def formatQA(self, txt):
-        soup = BeautifulSoup(txt, 'html.parser')
-        for hide in soup.findAll(True, {'class': re.compile(
-                '\\bbrowserhide\\b')}):
-            hide.extract()
-        txt=str(soup)
-        s = txt.replace("<br>", u" ")
-        s = s.replace("<br />", u" ")
-        s = s.replace("<div>", u" ")
-        s = s.replace("\n", u" ")
-        s = re.sub("\[sound:[^]]+\]", "", s)
-        s = re.sub("\[\[type:[^]]+\]\]", "", s)
-        s = stripHTMLMedia(s)
-        s = s.strip()
-        return s
+        return htmlToTextLine(txt)
 
     def nextDue(self, c, index):
         if c.odid:
@@ -775,6 +762,8 @@ by clicking on one on the left."""))
         self._modelTree(root)
         self._userTagTree(root)
         self.form.tree.setIndentation(15)
+        self.sidebarTree=root #for 2.1
+
 
     def onTreeClick(self, item, col):
         if getattr(item, 'onclick', None):
@@ -1770,18 +1759,7 @@ class BrowserToolbar(Toolbar):
         right += "</div>"
         self.web.page().currentFrame().setScrollBarPolicy(
             Qt.Horizontal, Qt.ScrollBarAlwaysOff)
-
-        self.web.stdHtml(self._body%right, self._css + """
-#header { font-weight: normal; }
-a { margin-right: 1em; }
-.hitem { overflow: hidden; white-space: nowrap;}
-""")
-
-
-
-
-
-
+        self.web.stdHtml(self._body%right, self._css)
 
     # Link handling
     ######################################################################

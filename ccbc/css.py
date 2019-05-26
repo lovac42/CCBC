@@ -6,6 +6,7 @@
 from ccbc.utils import *
 
 toolbar = readFile("toolbar.css")
+
 browser_toolbar = readFile("browser_toolbar.css")
 
 bottombar = readFile("toolbar-bottom.css")
@@ -22,4 +23,5 @@ overview = readFile("overview.css")
 reviewer = readFile("reviewer.css")
 
 editor = readFile("editor.css")
-editor_ui = readFile("editor_ui.css")
+
+stats = readFile("stats.css")

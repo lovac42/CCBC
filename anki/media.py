@@ -156,6 +156,7 @@ create table meta (dirMod int, lastUsn int); insert into meta values (0, 0);
             typeMap = {
                 "image/jpeg": ".jpg",
                 "image/png": ".png",
+                "text/css": ".css",
             }
             if typeHint in typeMap:
                 fname += typeMap[typeHint]

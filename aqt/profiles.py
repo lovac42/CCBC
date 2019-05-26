@@ -295,11 +295,7 @@ and no other programs are accessing your profile folders, then try again."""))
             return os.path.join(dataDir, "Anki2")
 
     def _loadMeta(self):
-        opath = os.path.join(self.base, "prefs.db")
         path = os.path.join(self.base, "prefz.db")
-        if os.path.exists(opath) and not os.path.exists(path):
-            shutil.copy(opath, path)
-
         new = not os.path.exists(path)
         def recover():
             # if we can't load profile, start with a new one

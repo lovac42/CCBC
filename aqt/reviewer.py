@@ -133,8 +133,13 @@ class Reviewer(object):
     # Initializing the webview
     ##########################################################################
 
+
+    def revHtml(self):
+        return self._revHtml
+
     _revHtml = """
-<img src="qrc:/icons/rating.png" id=star class=marked>
+<div id=_mark><img src="qrc:/icons/rating.png" id=star class=marked></div>
+<div id=_flag>&#x2691;</div>
 <div id=qa></div>
 <script>
 var ankiPlatform = "desktop";
@@ -185,7 +190,7 @@ function _typeAnsPress() {
         self._bottomReady = False
         base = getBase(self.mw.col)
         # main window
-        self.web.stdHtml(self._revHtml, self._styles(),
+        self.web.stdHtml(self.revHtml(), self._styles(),
             loadCB=lambda x: self._showQuestion(),
             head=base)
         # show answer / ease buttons

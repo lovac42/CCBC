@@ -72,7 +72,7 @@ def cardstats(card):
     o["value_for_overdue"]    = mw.col.sched._daysLate(card)
     o["actual_ivl"]           = card.ivl + mw.col.sched._daysLate(card)
     o["is_early_review_then_percentage_interval"] = is_early_review_then_return_percentage_interval(card)
-    
+
     for k,v in o.items():
         o[k] = str(v) + '  '
     return SimpleNamespace(**o)

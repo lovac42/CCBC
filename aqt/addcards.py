@@ -27,8 +27,6 @@ class AddCards(QDialog):
         self.mw = mw
         self.form = aqt.forms.addcards.Ui_Dialog()
         self.form.setupUi(self)
-        self.setStyleSheet(ccbc.css.editor_ui)
-
 
         self.setWindowTitle(_("Add"))
         self.setMinimumHeight(300)
