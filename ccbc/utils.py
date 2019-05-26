@@ -31,3 +31,13 @@ def readFile(fname):
     if os.path.exists(path):
         with open(path, 'r', encoding='utf-8') as f:
             return f.read()
+
+
+def isURL(s):
+    s = s.lower()
+    return (s.startswith("http://")
+        or s.startswith("https://")
+        or s.startswith("ftp://")
+        or s.startswith("file://"))
+
+

@@ -10,6 +10,7 @@ from aqt.utils import saveGeom, restoreGeom, maybeHideClose, showInfo, addCloseS
 from anki.lang import _
 import aqt
 import ccbc.js
+import ccbc.css
 
 
 # Deck Stats
@@ -27,6 +28,7 @@ class DeckStats(QDialog):
         self.oldPos = None
         self.wholeCollection = False
         self.setMinimumWidth(700)
+        self.setStyleSheet(ccbc.css.stats)
         f = self.form
         f.setupUi(self)
         restoreGeom(self, self.name)
@@ -126,7 +128,11 @@ to your desktop."""))
         stats = self.mw.col.stats()
         stats.wholeCollection = self.wholeCollection
         txt = stats.report(type=self.period)
-        self.report="<script>%s\n</script>%s"%(
+        self.report="<style>%s</style><script>%s\n</script>%s"%(
+                ccbc.css.stats,
                 ccbc.js.jquery+ccbc.js.plot,txt)
         self.form.web.setHtml(self.report)
+        klass=self.mw.web.page().mainFrame().evaluateJavaScript(
+                                        'document.body.className')
+        self.form.web.eval('document.body.className += "%s";'%klass)
         self.mw.progress.finish()

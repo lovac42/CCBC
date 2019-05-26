@@ -3,16 +3,13 @@
 
 /* File has been modified by lovac42 for ccbc project */
 
-html {
-    height: 140%;
-    background: -webkit-gradient(linear, left top, left bottom, from(#ddd), to(#fff));
-    margin:0; padding:0;
-}
 
 #header {
     padding: 0px;
     font-weight: bold;
     border-bottom: 2px solid #aaa;
+    height: 140%;
+    background: -webkit-gradient(linear, left top, left bottom, from(#ddd), to(#fff));
 }
 
 .tdcenter {
@@ -26,8 +23,8 @@ body {
     overflow: hidden;
 }
 
-* {
-    -webkit-user-drag: none;
+a {
+    margin-right: 1em;
 }
 
 .hitem {
@@ -35,6 +32,8 @@ body {
     padding-left: 10px;
     text-decoration: none;
     color: black;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .hitem:hover {
@@ -42,3 +41,4 @@ body {
 }
 
 .hitem:focus { outline: 0; }
+

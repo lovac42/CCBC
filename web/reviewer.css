@@ -11,9 +11,12 @@ body {
     overflow-wrap: break-word;
 }
 
-body.nightMode {
-    background-color: black;
-    color: white;
+/* the first card for preview mode doesn't show up with
+   correct colors so this is a cheap trick to get around that.
+*/
+body.night_mode {
+    background-color: #272828;
+    color: #ffffff;
 }
 
 img {

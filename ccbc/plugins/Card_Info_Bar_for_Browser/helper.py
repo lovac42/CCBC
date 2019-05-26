@@ -49,8 +49,11 @@ def is_early_review_then_return_percentage_interval(card):
             # print('a3')
             return False
         else:
-            lastRev = due - card.ivl
-            elapsed = mw.col.sched.today - lastRev
-            p = elapsed/float(card.ivl) * 100
-            pf = "{0:.2f}".format(p) + " %"
-            return pf     
+            try:
+                lastRev = due - card.ivl
+                elapsed = mw.col.sched.today - lastRev
+                p = elapsed/float(card.ivl) * 100
+                pf = "{0:.2f}".format(p) + " %"
+                return pf
+            except ZeroDivisionError:
+                return False

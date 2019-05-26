@@ -18,7 +18,7 @@ from anki.utils import ids2str, fieldChecksum, \
     intTime, splitFields, joinFields, maxID, devMode, stripHTMLMedia
 from anki.hooks import  runFilter, runHook
 from anki.models import ModelManager
-from anki.media import MediaManager
+# from anki.media import MediaManager
 from anki.decks import DeckManager
 from anki.tags import TagManager
 from anki.consts import *
@@ -29,6 +29,8 @@ import anki.cards
 import anki.notes
 import anki.template
 import anki.find
+
+from ccbc.media import ExtMediaManager
 
 
 defaultConf = {
@@ -61,7 +63,7 @@ class _Collection:
         self.server = server
         self._lastSave = time.time()
         self.clearUndo()
-        self.media = MediaManager(self, server)
+        self.media = ExtMediaManager(self, server)
         self.models = ModelManager(self)
         self.decks = DeckManager(self)
         self.tags = TagManager(self)
@@ -869,11 +871,11 @@ and type=0""", [intTime(), self.usn()])
         # v2 sched had a bug that could create decimal intervals
         curs.execute("update cards set ivl=round(ivl),due=round(due) where ivl!=round(ivl) or due!=round(due)")
         if curs.rowcount:
-            problems.append("Fixed %d cards with v2 scheduler bug." % curs.rowcount)
+            problems.append("Fixed %d cards using float point for intervals." % curs.rowcount)
 
         curs.execute("update revlog set ivl=round(ivl),lastIvl=round(lastIvl) where ivl!=round(ivl) or lastIvl!=round(lastIvl)")
         if curs.rowcount:
-            problems.append("Fixed %d review history entries with v2 scheduler bug." % curs.rowcount)
+            problems.append("Fixed %d review history entries using float point for intervals." % curs.rowcount)
         # models
         if self.models.ensureNotEmpty():
             problems.append("Added missing note type.")

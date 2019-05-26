@@ -23,6 +23,7 @@ class FullScreenManager:
         addHook('afterStateChange', self.stateChanged)
         addHook('profileLoaded', self.onProfileLoaded)
         self.setupMenu()
+        self.mwCSS=mw.styleSheet()
 
 
     def setupMenu(self):
@@ -71,16 +72,16 @@ class FullScreenManager:
 
 
     def stateChanged(self, newS, oldS, *args):
+        self.mwCSS=mw.styleSheet().replace("QMenuBar{height:0 !important;}","")
         self.reset()
 
         #yikes
-        g,h,b=('height:0 !important;',0,self.mw.bottomWeb.hide) if \
-                    self.mw.isFullScreen() and \
-                    newS=='review' else \
+        g,h,b=('QMenuBar{height:0 !important;}',0,self.mw.bottomWeb.hide) if \
+                    self.mw.isFullScreen() and newS=='review' else \
                     ('',self.tb_height,self.mw.bottomWeb.show)
 
         if self.menubar.isChecked():
-            self.mw.setStyleSheet(g) #hide by css to keep hotkeys active
+            self.mw.setStyleSheet(self.mwCSS+g) #hide by css to keep hotkeys active
         if self.toolbar.isChecked():
             self.mw.toolbar.web.setFixedHeight(h) #menubar
         if self.bottombar.isChecked():
@@ -88,7 +89,7 @@ class FullScreenManager:
 
 
     def reset(self):
-        self.mw.setStyleSheet('')
+        self.mw.setStyleSheet(self.mwCSS)
         self.mw.toolbar.web.setFixedHeight(self.tb_height)
         self.mw.bottomWeb.show()
 

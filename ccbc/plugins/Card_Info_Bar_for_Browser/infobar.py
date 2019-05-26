@@ -37,9 +37,10 @@ from anki.lang import _
 from .card_properties import cardstats
 
 
+state=False
 
 def addInfoBar(self):
-    pass
+
     a = ["added","fr","lr","due","ivl","ease","revs","laps","avTime",
             "cardType","noteType","Deck", "nid", "cid"] 
     for i in a:
@@ -84,7 +85,8 @@ def addInfoBar(self):
 
 
 def update(self):
-    if self.card:
+    if state and self.card:
+        # print("update card")
         p = cardstats(self.card)
         self.i_added.setText(p.Added) 
         self.i_fr.setText(p.FirstReview) 
@@ -107,16 +109,19 @@ addHook("browser.rowChanged", update)
 
 
 def toggle_infobox(form):
+    global state
     if not form.infowidget.isVisible():
         b=True
     else:
         b=False
+    state=b
     form.infowidget.setVisible(b)
     form.cb_infowidget.setChecked(b)
     mw.pm.profile["showBrowserCardInfobox"]=b
 
 
 def onSetupMenus(browser):
+    global state
     bf=browser.form
     try:
         m = browser.menuView
@@ -130,8 +135,8 @@ def onSetupMenus(browser):
     bf.cb_infowidget.setShortcut(shortcut(_("Ctrl+o")))
     bf.cb_infowidget.toggled.connect(lambda:toggle_infobox(bf))
     bf.cb_infowidget.setCheckable(True)
-    b=mw.pm.profile.get("showBrowserCardInfobox",False)
-    bf.cb_infowidget.setChecked(b)
-    browser.form.infowidget.setVisible(b)
+    state=mw.pm.profile.get("showBrowserCardInfobox",False)
+    bf.cb_infowidget.setChecked(state)
+    browser.form.infowidget.setVisible(state)
 
 addHook("browser.setupMenus", onSetupMenus)
