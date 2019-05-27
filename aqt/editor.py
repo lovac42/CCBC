@@ -28,7 +28,7 @@ import ccbc.js
 import ccbc.html
 import ccbc.css
 
-from ccbc.cleaner import Cleaner
+from ccbc.cleaner import TidyTags
 from bs4 import BeautifulSoup
 from anki.utils import checksum
 
@@ -424,20 +424,10 @@ class Editor(object):
         # html, head, and body are auto stripped
         # meta and other junk will be stripped in
         # _filterHTML() with BeautifulSoup
-
-        # self.mw.progress.start(
-            # immediate=True, parent=self.parentWindow)
-        try:
-            # filter html to strip out things like a leading </div>
-            c = Cleaner(self.mw)
-        # TODO: Use HTMLCleaner for IR models
-            c.feed(html)
-            html = c.toString()
-            c.close()
-        except:
-            showWarning(_("An error occurred while parsing html or downloading resources"))
-        # finally:
-            # self.mw.progress.finish()
+        tt = TidyTags(self.mw)
+        tt.feed(html)
+        html = tt.toString()
+        tt.close()
 
         self.note.fields[self.currentField] = html
         self.loadNote()
@@ -784,14 +774,6 @@ to a cloze type first, via Edit>Change Note Type."""))
                 # convert inlined data
                 src = re.sub(r'\r|\n|\t','',src)
                 tag['src'] = self.inlinedImageToFilename(src)
-
-            #REMOVE: to keep the formating/alignment of ebooks
-            #copy image references and strip junk attributes
-            # ntag={}
-            # for attr, val in tag.attrs.items():
-                # if attr == "src":
-                    # ntag[attr]=val
-            # tag.attrs=ntag
 
         # strip superfluous elements
         for elem in "html", "head", "body", "meta":

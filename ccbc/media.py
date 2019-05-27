@@ -28,35 +28,44 @@ class ExtMediaManager(MediaManager):
 
 
     def handle_resource(self, src):
+        protocal=''
         # src=urllib.parse.unquote(src)
-        if src.lower().startswith("file://"):
+        if src.startswith("//"): #PITA: protocol-relative URL
+            protocal='https:'    #These must be removed as it causes 5sec freezes due to network lag.
+        elif src.lower().startswith("file://"):
             src = os.path.basename(src)
-        if isURL(src):
-            src = self.importImg(src)
+
+        if protocal or isURL(src):
+            src = self.importImg(src, protocal)
         elif src.lower().startswith("data:image/"):
             src = re.sub(r'\r|\n|\t','',src)
             src = self.inlinedImageToFilename(src)
-        else:
-            return None #not valid uri
         return src
 
-    def importImg(self, url):
+    def importImg(self, url, protocal=''):
         "Download file into media folder and return local filename or None."
         # urllib doesn't understand percent-escaped utf8, but requires things like
         # '#' to be escaped. we don't try to unquote the incoming URL, because
         # we should only be receiving file:// urls from url mime, which is unquoted
-        if url.lower().startswith("file://"):
+        if not protocal and \
+        url.lower().startswith("file://"):
             url = url.replace("%", "%25")
             url = url.replace("#", "%23")
+
         # fetch it into a temporary folder
+        purl=protocal+url
         try:
-            req = urllib.request.Request(url, None, {
+            req = urllib.request.Request(purl, None, {
                 'User-Agent': 'Mozilla/5.0 (compatible; Anki)'})
             filecontents = urllib.request.urlopen(req).read()
         except urllib.error.URLError as e:
+            if protocal: #retry with http instead of https
+                return self.importImg('http:'+url)
             showWarning(_("An error occurred while opening %s") % e)
-            return
-        path = urllib.parse.unquote(url)
+            return url
+
+
+        path = urllib.parse.unquote(purl)
         return self.writeData(path, filecontents)
 
     def inlinedImageToFilename(self, txt):
