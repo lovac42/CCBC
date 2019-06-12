@@ -240,9 +240,10 @@ question on all cards."""))
         QDialog.reject(self)
 
     def canClose(self):
-        if self.addOnceChkBox.isChecked():
+        blankField = self.editor.fieldsAreBlank()
+        if blankField and self.addOnceChkBox.isChecked():
             return True
-        if (self.forceClose or self.editor.fieldsAreBlank() or
+        if (self.forceClose or blankField or
             askUser(_("Close and lose current input?"))):
             return True
         return False

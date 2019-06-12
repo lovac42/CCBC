@@ -6,6 +6,7 @@
 
 import re
 from html.parser import HTMLParser
+from collections import deque
 
 
 EMPTY_ELEMENTS = (
@@ -20,6 +21,8 @@ EMPTY_ELEMENTS = (
 # Also filters out // urls which causes webkit to freeze
 # due to network lags.
 
+#TODO: write unit test for checking various html tags, white spaces, escape chars
+
 class TidyTags(HTMLParser):
     tag_src_map = {"img":"src", "link":"href"}
 
@@ -27,14 +30,15 @@ class TidyTags(HTMLParser):
 
     def __init__(self, mw):
         HTMLParser.__init__(self)
-        self.data = []
-        self.stack = []
+        self.data = deque()
+        self.stack = deque()
 
         self.rm_elements = ["iframe","object"]
 
         prof = mw.pm.profile
         if prof.get("tidyTags.noScript",True):
             self.rm_elements.append("script")
+            self.rm_elements.append("noscript")
         # TODO: separate configs for html tags: style, form, etc...
 
         self.importer = None

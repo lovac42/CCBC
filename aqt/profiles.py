@@ -46,16 +46,16 @@ profileConf = dict(
     key=None,
     mainWindowGeom=None,
     mainWindowState=None,
-    numBackups=30,
+    numBackups=50,
     lastOptimize=intTime(),
     # editing
     fullSearch=False,
     searchHistory=[],
     lastColour="#00f",
     stripHTML=True,
-    pastePNG=False,
+    pastePNG=True,
     # not exposed in gui
-    deleteMedia=False,
+    deleteMedia=False, #nooped
     preserveKeyboard=True,
     # syncing
     syncKey=None,
@@ -179,6 +179,9 @@ a flash drive.""" % self.base)
 
     def create(self, name):
         name = name.strip()
+        if name in ("addonz","modulez"):
+            showWarning(_("Reserved names"))
+            return
         prof = profileConf.copy()
         self.db.execute("insert into profiles values (?, ?)",
                         name, pickle.dumps(prof))

@@ -131,6 +131,8 @@ class Ui_Dialog(object):
         self.menuEdit.setObjectName("menuEdit")
         self.menuJump = QtGui.QMenu(self.menubar)
         self.menuJump.setObjectName("menuJump")
+        self.menuView = QtGui.QMenu(self.menubar)
+        self.menuView.setObjectName("menuView")
         Dialog.setMenuBar(self.menubar)
         self.actionReschedule = QtGui.QAction(Dialog)
         icon1 = QtGui.QIcon()
@@ -237,11 +239,21 @@ class Ui_Dialog(object):
         self.menuJump.addAction(self.actionPreviousCard)
         self.menuJump.addAction(self.actionNextCard)
         self.menuJump.addAction(self.actionLastCard)
-        self.menubar.addAction(self.menuEdit.menuAction())
-        self.menubar.addAction(self.menuJump.menuAction())
+
+
+        #View menu
+        self.actionShowEdit = QtGui.QAction(Dialog)
+        self.actionShowEdit.setObjectName("actionShowEdit")
+        self.actionShowEdit.setCheckable(True)
+        self.actionShowEdit.setChecked(True)
+        self.menuView.addAction(self.actionShowEdit)
 
         #Addon: Card Info Bar for Browser, https://ankiweb.net/shared/info/2140680811
         ccbc.plugins.Card_Info_Bar_for_Browser.browser.menu(self)
+
+        self.menubar.addAction(self.menuEdit.menuAction())
+        self.menubar.addAction(self.menuJump.menuAction())
+        self.menubar.addAction(self.menuView.menuAction())
 
         self.retranslateUi(Dialog)
         QtCore.QObject.connect(self.actionSelectAll, QtCore.SIGNAL("triggered()"), self.tableView.selectAll)
@@ -255,6 +267,7 @@ class Ui_Dialog(object):
         self.previewButton.setShortcut(_("Ctrl+Shift+P"))
         self.menuEdit.setTitle(_("&Edit"))
         self.menuJump.setTitle(_("&Go"))
+        self.menuView.setTitle(_("&View"))
         self.actionReschedule.setText(_("&Reschedule..."))
         self.actionSelectAll.setText(_("Select &All"))
         self.actionSelectAll.setShortcut(_("Ctrl+A"))
@@ -289,5 +302,8 @@ class Ui_Dialog(object):
         self.actionLastCard.setShortcut(_("End"))
         self.actionClose.setText(_("Close"))
         self.actionClose.setShortcut(_("Ctrl+W"))
+
+        self.actionShowEdit.setText(_("Show Editor"))
+        self.actionShowEdit.setShortcut(_("Ctrl+Shift+E"))
 
 from . import icons_rc

@@ -9,6 +9,7 @@
 import os
 import aqt
 from aqt.qt import *
+from anki.lang import _
 from aqt.utils import showInfo, openFolder, isWin, \
     askUser, restoreGeom, saveGeom, showWarning, tooltip
 

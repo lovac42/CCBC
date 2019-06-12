@@ -28,7 +28,7 @@ class DeckBrowser(object):
     def show(self):
         clearAudioQueue()
         self.web.setLinkHandler(self._linkHandler)
-        self.web.setKeyHandler(None)
+        # self.web.setKeyHandler(None)
         self.mw.keyHandler = self._keyHandler
         self._renderPage()
 
@@ -84,24 +84,6 @@ class DeckBrowser(object):
     _dragIndicatorBorderWidth = "1px"
 
     _css = ccbc.css.deckbrowser % dict(width=_dragIndicatorBorderWidth)
-
-
-# """
-# a.deck { color: #000; text-decoration: none; min-width: 5em;
-         # display:inline-block; }
-# a.deck:hover { text-decoration: underline; }
-# tr.deck td { border-bottom: %(width)s solid #e7e7e7; }
-# tr.top-level-drag-row td { border-bottom: %(width)s solid transparent; }
-# td { white-space: nowrap; }
-# tr.drag-hover td { border-bottom: %(width)s solid #aaa; }
-# body { margin: 1em; -webkit-user-select: none; }
-# .current { background-color: #e7e7e7; }
-# .decktd { min-width: 15em; }
-# .count { width: 6em; text-align: right; }
-# .collapse { color: #000; text-decoration:none; display:inline-block;
-    # width: 1em; }
-# .filtered { color: #00a !important; }
-# """ 
 
     _body = ccbc.html.deckbrowser
 

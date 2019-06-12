@@ -48,8 +48,11 @@ button{
 
 /* scrollbar */
 ::-webkit-scrollbar {
-    width: 4px;
+    max-width: 6px;
+    width: 6px;
     height: 4px;
+    max-height: 4px;
+    zoom: reset;
 }
 ::-webkit-scrollbar-track {
     background: #f1f1f1; 

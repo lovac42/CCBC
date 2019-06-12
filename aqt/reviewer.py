@@ -50,7 +50,7 @@ class Reviewer(object):
         self.mw.col.reset()
         self.mw.keyHandler = self._keyHandler
         self.web.setLinkHandler(self._linkHandler)
-        self.web.setKeyHandler(self._catchEsc)
+        # self.web.setKeyHandler(self._catchEsc)
         if isMac:
             self.bottom.web.setFixedHeight(46)
         else:
@@ -227,8 +227,8 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         if self._bottomReady:
             self._showAnswerButton()
         # if we have a type answer field, focus main web
-        if self.typeCorrect:
-            self.mw.web.setFocus()
+        # if self.typeCorrect:
+        self.mw.web.setFocus()
         # user hook
         runHook('showQuestion')
 
@@ -252,6 +252,7 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         if self.mw.state != "review":
             # showing resetRequired screen; ignore space
             return
+        runHook('showAnswer.before')
         self.state = "answer"
         c = self.card
         a = c.a()
@@ -262,6 +263,7 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         a = self._mungeQA(a)
         self.web.eval("_updateQA(%s, true);" % json.dumps(a))
         self._showEaseButtons()
+        self.mw.web.setFocus()
         # user hook
         runHook('showAnswer')
 
@@ -286,6 +288,8 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
     ############################################################
 
     def _catchEsc(self, evt):
+        if self.mw.state!="review":
+            return False
         if evt.key() == Qt.Key_Escape:
             self.web.eval("$('#typeans').blur();")
             return True
@@ -390,8 +394,7 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         if not self.typeCorrect:
             if self.typeCorrect is None:
                 if clozeIdx:
-                    warn = _("""\
-Please run Tools>Empty Cards""")
+                    warn = _("Please run Tools>Empty Cards")
                 else:
                     warn = _("Type answer: unknown field %s") % fld
                 return re.sub(self.typeAnsPat, warn, buf)
@@ -669,13 +672,13 @@ Please run Tools>Empty Cards""")
         self.mw.col.sched.suspendCards(
             [c.id for c in self.card.note().cards()])
         tooltip(_("Note suspended."))
-        self.mw.reset()
+        self.mw.reset(guiOnly=True)
 
     def onSuspendCard(self):
         self.mw.checkpoint(_("Suspend"))
         self.mw.col.sched.suspendCards([self.card.id])
         tooltip(_("Card suspended."))
-        self.mw.reset()
+        self.mw.reset(guiOnly=True)
 
     def onDelete(self):
         # need to check state because the shortcut is global to the main
@@ -685,7 +688,7 @@ Please run Tools>Empty Cards""")
         self.mw.checkpoint(_("Delete"))
         cnt = len(self.card.note().cards())
         self.mw.col.remNotes([self.card.note().id])
-        self.mw.reset()
+        self.mw.reset(guiOnly=True)
         tooltip(ngettext(
             "Note and its %d card deleted.",
             "Note and its %d cards deleted.",
@@ -694,13 +697,13 @@ Please run Tools>Empty Cards""")
     def onBuryCard(self):
         self.mw.checkpoint(_("Bury"))
         self.mw.col.sched.buryCards([self.card.id])
-        self.mw.reset()
+        self.mw.reset(guiOnly=True)
         tooltip(_("Card buried."))
 
     def onBuryNote(self):
         self.mw.checkpoint(_("Bury"))
         self.mw.col.sched.buryNote(self.card.nid)
-        self.mw.reset()
+        self.mw.reset(guiOnly=True)
         tooltip(_("Note buried."))
 
     def onRecordVoice(self):

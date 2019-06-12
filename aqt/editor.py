@@ -15,7 +15,7 @@ from anki.utils import tmpdir
 
 from anki.lang import _
 from aqt.qt import *
-from PyQt4 import QtCore
+from PyQt4 import QtCore, QtGui
 from anki.utils import stripHTML, isWin, isMac, namedtmp, json, stripHTMLMedia
 import anki.sound
 from anki.hooks import runHook, runFilter
@@ -181,6 +181,8 @@ class Editor(object):
         s.connect(s, SIGNAL("activated()"), self.insertLatexMathEnv)
         s = QShortcut(QKeySequence("Ctrl+Shift+X"), self.widget)
         s.connect(s, SIGNAL("activated()"), self.onHtmlEdit)
+        s = QShortcut(QKeySequence("Ctrl+Shift+V"), self.widget)
+        s.connect(s, SIGNAL("activated()"), lambda:self.web.onPaste(True))
         # tags
         s = QShortcut(QKeySequence("Ctrl+Shift+T"), self.widget)
         s.connect(s, SIGNAL("activated()"), lambda: self.tags.setFocus())
@@ -429,8 +431,11 @@ class Editor(object):
         html = tt.toString()
         tt.close()
 
-        self.note.fields[self.currentField] = html
-        self.loadNote()
+        # self.note.fields[self.currentField] = html
+        # self.loadNote()
+        self.web.eval("setFieldHtml(%s,%d);"%(
+            json.dumps(html),self.currentField))
+
         # focus field so it's saved
         self.web.setFocus()
         self.web.eval("focusField(%d);" % self.currentField)
@@ -586,13 +591,15 @@ to a cloze type first, via Edit>Change Note Type."""))
         "Add to media folder and return local img or sound tag."
         # copy to media folder
         fname = self.mw.col.media.addFile(path)
+
         # remove original?
-        if canDelete and self.mw.pm.profile['deleteMedia']:
-            if os.path.abspath(fname) != os.path.abspath(path):
-                try:
-                    os.unlink(path)
-                except:
-                    pass
+        # if canDelete and self.mw.pm.profile['deleteMedia']:
+            # if os.path.abspath(fname) != os.path.abspath(path):
+                # try:
+                    # os.unlink(path)
+                # except:
+                    # pass
+
         # return a local html link
         return self.fnameToLink(fname)
 
@@ -740,18 +747,15 @@ to a cloze type first, via Edit>Change Note Type."""))
             else:
                 # strip completely
                 tag.replaceWithChildren()
+
         for tag in doc("font", "Apple-style-span"):
             # strip all but colour attr from implicit font tags
             if 'color' in dict(tag.attrs):
-                for attr in tag.attrs:
-                    if attr != "color":
-                        del tag[attr]
-                    # and apple class
-                del tag['class']
+                tag.attrs={'color':tag['color']}
             else:
-                # remove completely
                 tag.replaceWithChildren()
             # now images
+
         for tag in doc("img"):
             # turn file:/// links into relative ones
             try:
@@ -852,7 +856,8 @@ class EditorWebView(AnkiWebView):
     def __init__(self, parent, editor):
         AnkiWebView.__init__(self)
         self.editor = editor
-        self.strip = self.editor.mw.pm.profile['stripHTML']
+        # Use Ctrl+Shift+V instead
+        self.strip = True #self.editor.mw.pm.profile['stripHTML']
 
     def keyPressEvent(self, evt):
         if evt.matches(QKeySequence.Paste):
@@ -874,10 +879,15 @@ class EditorWebView(AnkiWebView):
         self.triggerPageAction(QWebPage.Copy)
         self._flagAnkiText()
 
-    def onPaste(self):
+    def onPaste(self, shiftKey=False):
+        #for the mouse + shift
+        self.strip=not(shiftKey or \
+        self.editor.mw.app.queryKeyboardModifiers()==Qt.ShiftModifier)
+
         mime = self.mungeClip()
         self.triggerPageAction(QWebPage.Paste)
         self.restoreClip()
+        self.strip=True
 
     def mouseReleaseEvent(self, evt):
         if not isMac and not isWin and evt.button() == Qt.MidButton:
@@ -1077,5 +1087,7 @@ class EditorWebView(AnkiWebView):
         a.connect(a, SIGNAL("triggered()"), self.onCopy)
         a = m.addAction(_("Paste"))
         a.connect(a, SIGNAL("triggered()"), self.onPaste)
+        a = m.addAction(_("Edit HTML"))
+        a.connect(a, SIGNAL("triggered()"), self.editor.onHtmlEdit)
         runHook("EditorWebView.contextMenuEvent", self, m)
         m.popup(QCursor.pos())

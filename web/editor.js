@@ -147,6 +147,10 @@ function onSticky(id, el) {
     py.run("sticky:"+id);
 }
 
+function setFieldHtml(data, fieldNum) {
+    $("#f"+fieldNum).html(data).focus();
+};
+
 function setFields(fields, focusTo) {
     var txt = "";
     for (var i=0; i<fields.length; i++) {

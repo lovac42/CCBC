@@ -231,8 +231,28 @@ Not currently enabled; click the sync button in the main window to enable."""))
         self.form.pastePNG.setChecked(self.prof.get("pastePNG", False))
         self.form.noScript.setChecked(self.prof.get("tidyTags.noScript", True))
         self.form.importMedia.setChecked(self.prof.get("tidyTags.importMedia", True))
+        if self.mw.col.sched.type == "anki":
+            self.form.skipFinalDrill.setVisible(False)
+        else: #custom experimental module
+            qc = self.mw.col.conf
+            self.form.skipFinalDrill.setCheckState(qc.get("skipFinalDrill", 0))
+            self.form.skipFinalDrill.clicked.connect(self.toggleFinalDrill)
+            self.toggleFinalDrill()
 
     def updateOptions(self):
         self.prof['pastePNG'] = self.form.pastePNG.isChecked()
         self.prof['tidyTags.noScript'] = self.form.noScript.isChecked()
         self.prof['tidyTags.importMedia'] = self.form.importMedia.isChecked()
+        qc = self.mw.col.conf
+        qc['skipFinalDrill'] = self.form.skipFinalDrill.checkState()
+
+    def toggleFinalDrill(self):
+        checked=self.form.skipFinalDrill.checkState()
+        if checked==1: #CB_NO_NEW
+            txt="Skip Final Drill: (don't skip new)"
+        elif checked==2: #CB_ALL
+            txt="Skip Final Drill: (skip all)"
+        else:
+            txt='Skip Final Drill: (disabled)'
+        self.form.skipFinalDrill.setText(_(txt))
+

@@ -206,6 +206,20 @@ class Ui_Preferences(object):
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout_2.addWidget(self.buttonBox)
 
+        # Muffins tab
+        self.lrnStage=QtWidgets.QWidget()
+        self.tabWidget.addTab(self.lrnStage, "Muffins")
+        self.lrnStageGLayout=QtWidgets.QGridLayout()
+        self.lrnStageVLayout=QtWidgets.QVBoxLayout(self.lrnStage)
+        self.lrnStageVLayout.addLayout(self.lrnStageGLayout)
+        spacerItem=QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.lrnStageVLayout.addItem(spacerItem)
+
+        # Addon: Final Drill
+        self.skipFinalDrill=QtWidgets.QCheckBox(self.lrnStage)
+        self.lrnStageGLayout.addWidget(self.skipFinalDrill, 1, 0, 1, 3)
+        self.skipFinalDrill.setTristate(True)
+
         self.retranslateUi(Preferences)
         self.tabWidget.setCurrentIndex(0)
         self.buttonBox.accepted.connect(Preferences.accept)
@@ -268,3 +282,4 @@ class Ui_Preferences(object):
         self.label_21.setText(_("Some settings will take effect after you restart Anki."))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _("Backups"))
 
+        self.skipFinalDrill.setText(_('Skip Final Drill'))
