@@ -10,7 +10,7 @@ import os
 from anki.lang import _
 from anki.utils import intTime, isWin
 from anki.db import DB
-from anki.collection import _Collection
+from ccbc.collection import _ExtCollection
 from anki.consts import *
 from anki.stdmodels import addBasicModel, addClozeModel, addForwardReverse, \
     addForwardOptionalReverse, addBasicTypingModel
@@ -37,7 +37,7 @@ def Collection(path, lock=True, server=False, log=False):
         db.execute("pragma journal_mode = wal")
     db.setAutocommit(False)
     # add db to col and do any remaining upgrades
-    col = _Collection(db, server, log)
+    col = _ExtCollection(db, server, log)
     if ver < SCHEMA_VERSION:
         _upgrade(col, ver)
     elif ver > SCHEMA_VERSION:

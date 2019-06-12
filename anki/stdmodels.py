@@ -98,9 +98,7 @@ def addClozeModel(col):
  font-weight: bold;
  color: blue;
 }
-.nightMode .cloze {
- color: lightblue;
-}"""
+"""
     t['qfmt'] = fmt
     t['afmt'] = fmt + "<br>\n{{%s}}" % _("Extra")
     mm.addTemplate(m, t)

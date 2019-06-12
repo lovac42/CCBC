@@ -15,7 +15,7 @@ from anki.utils import tmpdir
 
 from anki.lang import _
 from aqt.qt import *
-from PyQt4 import QtCore
+from PyQt4 import QtCore, QtGui
 from anki.utils import stripHTML, isWin, isMac, namedtmp, json, stripHTMLMedia
 import anki.sound
 from anki.hooks import runHook, runFilter
@@ -28,7 +28,7 @@ import ccbc.js
 import ccbc.html
 import ccbc.css
 
-from ccbc.cleaner import Cleaner
+from ccbc.cleaner import TidyTags
 from bs4 import BeautifulSoup
 from anki.utils import checksum
 
@@ -181,6 +181,8 @@ class Editor(object):
         s.connect(s, SIGNAL("activated()"), self.insertLatexMathEnv)
         s = QShortcut(QKeySequence("Ctrl+Shift+X"), self.widget)
         s.connect(s, SIGNAL("activated()"), self.onHtmlEdit)
+        s = QShortcut(QKeySequence("Ctrl+Shift+V"), self.widget)
+        s.connect(s, SIGNAL("activated()"), lambda:self.web.onPaste(True))
         # tags
         s = QShortcut(QKeySequence("Ctrl+Shift+T"), self.widget)
         s.connect(s, SIGNAL("activated()"), lambda: self.tags.setFocus())
@@ -424,23 +426,16 @@ class Editor(object):
         # html, head, and body are auto stripped
         # meta and other junk will be stripped in
         # _filterHTML() with BeautifulSoup
+        tt = TidyTags(self.mw)
+        tt.feed(html)
+        html = tt.toString()
+        tt.close()
 
-        # self.mw.progress.start(
-            # immediate=True, parent=self.parentWindow)
-        try:
-            # filter html to strip out things like a leading </div>
-            c = Cleaner(self.mw)
-        # TODO: Use HTMLCleaner for IR models
-            c.feed(html)
-            html = c.toString()
-            c.close()
-        except:
-            showWarning(_("An error occurred while parsing html or downloading resources"))
-        # finally:
-            # self.mw.progress.finish()
+        # self.note.fields[self.currentField] = html
+        # self.loadNote()
+        self.web.eval("setFieldHtml(%s,%d);"%(
+            json.dumps(html),self.currentField))
 
-        self.note.fields[self.currentField] = html
-        self.loadNote()
         # focus field so it's saved
         self.web.setFocus()
         self.web.eval("focusField(%d);" % self.currentField)
@@ -596,13 +591,15 @@ to a cloze type first, via Edit>Change Note Type."""))
         "Add to media folder and return local img or sound tag."
         # copy to media folder
         fname = self.mw.col.media.addFile(path)
+
         # remove original?
-        if canDelete and self.mw.pm.profile['deleteMedia']:
-            if os.path.abspath(fname) != os.path.abspath(path):
-                try:
-                    os.unlink(path)
-                except:
-                    pass
+        # if canDelete and self.mw.pm.profile['deleteMedia']:
+            # if os.path.abspath(fname) != os.path.abspath(path):
+                # try:
+                    # os.unlink(path)
+                # except:
+                    # pass
+
         # return a local html link
         return self.fnameToLink(fname)
 
@@ -750,18 +747,15 @@ to a cloze type first, via Edit>Change Note Type."""))
             else:
                 # strip completely
                 tag.replaceWithChildren()
+
         for tag in doc("font", "Apple-style-span"):
             # strip all but colour attr from implicit font tags
             if 'color' in dict(tag.attrs):
-                for attr in tag.attrs:
-                    if attr != "color":
-                        del tag[attr]
-                    # and apple class
-                del tag['class']
+                tag.attrs={'color':tag['color']}
             else:
-                # remove completely
                 tag.replaceWithChildren()
             # now images
+
         for tag in doc("img"):
             # turn file:/// links into relative ones
             try:
@@ -784,14 +778,6 @@ to a cloze type first, via Edit>Change Note Type."""))
                 # convert inlined data
                 src = re.sub(r'\r|\n|\t','',src)
                 tag['src'] = self.inlinedImageToFilename(src)
-
-            #REMOVE: to keep the formating/alignment of ebooks
-            #copy image references and strip junk attributes
-            # ntag={}
-            # for attr, val in tag.attrs.items():
-                # if attr == "src":
-                    # ntag[attr]=val
-            # tag.attrs=ntag
 
         # strip superfluous elements
         for elem in "html", "head", "body", "meta":
@@ -870,7 +856,8 @@ class EditorWebView(AnkiWebView):
     def __init__(self, parent, editor):
         AnkiWebView.__init__(self)
         self.editor = editor
-        self.strip = self.editor.mw.pm.profile['stripHTML']
+        # Use Ctrl+Shift+V instead
+        self.strip = True #self.editor.mw.pm.profile['stripHTML']
 
     def keyPressEvent(self, evt):
         if evt.matches(QKeySequence.Paste):
@@ -892,10 +879,15 @@ class EditorWebView(AnkiWebView):
         self.triggerPageAction(QWebPage.Copy)
         self._flagAnkiText()
 
-    def onPaste(self):
+    def onPaste(self, shiftKey=False):
+        #for the mouse + shift
+        self.strip=not(shiftKey or \
+        self.editor.mw.app.queryKeyboardModifiers()==Qt.ShiftModifier)
+
         mime = self.mungeClip()
         self.triggerPageAction(QWebPage.Paste)
         self.restoreClip()
+        self.strip=True
 
     def mouseReleaseEvent(self, evt):
         if not isMac and not isWin and evt.button() == Qt.MidButton:
@@ -1095,5 +1087,7 @@ class EditorWebView(AnkiWebView):
         a.connect(a, SIGNAL("triggered()"), self.onCopy)
         a = m.addAction(_("Paste"))
         a.connect(a, SIGNAL("triggered()"), self.onPaste)
+        a = m.addAction(_("Edit HTML"))
+        a.connect(a, SIGNAL("triggered()"), self.editor.onHtmlEdit)
         runHook("EditorWebView.contextMenuEvent", self, m)
         m.popup(QCursor.pos())

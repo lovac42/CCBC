@@ -47,7 +47,7 @@ class EditCurrent(QDialog):
             # card's been deleted
             remHook("reset", self.onReset)
             self.editor.setNote(None)
-            self.mw.reset()
+            self.mw.reset(guiOnly=True)
             aqt.dialogs.close("EditCurrent")
             self.close()
             return

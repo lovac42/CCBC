@@ -51,6 +51,15 @@ class Ui_Preferences(object):
         self.pastePNG = QtWidgets.QCheckBox(self.tab_1)
         self.pastePNG.setObjectName("pastePNG")
         self.verticalLayout.addWidget(self.pastePNG)
+
+        # For TidyTags to clean up when editing HTML 
+        self.noScript = QtWidgets.QCheckBox(self.tab_1)
+        self.noScript.setObjectName("noScript")
+        self.verticalLayout.addWidget(self.noScript)
+        self.importMedia = QtWidgets.QCheckBox(self.tab_1)
+        self.importMedia.setObjectName("importMedia")
+        self.verticalLayout.addWidget(self.importMedia)
+
         # self.nightMode = QtWidgets.QCheckBox(self.tab_1)
         # self.nightMode.setObjectName("nightMode")
         # self.verticalLayout.addWidget(self.nightMode)
@@ -197,6 +206,20 @@ class Ui_Preferences(object):
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout_2.addWidget(self.buttonBox)
 
+        # Muffins tab
+        self.lrnStage=QtWidgets.QWidget()
+        self.tabWidget.addTab(self.lrnStage, "Muffins")
+        self.lrnStageGLayout=QtWidgets.QGridLayout()
+        self.lrnStageVLayout=QtWidgets.QVBoxLayout(self.lrnStage)
+        self.lrnStageVLayout.addLayout(self.lrnStageGLayout)
+        spacerItem=QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.lrnStageVLayout.addItem(spacerItem)
+
+        # Addon: Final Drill
+        self.skipFinalDrill=QtWidgets.QCheckBox(self.lrnStage)
+        self.lrnStageGLayout.addWidget(self.skipFinalDrill, 1, 0, 1, 3)
+        self.skipFinalDrill.setTristate(True)
+
         self.retranslateUi(Preferences)
         self.tabWidget.setCurrentIndex(0)
         self.buttonBox.accepted.connect(Preferences.accept)
@@ -208,7 +231,9 @@ class Ui_Preferences(object):
         Preferences.setTabOrder(self.showProgress, self.pastePNG)
         # Preferences.setTabOrder(self.pastePNG, self.nightMode)
         # Preferences.setTabOrder(self.nightMode, self.dayLearnFirst)
-        Preferences.setTabOrder(self.pastePNG, self.newSched)
+        Preferences.setTabOrder(self.pastePNG, self.noScript)
+        Preferences.setTabOrder(self.noScript, self.importMedia)
+        Preferences.setTabOrder(self.importMedia, self.newSched)
         Preferences.setTabOrder(self.newSched, self.useCurrent)
         Preferences.setTabOrder(self.useCurrent, self.newSpread)
         Preferences.setTabOrder(self.newSpread, self.dayOffset)
@@ -229,6 +254,8 @@ class Ui_Preferences(object):
         self.showEstimates.setText(_("Show next review time above answer buttons"))
         self.showProgress.setText(_("Show remaining card count during review"))
         self.pastePNG.setText(_("Paste clipboard images as PNG"))
+        self.noScript.setText(_("Remove <script> when editing HTML (add more conf later)"))
+        self.importMedia.setText(_("Import media when editing HTML"))
         # self.nightMode.setText(_("Show cards as white on black (night mode)"))
         self.dayLearnFirst.setText(_("Show learning cards with larger steps before reviews"))
         self.newSched.setText(_("Experimental V2 scheduler"))
@@ -255,3 +282,4 @@ class Ui_Preferences(object):
         self.label_21.setText(_("Some settings will take effect after you restart Anki."))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _("Backups"))
 
+        self.skipFinalDrill.setText(_('Skip Final Drill'))

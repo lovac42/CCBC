@@ -414,6 +414,8 @@ class Browser(QMainWindow):
         c(f.actionNote, s, self.onNote)
         c(f.actionTags, s, self.onTags)
         c(f.actionCardList, s, self.onCardList)
+        # view
+        c(f.actionShowEdit, s, self.onRowChanged)
         # keyboard shortcut for shift+home/end
         self.pgUpCut = QShortcut(QKeySequence("Shift+Home"), self)
         c(self.pgUpCut, SIGNAL("activated()"), self.onFirstCard)
@@ -517,6 +519,10 @@ class Browser(QMainWindow):
         self.form.searchEdit.setCompleter(None)
         self.form.searchEdit.addItems(self.mw.pm.profile['searchHistory'])
 
+    def onSearchActivated(self): #v2.1
+        return self.onSearch()
+    def search(self): #v2.1
+        return self.onSearch(False)
 
     def onSearch(self, reset=True):
         "Careful: if reset is true, the current note is saved."
@@ -579,6 +585,7 @@ class Browser(QMainWindow):
         self.form.tableView.setSortingEnabled(True)
         self.form.tableView.setModel(self.model)
         self.form.tableView.selectionModel()
+        self.form.tableView.doubleClicked.connect(self._openPreview)
         self.form.tableView.setItemDelegate(StatusDelegate(self, self.model))
         self.connect(self.form.tableView.selectionModel(),
                      SIGNAL("selectionChanged(QItemSelection,QItemSelection)"),
@@ -590,11 +597,12 @@ class Browser(QMainWindow):
             self.mw, self.form.fieldsArea, self)
         self.editor.stealFocus = False
 
-    def onRowChanged(self, current, previous):
+    def onRowChanged(self, current=None, previous=None):
         "Update current note and hide/show editor."
         update = self.updateTitle()
-        show = self.model.cards and update == 1
-        self.form.splitter.widget(1).setVisible(not not show)
+        chk = self.form.actionShowEdit.isChecked()
+        show = chk and self.model.cards and update == 1
+        self.form.splitter.widget(1).setVisible(not not show) #weird typecast
         if not show:
             self.editor.setNote(None)
             self.singleCard = False

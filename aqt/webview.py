@@ -58,20 +58,14 @@ class AnkiWebView(QWebView):
         self.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
         self.setLinkHandler()
         self.setKeyHandler()
+        self.setMouseBtnHandler()
+        self.setWheelHandler()
         self.connect(self, SIGNAL("linkClicked(QUrl)"), self._linkHandler)
         self.connect(self, SIGNAL("loadFinished(bool)"), self._loadFinished)
         self.allowDrops = False
         # reset each time new html is set; used to detect if still in same state
         self.key = None
         self.setCanFocus(canFocus)
-
-    def wheelEvent(self, evt):
-        runHook("QWebView.wheelEvent",evt)
-        QWebView.wheelEvent(self, evt)
-
-    def mouseReleaseEvent(self, evt):
-        runHook("QWebView.mouseReleaseEvent",evt)
-        QWebView.mouseReleaseEvent(self, evt)
 
     def keyPressEvent(self, evt):
         if evt.matches(QKeySequence.Copy):
@@ -89,6 +83,20 @@ class AnkiWebView(QWebView):
                 evt.accept()
                 return
         QWebView.keyReleaseEvent(self, evt)
+
+    def wheelEvent(self, evt):
+        if self._wheelHandler:
+            if self._wheelHandler(evt):
+                evt.accept()
+                return
+        QWebView.wheelEvent(self, evt)
+
+    def mouseReleaseEvent(self, evt):
+        if self._mouseBtnHandler:
+            if self._mouseBtnHandler(evt):
+                evt.accept()
+                return
+        QWebView.mouseReleaseEvent(self, evt)
 
     def contextMenuEvent(self, evt):
         if not self._canFocus:
@@ -113,6 +121,14 @@ class AnkiWebView(QWebView):
     def setKeyHandler(self, handler=None):
         # handler should return true if event should be swallowed
         self._keyHandler = handler
+
+    def setMouseBtnHandler(self, handler=None):
+        # handler should return true if event should be swallowed
+        self._mouseBtnHandler = handler
+
+    def setWheelHandler(self, handler=None):
+        # handler should return true if event should be swallowed
+        self._wheelHandler = handler
 
     def setHtml(self, html, loadCB=None):
         self.key = None

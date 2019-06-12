@@ -3,7 +3,11 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 # Support: https://github.com/lovac42/CCBC
 
+#ctrl+mouse_wheel for fast zoom
+#ctrl+shift+mouse_wheel for slow zoom
 
+
+import json
 from aqt import mw
 from aqt.qt import *
 from anki.hooks import addHook
@@ -11,7 +15,231 @@ from anki.hooks import addHook
 
 class ViewManager:
     def __init__(self, mw):
-        self.fullscreen = FullScreenManager(mw)
+        self.mw = mw
+        self.ir = IR_View_Manager(mw)
+
+        self.zoom = ZoomManager(mw)
+        self.getZoom = self.zoom.getZoom
+        self.setZoom = self.zoom.setZoom
+
+        self.scroll = ScrollManager(mw)
+        self.getScroll = self.scroll.get
+        self.setScroll = self.scroll.set
+
+        self.fullScr = FullScreenManager(mw)
+        self.setFullScreen = self.fullScr.set
+
+        self.mw.web.setKeyHandler(self._keyHandler)
+        self.mw.web.setMouseBtnHandler(self.ir.onEvent)
+        self.mw.web.setWheelHandler(self._wheelHandler)
+
+        addHook('beforeStateChange', self.onBeforeStateChange)
+        addHook('afterStateChange', self.onAfterStateChange)
+        addHook('unloadProfile', self.flush)
+        addHook('checkpoint', self.flush) #suspend, bury, delete
+        addHook('showAnswer.before', self.flush) #save ir data on Q side
+        addHook('showQuestion', self.onShowQuestion)
+        addHook('showAnswer', self.onShowAnswer)
+        addHook('profileLoaded', self.onProfileLoaded)
+
+    def onProfileLoaded(self):
+        zi=self.mw.pm.profile.get("zoom.img",False)
+        self.zoom.zoomImage.setChecked(zi)
+        self.zoom.setZoomTextOnly() #init zoom settings
+
+    def flush(self, *args):
+        if self.mw.state == 'review':
+            self.ir.flush(*args)
+
+    def onBeforeStateChange(self, newS, oldS, *args):
+        if oldS == 'review':
+            self.ir.flush()
+
+    def onAfterStateChange(self, newS, oldS, *args):
+        self.fullScr.stateChanged(newS)
+        if newS != 'review':
+            self.zoom.isIR = False
+            self.zoom.adjust() #reload
+
+    def onShowQuestion(self):
+        c = self.mw.reviewer.card
+        self.ir.setCard(c)
+        if self.ir.isIRCard():
+            self.zoom.isIR = True
+            z=self.ir.getZoom()
+            self.setZoom(z or self.getZoom())
+            self.setScroll(self.ir.getScroll())
+        else:
+            self.zoom.isIR = False
+            if not self.zoom.zoomLock.isChecked():
+                self.zoom.adjust() #reload
+
+    def onShowAnswer(self):
+        if self.ir.isIRCard():
+            return
+        if not self.zoom.zoomLock.isChecked():
+            self.zoom.adjust()
+
+    def isFullScreen(self):
+        return self.mw.windowState() == Qt.WindowFullScreen
+
+    def _wheelHandler(self, evt):
+        if evt.modifiers() == Qt.ControlModifier:
+            z=0.20 if self.zoom.isIR else 0.35 #TODO: add config for adjustments
+            return self.zoom.mouseZoom(evt,z)
+        elif evt.modifiers() == (Qt.ShiftModifier|Qt.ControlModifier):
+            return self.zoom.mouseZoom(evt,0.08) #shift + zoom
+        return self.ir.onEvent(evt)
+
+    def _keyHandler(self, evt):
+        if self.mw.reviewer._catchEsc(evt):
+            # print("esc key")
+            return True
+        return self.ir.onEvent(evt)
+
+
+
+
+
+
+
+class ZoomManager():
+
+    def __init__(self, mw):
+        self.mw = mw
+        self.isIR = False
+        self.setupMenu()
+
+        self.getZoom = self.mw.web.zoomFactor
+        self.setZoom = self.mw.web.setZoomFactor
+
+    def setupMenu(self):
+        menu = self.mw.form.menuView
+        subMenu = QMenu('&Zoom', menu)
+        menu.addMenu(subMenu)
+
+        a = QAction("Zoom In", subMenu)
+        a.triggered.connect(self.zoomIn)
+        a.setShortcut("Ctrl++")
+        subMenu.addAction(a)
+
+        a = QAction("Zoom In", self.mw)
+        a.triggered.connect(self.zoomIn)
+        a.setShortcut("Ctrl+=")
+        self.mw.addAction(a)
+
+        a = QAction("Zoom Out", subMenu)
+        a.triggered.connect(self.zoomOut)
+        a.setShortcut("Ctrl+-")
+        subMenu.addAction(a)
+
+        subMenu.addSeparator()
+
+        a = QAction("Zoom Reset", subMenu)
+        a.triggered.connect(lambda:self.reset(1)) #param=false w/o lambda
+        a.setShortcut("Ctrl+\\")
+        subMenu.addAction(a)
+        subMenu.addSeparator()
+
+        a = QAction("Zoom Lock", subMenu)
+        a.setCheckable(True)
+        a.setShortcut("Ctrl+|")
+        self.zoomLock = a
+        subMenu.addAction(a)
+
+        a = QAction("Zoom on Images", subMenu)
+        a.setCheckable(True)
+        a.triggered.connect(self.setZoomTextOnly)
+        self.zoomImage = a
+        subMenu.addAction(a)
+        subMenu.addSeparator()
+
+        a = QAction("50%", subMenu)
+        a.triggered.connect(lambda:self.reset(0.5))
+        subMenu.addAction(a)
+        a = QAction("75%", subMenu)
+        a.triggered.connect(lambda:self.reset(0.75))
+        subMenu.addAction(a)
+        a = QAction("100%", subMenu)
+        a.triggered.connect(lambda:self.reset(1))
+        subMenu.addAction(a)
+        subMenu.addSeparator()
+
+        a = QAction("125%", subMenu)
+        a.triggered.connect(lambda:self.reset(1.25))
+        subMenu.addAction(a)
+        a = QAction("150%", subMenu)
+        a.triggered.connect(lambda:self.reset(1.5))
+        subMenu.addAction(a)
+        a = QAction("175%", subMenu)
+        a.triggered.connect(lambda:self.reset(1.75))
+        subMenu.addAction(a)
+        a = QAction("200%", subMenu)
+        a.triggered.connect(lambda:self.reset(2))
+        subMenu.addAction(a)
+        a = QAction("250%", subMenu)
+        a.triggered.connect(lambda:self.reset(2.5))
+        subMenu.addAction(a)
+        a = QAction("300%", subMenu)
+        a.triggered.connect(lambda:self.reset(3))
+        subMenu.addAction(a)
+
+    def adjust(self, zoomBy=0):
+        if self.isIR or self.zoomLock.isChecked():
+            key=None
+            fct=self.getZoom()
+        else:
+            key = self._getKey()
+            fct = self.mw.pm.profile.get(
+                    key, self.getZoom())
+        self.setFactor(fct+zoomBy,key)
+
+    def setFactor(self, fct, key=None):
+        factor = min(10, max(0.5, fct))
+        self.setZoom(factor)
+        if key:
+            self.mw.pm.profile[key] = factor
+
+    def _getKey(self):
+        if self.mw.state != "review":
+            return "zoom."+self.mw.state
+        if self.isIR:
+            return None
+        m = self.mw.reviewer.card.model()
+        if self.mw.reviewer.state == "answer":
+            return "zoom.a_m%s"%str(m['id'])
+        return "zoom.q_m%s"%str(m['id'])
+
+    def reset(self, z=1): #called by menuitems
+        key = self._getKey()
+        self.setFactor(z,key)
+
+    def zoomIn(self, z):
+        self.adjust(z or 0.25)
+
+    def zoomOut(self, z):
+        self.adjust(-z or -0.25)
+
+    def mouseZoom(self, evt, zoom):
+        step = evt.delta() / 12 #120/0.1
+        if step < 0:
+            self.zoomOut(zoom)
+        else:
+            self.zoomIn(zoom)
+        return True
+
+    def setZoomTextOnly(self):
+        self.reset()
+        zimg=self.zoomImage.isChecked()
+        self.mw.pm.profile["zoom.img"] = zimg
+        s=self.mw.web.settings()
+        if zimg:
+            s.setAttribute(QWebSettings.ZoomTextOnly,False)
+        else:
+            s.setAttribute(QWebSettings.ZoomTextOnly,True)
+
+
+
 
 
 
@@ -20,64 +248,61 @@ class FullScreenManager:
         self.mw = mw
         self.mu_height = self.mw.height()
         self.tb_height = self.mw.toolbar.web.height()
-        addHook('afterStateChange', self.stateChanged)
         addHook('profileLoaded', self.onProfileLoaded)
         self.setupMenu()
-        self.mwCSS=mw.styleSheet()
-
+        self.mwCSS = mw.styleSheet()
 
     def setupMenu(self):
-        menu=self.mw.form.menuView
-        a = QAction("Full Screen", self.mw)
+        menu = self.mw.form.menuView
+        subMenu = QMenu('&Screen', menu)
+        menu.addMenu(subMenu)
+
+        a = QAction("Full Screen", subMenu)
         a.triggered.connect(self.onFullScreen)
         a.setShortcut("F11")
-        menu.addAction(a)
+        subMenu.addAction(a)
+        subMenu.addSeparator()
 
-        self.menubar=QAction("FS: Hide Menubar", self.mw)
+        self.menubar = QAction("Hide Menubar", subMenu)
         self.menubar.setCheckable(True)
         self.menubar.triggered.connect(self.cb_toggle)
-        menu.addAction(self.menubar)
+        subMenu.addAction(self.menubar)
 
-        self.toolbar=QAction("FS: Hide Toolbar", self.mw)
+        self.toolbar = QAction("Hide Toolbar", subMenu)
         self.toolbar.setCheckable(True)
         self.toolbar.triggered.connect(self.cb_toggle)
-        menu.addAction(self.toolbar)
+        subMenu.addAction(self.toolbar)
 
-        self.bottombar=QAction("FS: Hide Bottombar", self.mw)
+        self.bottombar = QAction("Hide Bottombar", subMenu)
         self.bottombar.setCheckable(True)
         self.bottombar.triggered.connect(self.cb_toggle)
-        menu.addAction(self.bottombar)
-
+        subMenu.addAction(self.bottombar)
 
     def cb_toggle(self):
-        self.mw.pm.profile['fs_hide_menubar']=self.menubar.isChecked()
-        self.mw.pm.profile['fs_hide_toolbar']=self.toolbar.isChecked()
-        self.mw.pm.profile['fs_hide_bottombar']=self.bottombar.isChecked()
-        self.stateChanged(self.mw.state,self.mw.state)
-
+        self.mw.pm.profile['fs_hide_menubar'] = self.menubar.isChecked()
+        self.mw.pm.profile['fs_hide_toolbar'] = self.toolbar.isChecked()
+        self.mw.pm.profile['fs_hide_bottombar'] = self.bottombar.isChecked()
+        self.stateChanged(self.mw.state)
 
     def onProfileLoaded(self):
-        b=self.mw.pm.profile.get('fs_hide_menubar',True)
+        b = self.mw.pm.profile.get('fs_hide_menubar',True)
         self.menubar.setChecked(b)
-        b=self.mw.pm.profile.get('fs_hide_toolbar',True)
+        b = self.mw.pm.profile.get('fs_hide_toolbar',True)
         self.toolbar.setChecked(b)
-        b=self.mw.pm.profile.get('fs_hide_bottombar',False)
+        b = self.mw.pm.profile.get('fs_hide_bottombar',False)
         self.bottombar.setChecked(b)
 
-
     def onFullScreen(self):
-        toggle=self.mw.windowState() ^ Qt.WindowFullScreen
-        self.mw.setWindowState(toggle)
-        self.stateChanged(self.mw.state,self.mw.state)
+        toggle = self.mw.windowState() ^ Qt.WindowFullScreen
+        self.set(toggle)
 
-
-    def stateChanged(self, newS, oldS, *args):
-        self.mwCSS=mw.styleSheet().replace("QMenuBar{height:0 !important;}","")
+    def stateChanged(self, state):
+        self.mwCSS = mw.styleSheet().replace("QMenuBar{height:0 !important;}","")
         self.reset()
 
         #yikes
-        g,h,b=('QMenuBar{height:0 !important;}',0,self.mw.bottomWeb.hide) if \
-                    self.mw.isFullScreen() and newS=='review' else \
+        g,h,b = ('QMenuBar{height:0 !important;}',0,self.mw.bottomWeb.hide) if \
+                    self.mw.isFullScreen() and state == 'review' else \
                     ('',self.tb_height,self.mw.bottomWeb.show)
 
         if self.menubar.isChecked():
@@ -87,9 +312,106 @@ class FullScreenManager:
         if self.bottombar.isChecked():
             b()
 
-
     def reset(self):
         self.mw.setStyleSheet(self.mwCSS)
         self.mw.toolbar.web.setFixedHeight(self.tb_height)
         self.mw.bottomWeb.show()
 
+    def set(self, bool):
+        if bool:
+            self.mw.setWindowState(Qt.WindowFullScreen)
+        else:
+            self.mw.setWindowState(Qt.WindowNoState)
+        self.stateChanged(self.mw.state)
+
+
+
+
+
+
+class ScrollManager():
+    def __init__(self, mw):
+        self.mw = mw
+
+    def get(self):
+        return self.mw.web.page().mainFrame().scrollPosition().y()
+
+    def set(self, pos=0):
+        self.mw.web.page().mainFrame().setScrollPosition(QPoint(0,pos))
+
+    def reset(self):
+        self.mw.web.page().mainFrame().setScrollPosition(QPoint(0,0))
+
+
+
+
+
+class IR_View_Manager:
+    def __init__(self, mw):
+        self.mw = mw
+        self.count = 0
+        self.ir_data = None
+        self.last_id = -1
+
+        self._zoom = self.mw.web.zoomFactor
+        self._scroll = self.mw.web.page().mainFrame().scrollPosition
+
+    def setCard(self, card):
+        if card.id != self.last_id:
+            self.last_id=card.id
+            self.ir_data=self._extractData(card)
+
+    def _extractData(self, card):
+        n=card.model()['name'][:6]
+        if n == 'IRead2' or n == 'IR3':
+            if card.data:
+                d=json.loads(card.data)
+                if d:
+                    return d.get('viewm',[0,0])
+            return [0,0]
+
+    def onEvent(self, evt):
+        if self.mw.state!="review":
+            return False
+        elif not self.ir_data:
+            return False
+        elif isinstance(evt,QKeyEvent):
+            if evt.key() == Qt.Key_Space or \
+            (evt.key() >= Qt.Key_Left and \
+             evt.key() <= Qt.Key_PageDown):
+                self.cache()
+                return True
+        else:
+            if self.count%5 == 0:
+                self.cache()
+            self.count+=1
+
+    def isIRCard(self):
+        return not self.ir_data == None
+
+    def getZoom(self):
+        return self.ir_data[1]
+
+    def getScroll(self):
+        return self.ir_data[0]
+
+    def flush(self, chkpts=""):
+        self.cache(flush=True)
+        if chkpts in ("Bury","Suspend","Delete"):
+            self.ir_data = None
+
+    def cache(self, flush=False):
+        if self.ir_data:
+            self.count = 0
+            s = self._scroll().y() #TODO: restore exact scroll pos & window geo
+            z = self._zoom()
+            self.ir_data = [s,z]
+            if not flush:
+                return
+            c = self.mw.reviewer.card
+            if c:
+                self.last_id = c.id
+                d = {} if not c.data else json.loads(c.data)
+                d['viewm'] = self.ir_data
+                c.data = json.dumps(d)
+                c.flush()

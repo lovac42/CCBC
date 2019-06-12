@@ -24,7 +24,7 @@ class Overview(object):
     def show(self):
         clearAudioQueue()
         self.web.setLinkHandler(self._linkHandler)
-        self.web.setKeyHandler(None)
+        # self.web.setKeyHandler(None)
         self.mw.keyHandler = self._keyHandler
         self.refresh()
 
@@ -64,7 +64,7 @@ class Overview(object):
             self.onStudyMore()
         elif url == "unbury":
             self.mw.col.sched.unburyCardsForDeck()
-            # self.mw.reset()
+            self.mw.reset()
         elif url.lower().startswith("http"):
             openLink(url)
         return False

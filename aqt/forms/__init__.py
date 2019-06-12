@@ -39,6 +39,7 @@ __all__ = [
 	"taglimit",
 	"template",
 ]
+from . import about
 from . import addcards
 from . import addfield
 from . import addmodel

@@ -18,9 +18,8 @@ import ccbc
 
 
 
-saved_history=[]
-
 class AddCards(QDialog):
+    history=[]
 
     def __init__(self, mw):
         QDialog.__init__(self, None, Qt.Window)
@@ -94,7 +93,6 @@ class AddCards(QDialog):
         self.historyButton = b
 
     def setupHistory(self):
-        self.history = saved_history
         self.historyButton.setEnabled(len(self.history))
 
     def setupNewNote(self, set=True):
@@ -156,7 +154,6 @@ class AddCards(QDialog):
         self.mw.col._remNotes([note.id])
 
     def addHistory(self, note):
-        self.history=saved_history
         self.history.insert(0, note.id)
         self.history = self.history[:30]
         self.historyButton.setEnabled(True)
@@ -243,9 +240,10 @@ question on all cards."""))
         QDialog.reject(self)
 
     def canClose(self):
-        if self.addOnceChkBox.isChecked():
+        blankField = self.editor.fieldsAreBlank()
+        if blankField and self.addOnceChkBox.isChecked():
             return True
-        if (self.forceClose or self.editor.fieldsAreBlank() or
+        if (self.forceClose or blankField or
             askUser(_("Close and lose current input?"))):
             return True
         return False

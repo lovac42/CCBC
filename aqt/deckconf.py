@@ -195,9 +195,10 @@ class DeckConf(QDialog):
         f.maxIvl.setValue(c['maxIvl'])
         f.revplim.setText(self.parentLimText('rev'))
         f.buryRev.setChecked(c.get("bury", True))
-        f.hardFactor.setValue(int(c.get("hardFactor", 1.2)*100))
-        #TODO: Remove
-        if self.mw.col.schedVer() == 1:
+        f.hardFactor.setValue(int(c.get("hardFactor", 0.6)*100))
+
+        if self.mw.col.sched.type == "anki" and \
+        self.mw.col.schedVer() == 1:
             f.hardFactor.setVisible(False)
             f.hardFactorLabel.setVisible(False)
         else:
@@ -208,6 +209,12 @@ class DeckConf(QDialog):
         f.lapMult.setValue(c['mult']*100)
         f.lapMinInt.setValue(c['minInt'])
         f.leechThreshold.setValue(c['leechFails'])
+        # leech action
+        if self.mw.col.sched.type == "anki":
+            rm=f.leechAction.removeItem
+            rm(2)
+            rm(3)
+            rm(4)
         f.leechAction.setCurrentIndex(c['leechAction'])
         # general
         c = self.conf

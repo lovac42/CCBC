@@ -18,9 +18,9 @@ from anki.utils import ids2str, fieldChecksum, \
     intTime, splitFields, joinFields, maxID, devMode, stripHTMLMedia
 from anki.hooks import  runFilter, runHook
 from anki.models import ModelManager
-# from anki.media import MediaManager
-from anki.decks import DeckManager
+from anki.media import MediaManager
 from anki.tags import TagManager
+from anki.decks import DeckManager
 from anki.consts import *
 from anki.errors import AnkiError
 from anki.sound import stripSounds
@@ -30,7 +30,6 @@ import anki.notes
 import anki.template
 import anki.find
 
-from ccbc.media import ExtMediaManager
 
 
 defaultConf = {
@@ -63,7 +62,7 @@ class _Collection:
         self.server = server
         self._lastSave = time.time()
         self.clearUndo()
-        self.media = ExtMediaManager(self, server)
+        self.media = MediaManager(self, server)
         self.models = ModelManager(self)
         self.decks = DeckManager(self)
         self.tags = TagManager(self)

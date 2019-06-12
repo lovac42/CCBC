@@ -14,7 +14,7 @@ import zipfile
 from send2trash import send2trash
 from aqt.qt import *
 from anki import Collection
-from anki.utils import  isWin, isMac, intTime, splitFields, ids2str
+from anki.utils import  isWin, isMac, intTime, splitFields, ids2str, versionWithBuild
 from anki.hooks import runHook, addHook
 import aqt
 import aqt.progress
@@ -31,6 +31,7 @@ class AnkiQt(QMainWindow):
     def __init__(self, app, profileManager, args):
         QMainWindow.__init__(self)
         self.state = "startup"
+        self.setAcceptDrops(True)
         aqt.mw = self
         self.app = app
         if isWin:
@@ -147,8 +148,6 @@ class AnkiQt(QMainWindow):
         except:
             idx = 0
         f.profiles.setCurrentRow(idx)
-
-
 
     def onProfileRowChange(self, n):
         if n < 0:
@@ -340,8 +339,13 @@ the manual for information on how to restore from an automatic backup."))
             zipStorage = zipfile.ZIP_DEFLATED
         else:
             zipStorage = zipfile.ZIP_STORED
-        if not nbacks or os.getenv("ANKIDEV", 0):
+
+        if os.getenv("ANKIDEV", 0):
+            print("dev mode, no backups")
             return
+        if not nbacks:
+            return
+
         dir = self.pm.backupFolder()
         path = self.pm.collectionPath()
         # find existing backups
@@ -740,6 +744,7 @@ title="%s">%s</button>''' % (
             runHook("undoState", False)
 
     def checkpoint(self, name):
+        runHook("checkpoint", name) #allows data tobe flushed
         self.col.save(name)
         self.maybeEnableUndo()
 
@@ -915,7 +920,7 @@ and if the problem comes up again, please ask on the support site."""))
     def onRemNotes(self, col, nids):
         path = os.path.join(self.pm.profileFolder(), "deleted.txt")
         existed = os.path.exists(path)
-        with open(path, "a") as f:
+        with open(path, 'a', encoding='utf-8') as f:
             if not existed:
                 f.write("nid\tmid\tfields\n")
             for id, mid, flds in col.db.execute(
@@ -1032,14 +1037,8 @@ will be lost. Continue?"""))
                 geomKey="emptyCards")
         box.addButton(_("Delete Cards"), QDialogButtonBox.AcceptRole)
         box.button(QDialogButtonBox.Close).setDefault(True)
-        def onDelete():
-            saveGeom(diag, "emptyCards")
-            QDialog.accept(diag)
-            self.checkpoint(_("Delete Empty"))
-            self.col.remCards(cids)
-            tooltip(ngettext("%d card deleted.", "%d cards deleted.", len(cids)) % len(cids))
-            self.reset()
-        diag.connect(box, SIGNAL("accepted()"), onDelete)
+        from ccbc.plugins.Keep_empty_note.keep_empty_note import onDelete
+        box.accepted.connect(lambda:onDelete(self,diag,cids))
         diag.show()
 
     # Debugging
@@ -1226,6 +1225,25 @@ Please ensure a profile is open and Anki is not busy, then try again."""),
         p = os.path.join(self.pm.base, "crash.log")
         self._crashLog = open(p, "ab", 0)
         faulthandler.enable(self._crashLog)
+
+    def onAbout(self):
+        abouttext = "Version %s"%versionWithBuild()
+        abouttext += "\nQt %s PyQt %s"%(QT_VERSION_STR,PYQT_VERSION_STR)
+        print(abouttext)
+
+    # Handle Drag n Drop
+    ##########################################################################
+
+    def dragEnterEvent(self, event):
+        mime = event.mimeData()
+        if not mime.hasUrls():
+            return None
+        urls = mime.urls()
+        ext = self.addonManager.ext
+        for url in urls:
+            if url.toLocalFile().endswith(ext):
+                self.addonManager.onAddonsDialog()
+                break
 
     # Media server
     ##########################################################################
