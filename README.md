@@ -45,11 +45,11 @@ Large and Colorful Buttons (css only), by hkr: https://ankiweb.net/shared/info/1
 
 
 ### Arthur-Milchior Must Haves:
-Using regexps to remove tags: https://ankiweb.net/shared/info/1502698883
-Keep empty note: https://ankiweb.net/shared/info/2018640062
-Tag missing media: https://ankiweb.net/shared/info/2027876532
-Clearer empty card info: https://ankiweb.net/shared/info/25425599
-Correct due (2.0 version): https://ankiweb.net/shared/info/127334978
+Using regexps to remove tags: https://ankiweb.net/shared/info/1502698883  
+Keep empty note: https://ankiweb.net/shared/info/2018640062  
+Tag missing media: https://ankiweb.net/shared/info/2027876532  
+Clearer empty card info: https://ankiweb.net/shared/info/25425599  
+Correct due (2.0 version): https://ankiweb.net/shared/info/127334978  
 
 
 ### My own addons:
