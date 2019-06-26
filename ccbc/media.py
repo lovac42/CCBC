@@ -73,7 +73,7 @@ class ExtMediaManager(MediaManager):
         except urllib.error.URLError as e:
             if protocal: #retry with http instead of https
                 return self.importImg('http:'+url)
-            showWarning(_("An error occurred while opening %s") % e)
+            print("Can't get url: %s" % e)
             return url
 
         path = urllib.parse.unquote(purl)
