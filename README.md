@@ -82,3 +82,7 @@ Zoom adjustments are saved per card model based on front or back view. IR cards 
 
 <img src="https://github.com/lovac42/CCBC/blob/master/screenshots/nm_heatmap.png?raw=true">  
 
+<img src="https://github.com/lovac42/CCBC/blob/master/screenshots/orange_pi.png?raw=true">  
+
+<img src="https://github.com/lovac42/CCBC/blob/master/screenshots/orange_pi2.png?raw=true">  
+
