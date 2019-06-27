@@ -73,3 +73,6 @@ class Ui_Dialog(object):
         self.toggleEnabled.setText(_("Toggle Enabled"))
         self.delete_2.setText(_("Delete"))
 
+        self.getAddons.setVisible(False)
+        self.checkForUpdates.setVisible(False)
+
