@@ -255,7 +255,7 @@ class Ui_Preferences(object):
         self.showProgress.setText(_("Show remaining card count during review"))
         self.pastePNG.setText(_("Paste clipboard images as PNG"))
         self.noScript.setText(_("Remove <script> when editing HTML (add more conf later)"))
-        self.importMedia.setText(_("Import media when editing HTML"))
+        self.importMedia.setText(_("Import and localize media during edits"))
         # self.nightMode.setText(_("Show cards as white on black (night mode)"))
         self.dayLearnFirst.setText(_("Show learning cards with larger steps before reviews"))
         self.newSched.setText(_("Experimental V2 scheduler"))

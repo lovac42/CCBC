@@ -4,7 +4,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 # Support: https://github.com/lovac42/CCBC
 
-import os
+import os, re
 from anki.utils import isMac
 
 
@@ -34,10 +34,5 @@ def readFile(fname):
 
 
 def isURL(s):
-    s = s.lower()
-    return (s.startswith("http://")
-        or s.startswith("https://")
-        or s.startswith("ftp://")
-        or s.startswith("file://"))
-
+    return re.search(r"^(https?|file|ftp)://",s,re.I) != None
 
