@@ -58,7 +58,12 @@ class _ExtCollection(anki.collection._Collection):
     def findNotes(self, query):
         return ExtFinder(self).findNotes(query)
 
-
+    def changeSchedulerVer(self, ver):
+        anki.collection._Collection.changeSchedulerVer(self, ver)
+        try: #check if scheduler is from modulez
+            self.sched.type
+        except:
+            self.sched.type="anki"
 
 
     #Addon: clearer empty card info
