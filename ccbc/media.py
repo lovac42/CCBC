@@ -16,10 +16,17 @@ from anki.utils import checksum, isWin, isMac
 from anki.db import DB, DBError
 from anki.notes import Note
 from anki.find import Finder
-from ccbc.utils import isURL
+from ccbc.utils import isURL, isDataURL
 from anki.sync import AnkiRequestsClient
 from anki.lang import _
 from anki.consts import *
+
+
+RE_CR_LF_TAB = re.compile(r'\r|\n|\t')
+
+RE_FILE_URI = re.compile(r'^file://', re.I)
+RE_LOCALHOST_URI = re.compile(r'^file://([^/])', re.I)      #file://localhost/etc/usr
+RE_LOCALPATH_URI = re.compile(r'^file:(/[^/]|///)', re.I)   #file:///etc/usr or file:/etc/usr
 
 
 class ExtMediaManager(MediaManager):
@@ -52,8 +59,8 @@ class ExtMediaManager(MediaManager):
 
         if protocal or isURL(src):
             src = self.importResource(src, protocal)
-        elif src.lower().startswith("data:image/"):
-            src = re.sub(r'\r|\n|\t','',src)
+        elif isDataURL(src):
+            src = RE_CR_LF_TAB.sub('', src)
             src = self.inlinedImageToFilename(src)
         return src
 
@@ -62,8 +69,7 @@ class ExtMediaManager(MediaManager):
         "Download file into media folder and return local filename or None."
         purl=protocal+url
         ct = None
-        p=purl[:12].lower()
-        if p.startswith("file://"):
+        if RE_FILE_URI.search(purl):
             filecontents=self._importLocalResource(url)
             if not filecontents:
                 return url
@@ -78,13 +84,13 @@ class ExtMediaManager(MediaManager):
 
     def _importLocalResource(self, path):
         if isWin:
-            if re.search(r'^file://[^/]',path):
+            if RE_LOCALHOST_URI.search(path):
                 # try samba path, windows only
-                src='\\\\'+re.sub(r'^file://', '', path)
+                src='\\\\'+RE_LOCALHOST_URI.sub(r'\1', path)
             else:
-                src=re.sub(r'^file:///', '', path)
+                src=RE_LOCALPATH_URI.sub('/', path)
         else:
-            src=re.sub(r'^file://', '', path)
+            src=RE_LOCALPATH_URI.sub('/', path)
         return open(src, "rb").read()
 
 
@@ -138,7 +144,7 @@ class ExtMediaManager(MediaManager):
         def repl(match):
             tag = match.group(0)
             fname = match.group("fname")
-            if re.match("(https?|file|ftp)://", fname):
+            if re.match("(https?|file|ftp)://?", fname):
                 return tag
             return tag.replace(fname, fn(fname))
         for reg in self.imgRegexps:

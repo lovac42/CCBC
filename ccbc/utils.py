@@ -33,6 +33,12 @@ def readFile(fname):
             return f.read()
 
 
+RE_URI = re.compile(r"^(https?|file|ftp)://", re.I)
 def isURL(s):
-    return re.search(r"^(https?|file|ftp)://",s,re.I) != None
+    return not not RE_URI.search(s)
+
+
+RE_DATA_URI = re.compile(r"^data:image/", re.I)
+def isDataURL(s):
+    return not not RE_DATA_URI.search(s)
 
