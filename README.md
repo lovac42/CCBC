@@ -17,7 +17,11 @@ In other words, a 100kb webpage with the space character encoded as "%20", as we
 
 ### Naming:
 What does CCBC stand for?  
-<i>Cannabis & Coffee; Breakfast of Champions.</i>
+<i>Cannabis & Coffee; Breakfast of Champions.</i>  
+
+What is an adze?  
+An adze is a tool used in woodworking that is extremely cheap to make and could be purchased for a buck at Dollar Generals. However, to make it right, and not scratch up the surface of the project, is a craftmanship in itself. They are hard to come by even for those willing to pay. Similarly, plugins are cheap to make, but to do it right is difficult and time consuming. For that reason, CCBC addons end with a .adze extension.
+
 
 
 ## Addons:
@@ -81,6 +85,8 @@ Zoom adjustments are saved per card model based on front or back view. IR cards 
 <img src="https://github.com/lovac42/CCBC/blob/master/screenshots/Clipboard-4.png?raw=true">  
 
 <img src="https://github.com/lovac42/CCBC/blob/master/screenshots/nm_heatmap.png?raw=true">  
+
+<img src="https://github.com/lovac42/CCBC/blob/master/screenshots/slackware.png?raw=true">  
 
 <img src="https://github.com/lovac42/CCBC/blob/master/screenshots/orange_pi.png?raw=true">  
 
