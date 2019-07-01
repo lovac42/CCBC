@@ -9,13 +9,12 @@ import re
 import os
 import ctypes
 import base64
-import random
 import urllib.request, urllib.parse, urllib.error
-from anki.utils import tmpdir
 
 from anki.lang import _
 from aqt.qt import *
 from PyQt4 import QtCore, QtGui
+
 from anki.utils import stripHTML, isWin, isMac, namedtmp, json, stripHTMLMedia
 import anki.sound
 from anki.hooks import runHook, runFilter
@@ -35,8 +34,6 @@ from anki.utils import checksum
 
 pics = ("jpg", "jpeg", "png", "tif", "tiff", "gif", "svg", "webp")
 audio =  ("wav", "mp3", "ogg", "flac", "mp4", "swf", "mov", "mpeg", "mkv", "m4a", "3gp", "spx", "oga")
-
-RE_NAS_URI = re.compile(r"^file://[^/]")
 
 _html = ccbc.html.editor
 
@@ -360,18 +357,15 @@ class Editor(object):
 
     def saveNow(self, callback=None, keepFocus=False):
         "Must call this before adding cards, closing dialog, etc."
-        if not self.note:
-            if callback:
-                return callback()
-            return
-        self.saveTags()
-        if self.mw.app.focusWidget() != self.web:
-            # if no fields are focused, there's nothing to save
-            return
-        # move focus out of fields and save tags
-        self.parentWindow.setFocus()
-        # and process events so any focus-lost hooks fire
-        self.mw.app.processEvents()
+        if self.note:
+            self.saveTags()
+            if self.mw.app.focusWidget() != self.web:
+                # if no fields are focused, there's nothing to save
+                return
+            # move focus out of fields and save tags
+            self.parentWindow.setFocus()
+            # and process events so any focus-lost hooks fire
+            self.mw.app.processEvents()
         if callback:
             return callback()
 
@@ -426,7 +420,7 @@ class Editor(object):
         # html, head, and body are auto stripped
         # meta and other junk will be stripped in
         # _filterHTML() with BeautifulSoup
-        tt = TidyTags(self.mw)
+        tt = TidyTags(self.mw, localize=True)
         tt.feed(html)
         html = tt.toString()
         tt.close()
@@ -645,6 +639,7 @@ to a cloze type first, via Edit>Change Note Type."""))
         return
 
     def isURL(self, s):
+        #moved to ccbc.utils.py, leaving this here for old addons
         s = s.lower()
         return (s.startswith("http://")
             or s.startswith("https://")
@@ -653,44 +648,17 @@ to a cloze type first, via Edit>Change Note Type."""))
 
     def _retrieveURL(self, url):
         "Download file into media folder and return local filename or None."
-
-        # If samba path, copy to temp dir first before import
-        if RE_NAS_URI.search(url):
-            dir = tmpdir()
-            tmp = os.path.join(dir, "img%s%s" % (
-                random.randrange(0, 1000000), os.path.splitext(url)[1]))
-            # print(tmp)
-
-            f = open(tmp, "wb")
-            url=url.replace('file://','\\\\')
-            f.write(open(url, "rb").read())
-            f.close()
-
-            url='file:///'+tmp.replace("\\", "/")
-            # print(url)
-
-        # urllib doesn't understand percent-escaped utf8, but requires things like
-        # '#' to be escaped. we don't try to unquote the incoming URL, because
-        # we should only be receiving file:// urls from url mime, which is unquoted
-        if url.lower().startswith("file://"):
-            url = url.replace("%", "%25")
-            url = url.replace("#", "%23")
-        # fetch it into a temporary folder
         self.mw.progress.start(
             immediate=True, parent=self.parentWindow)
         try:
-            req = urllib.request.Request(url, None, {
-                'User-Agent': 'Mozilla/5.0 (compatible; Anki)'})
-            filecontents = urllib.request.urlopen(req).read()
-        except urllib.error.URLError as e:
-            showWarning(_("An error occurred while opening %s") % e)
-            return
+            path=self.mw.col.media.handle_resource(url)
         finally:
             self.mw.progress.finish()
-        path = urllib.parse.unquote(url)
-        return self.mw.col.media.writeData(path, filecontents)
+        return path
 
     def inlinedImageToFilename(self, txt):
+        #moved to ccbc.media.py, leaving this here for old addons
+
         prefix = "data:image/"
         suffix = ";base64,"
         for ext in ("jpg", "jpeg", "png", "gif"):
@@ -729,6 +697,7 @@ to a cloze type first, via Edit>Change Note Type."""))
                         new.append(sattr)
                 doc.span['style'] = ";".join(new)
             # filter out implicit formatting from webkit
+
         for tag in doc("span", "Apple-style-span"):
             preserve = ""
             for item in tag['style'].split(";"):
@@ -754,30 +723,22 @@ to a cloze type first, via Edit>Change Note Type."""))
                 tag.attrs={'color':tag['color']}
             else:
                 tag.replaceWithChildren()
-            # now images
 
-        for tag in doc("img"):
-            # turn file:/// links into relative ones
-            try:
-                src=tag['src']
-            except KeyError:
-                # for some bizarre reason, mnemosyne removes src elements
-                # from missing media
-                continue
-                # strip all other attributes, including implicit max-width
+        # now images
+        if localize:
+            for tag in doc("img"):
+                # turn file:/// links into relative ones
+                try:
+                    src=tag['src']
+                except KeyError:
+                    # for some bizarre reason, mnemosyne removes src elements
+                    # from missing media
+                    continue
+                    # strip all other attributes, including implicit max-width
 
-            src=urllib.parse.unquote(src)
-            if src.lower().startswith("file://"):
-                src = tag['src'] = os.path.basename(src)
-            if localize and self.isURL(src):
-                # convert remote image links to local ones
-                fname = self.urlToFile(src)
+                fname=self.mw.col.media.handle_resource(src)
                 if fname:
                     tag['src'] = fname
-            elif src.lower().startswith("data:image/"):
-                # convert inlined data
-                src = re.sub(r'\r|\n|\t','',src)
-                tag['src'] = self.inlinedImageToFilename(src)
 
         # strip superfluous elements
         for elem in "html", "head", "body", "meta":
@@ -785,7 +746,6 @@ to a cloze type first, via Edit>Change Note Type."""))
                 tag.replaceWithChildren()
 
         return str(doc)
-
 
     # Advanced menu
     ######################################################################

@@ -8,15 +8,25 @@
 import os, re, anki, sys
 import base64, urllib
 import unicodedata
+import requests
+import aqt
+
 from anki.media import MediaManager
 from anki.utils import checksum, isWin, isMac
 from anki.db import DB, DBError
 from anki.notes import Note
 from anki.find import Finder
-from ccbc.utils import isURL
+from ccbc.utils import isURL, isDataURL
+from anki.sync import AnkiRequestsClient
 from anki.lang import _
 from anki.consts import *
 
+
+RE_CR_LF_TAB = re.compile(r'\r|\n|\t')
+
+RE_FILE_URI = re.compile(r'^file://', re.I)
+RE_LOCALHOST_URI = re.compile(r'^file://([^/])', re.I)      #file://localhost/etc/usr
+RE_LOCALPATH_URI = re.compile(r'^file:(/[^/]|///)', re.I)   #file:///etc/usr or file:/etc/usr
 
 
 class ExtMediaManager(MediaManager):
@@ -41,43 +51,69 @@ class ExtMediaManager(MediaManager):
 
     def handle_resource(self, src):
         protocal=''
-        # src=urllib.parse.unquote(src)
-        if src.startswith("//"): #PITA: protocol-relative URL
-            protocal='https:'    #These must be removed as it causes 5sec freezes due to network lag.
-        elif src.lower().startswith("file://"):
-            src = os.path.basename(src)
+        src = urllib.parse.unquote(src)
+        if src.startswith("//"):
+            #PITA: protocol-relative URL, These must be removed as it causes
+            #5-30 secs freezes due to network lag.
+            protocal='https:'
 
         if protocal or isURL(src):
-            src = self.importImg(src, protocal)
-        elif src.lower().startswith("data:image/"):
-            src = re.sub(r'\r|\n|\t','',src)
+            src = self.importResource(src, protocal)
+        elif isDataURL(src):
+            src = RE_CR_LF_TAB.sub('', src)
             src = self.inlinedImageToFilename(src)
         return src
 
-    def importImg(self, url, protocal=''):
-        "Download file into media folder and return local filename or None."
-        # urllib doesn't understand percent-escaped utf8, but requires things like
-        # '#' to be escaped. we don't try to unquote the incoming URL, because
-        # we should only be receiving file:// urls from url mime, which is unquoted
-        if not protocal and \
-        url.lower().startswith("file://"):
-            url = url.replace("%", "%25")
-            url = url.replace("#", "%23")
 
-        # fetch it into a temporary folder
+    def importResource(self, url, protocal=''):
+        "Download file into media folder and return local filename or None."
         purl=protocal+url
+        ct = None
+        if RE_FILE_URI.search(purl):
+            filecontents=self._importLocalResource(url)
+            if not filecontents:
+                return url
+        else: # https://
+            res=self._importNetResource(url,protocal)
+            if not res:
+                return url
+            filecontents = res.content
+            ct = res.headers.get("content-type")
+        return self.writeData(purl, filecontents, typeHint=ct)
+
+
+    def _importLocalResource(self, path):
+        if isWin:
+            if RE_LOCALHOST_URI.search(path):
+                # try samba path, windows only
+                src='\\\\'+RE_LOCALHOST_URI.sub(r'\1', path)
+            else:
+                src=RE_LOCALPATH_URI.sub('/', path)
+        else:
+            src=RE_LOCALPATH_URI.sub('/', path)
+        return open(src, "rb").read()
+
+
+    def _importNetResource(self, url, protocal=''):
         try:
-            req = urllib.request.Request(purl, None, {
-                'User-Agent': 'Mozilla/5.0 (compatible; Anki)'})
-            filecontents = urllib.request.urlopen(req).read()
+            reqs = AnkiRequestsClient()
+            reqs.timeout = 30
+            r = reqs.get(protocal+url)
+            if r.status_code != 200:
+                if protocal: #retry with http instead of https
+                    return self._importNetResource('http:'+url)
+                aqt.utils.showWarning(_("Unexpected response code: %s") % r.status_code)
+                return
+            return r
         except urllib.error.URLError as e:
             if protocal: #retry with http instead of https
-                return self.importImg('http:'+url)
-            print("Can't get url: %s" % e)
-            return url
+                return self._importNetResource('http:'+url)
+            aqt.utils.showWarning(_("An error occurred while opening %s") % e)
+            return
+        except requests.exceptions.RequestException as e:
+            aqt.utils.showWarning(_("An error occurred while requesting %s") % e)
+            return
 
-        path = urllib.parse.unquote(purl)
-        return self.writeData(path, filecontents)
 
     def inlinedImageToFilename(self, txt):
         def _addPastedImage(media, data, ext):
@@ -96,9 +132,24 @@ class ExtMediaManager(MediaManager):
                 data = base64.b64decode(b64data, validate=True)
                 if ext == "jpeg":
                     ext = "jpg"
-                return addPastedImage(self, data, "."+ext)
+                return _addPastedImage(self, data, "."+ext)
         return ""
 
+
+    def escapeImages(self, string, unescape=False):
+        if unescape:
+            fn = urllib.parse.unquote
+        else:
+            fn = urllib.parse.quote
+        def repl(match):
+            tag = match.group(0)
+            fname = match.group("fname")
+            if re.match("(https?|file|ftp)://?", fname):
+                return tag
+            return tag.replace(fname, fn(fname))
+        for reg in self.imgRegexps:
+            string = re.sub(reg, repl, string)
+        return string
 
 
     def writeData(self, opath, data, typeHint=None):
@@ -151,10 +202,6 @@ class ExtMediaManager(MediaManager):
                 root = root + " (1)"
             else:
                 root = re.sub(reg, repl, root)
-
-
-
-
 
 
     #TODO: Create media manager to find, rename, relocate medias instead.
@@ -242,8 +289,8 @@ class ExtMediaManager(MediaManager):
             return self.check(local=local)
 
         #This line was removed in the addon, but was causing problems for
-        #_files, so it's added it back in for now.
-        nohave = [x for x in allRefs if not x.startswith("_")]
+        #_ files, so it's added it back in for now.
+        nohave = [x for x in allRefs if not x.startswith("_") and not isURL(x)]
 
         # NEW: A line here removed because it was a bug
         # New
@@ -283,4 +330,5 @@ class ExtMediaManager(MediaManager):
             browser = dialogs.open("Browser", mw)
             browser.form.searchEdit.lineEdit().setText("tag:MissingMedia")
             browser.onSearchActivated()
+
         return (nohave, unused, warnings)

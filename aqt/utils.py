@@ -5,13 +5,11 @@
 # Support: https://github.com/lovac42/CCBC
 
 from aqt.qt import *
-import re, os, sys, subprocess
-import aqt
-from anki.sound import stripSounds
-from anki.utils import isWin, isMac, invalidFilename, noBundledLibs, versionWithBuild
-from anki.utils import platDesc, versionWithBuild
-from anki.lang import _
+import aqt, re, os, sys, subprocess
 import urllib.request, urllib.parse, urllib.error
+from anki.sound import stripSounds
+from anki.utils import isWin, isMac, invalidFilename, noBundledLibs, platDesc, versionWithBuild
+from anki.lang import _
 
 
 def openHelp(section):

@@ -4,7 +4,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 # Support: https://github.com/lovac42/CCBC
 
-import os
+import os, re
 from anki.utils import isMac
 
 
@@ -33,11 +33,12 @@ def readFile(fname):
             return f.read()
 
 
+RE_URI = re.compile(r"^(https?|file|ftp)://", re.I)
 def isURL(s):
-    s = s.lower()
-    return (s.startswith("http://")
-        or s.startswith("https://")
-        or s.startswith("ftp://")
-        or s.startswith("file://"))
+    return not not RE_URI.search(s)
 
+
+RE_DATA_URI = re.compile(r"^data:image/", re.I)
+def isDataURL(s):
+    return not not RE_DATA_URI.search(s)
 

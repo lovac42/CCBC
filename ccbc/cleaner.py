@@ -26,12 +26,12 @@ EMPTY_ELEMENTS = (
 class TidyTags(HTMLParser):
     tag_src_map = {"img":"src", "link":"href"}
 
-    noScript = -1 # 0=disable; 1=on; -1=off;
-
-    def __init__(self, mw):
+    def __init__(self, mw, localize=False):
         HTMLParser.__init__(self)
         self.data = deque()
         self.stack = deque()
+
+        self.noScript = -1 # 0=disable; 1=on; -1=off;
 
         self.rm_elements = ["iframe","object"]
 
@@ -42,11 +42,11 @@ class TidyTags(HTMLParser):
         # TODO: separate configs for html tags: style, form, etc...
 
         self.importer = None
-        if prof.get("tidyTags.importMedia",True):
+        if localize and prof.get("tidyTags.importMedia",True):
             self.importer=mw.col.media
 
 
-    # Empty elements tag endings "/>" will be automatically fixed by bs4
+    # Empty elements tag endings "/>" will be automatically fixed
 
     def handle_starttag(self, tag, attributes):
         if self.noScript and tag in self.rm_elements:
@@ -107,6 +107,7 @@ class TidyTags(HTMLParser):
         for a in attributes:
             if a[0]==seekTag:
                 return a[1]
+        return "" #for missing attrs e.g. <img/> (mnemosyne imports)
 
     def sub_attr(self, attributes, swap):
         arr=[]

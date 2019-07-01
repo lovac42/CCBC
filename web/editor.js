@@ -154,6 +154,7 @@ function setFieldHtml(data, fieldNum) {
 function setFields(fields, focusTo) {
     var txt = "";
     for (var i=0; i<fields.length; i++) {
+        //class, name, sticky, field_data
         var c = "";
         var n = fields[i][0];
         var s = fields[i][1];
