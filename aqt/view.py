@@ -248,6 +248,7 @@ class FullScreenManager:
         self.mw = mw
         self.mu_height = self.mw.height()
         self.tb_height = self.mw.toolbar.web.height()
+        self.savedState = self.mw.windowState()
         addHook('profileLoaded', self.onProfileLoaded)
         self.setupMenu()
         self.mwCSS = mw.styleSheet()
@@ -319,9 +320,10 @@ class FullScreenManager:
 
     def set(self, bool):
         if bool:
+            self.savedState = self.mw.windowState()
             self.mw.setWindowState(Qt.WindowFullScreen)
         else:
-            self.mw.setWindowState(Qt.WindowNoState)
+            self.mw.setWindowState(self.savedState)
         self.stateChanged(self.mw.state)
 
 
