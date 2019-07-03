@@ -138,8 +138,8 @@ class Reviewer(object):
         return self._revHtml
 
     _revHtml = """
-<div id=_mark><img src="qrc:/icons/rating.png" id=star class=marked></div>
-<div id=_flag>&#x2691;</div>
+<div id=_mark>&#x2605;</div>
+<div id=_flag>&#x2744;</div>
 <div id=qa></div>
 <script>
 var ankiPlatform = "desktop";
@@ -164,11 +164,30 @@ function _updateQA (q, answerMode, klass) {
     $("img").attr("draggable", false);
 };
 
-function _toggleStar (show) {
-    if (show) {
-        $(".marked").show();
+
+_flagColours = {
+    1: "#ff6666",
+    2: "#d4af37",
+    3: "#77ff77",
+    4: "#77aaff"
+};
+
+function _drawFlag(flag) {
+    var elem = $("#_flag");
+    if (flag === 0) {
+        elem.hide();
+        return;
+    }
+    elem.show();
+    elem.css("color", _flagColours[flag]);
+}
+
+function _toggleStar (mark) {
+    var elem = $("#_mark");
+    if (!mark) {
+        elem.hide();
     } else {
-        $(".marked").hide();
+        elem.show();
     }
 }
 
@@ -224,6 +243,7 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         klass = "card card%d frontSide" % (c.ord+1)
         self.web.eval("_updateQA(%s, false, '%s');" % (json.dumps(q), klass))
         self._toggleStar()
+        self._toggleFlag()
         if self._bottomReady:
             self._showAnswerButton()
         # if we have a type answer field, focus main web
@@ -241,6 +261,11 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         return s.mw.col.decks.confForDid(
             s.card.odid or s.card.did).get('replayq', True)
 
+
+    def _toggleFlag(self):
+        self.web.eval("_drawFlag(%s);" % self.card.userFlag())
+
+    #renamed to _drawMark in 2.1
     def _toggleStar(self):
         self.web.eval("_toggleStar(%s);" % json.dumps(
             self.card.note().hasTag("marked")))
@@ -326,7 +351,11 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         elif key == "o":
             self.onOptions()
         elif key in ("1", "2", "3", "4"):
-            self._answerCard(int(key))
+            mod = evt.modifiers()
+            if mod==Qt.ControlModifier:
+                self.setFlag(int(key))
+            else:
+                self._answerCard(int(key))
         elif key == "v":
             self.onReplayRecorded()
 
@@ -628,8 +657,19 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
     ##########################################################################
 
     # note the shortcuts listed here also need to be defined above
-    def showContextMenu(self):
+    def _contextMenu(self):
+        currentFlag = self.card and self.card.userFlag()
         opts = [
+            [_("Flag Card"), [
+                [_("Red Flag"), "Ctrl+1", lambda: self.setFlag(1),
+                 dict(checked=currentFlag == 1)],
+                [_("Orange Flag"), "Ctrl+2", lambda: self.setFlag(2),
+                 dict(checked=currentFlag == 2)],
+                [_("Green Flag"), "Ctrl+3", lambda: self.setFlag(3),
+                 dict(checked=currentFlag == 3)],
+                [_("Blue Flag"), "Ctrl+4", lambda: self.setFlag(4),
+                 dict(checked=currentFlag == 4)],
+            ]],
             [_("Mark Note"), "*", self.onMark],
             [_("Bury Card"), "-", self.onBuryCard],
             [_("Bury Note"), "=", self.onBuryNote],
@@ -642,21 +682,49 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             [_("Record Own Voice"), "Shift+V", self.onRecordVoice],
             [_("Replay Own Voice"), "V", self.onReplayRecorded],
         ]
+        return opts
+
+    def showContextMenu(self):
+        opts = self._contextMenu()
         m = QMenu(self.mw)
-        for row in opts:
+        self._addMenuItems(m, opts)
+
+        runHook("Reviewer.contextMenuEvent", self, m)
+        m.exec_(QCursor.pos())
+
+    def _addMenuItems(self, m, rows):
+        for row in rows:
             if not row:
                 m.addSeparator()
                 continue
-            label, scut, func = row
+            if len(row) == 2:
+                subm = m.addMenu(row[0])
+                self._addMenuItems(subm, row[1])
+                continue
+            if len(row) == 4:
+                label, scut, func, opts = row
+            else:
+                label, scut, func = row
+                opts = {}
             a = m.addAction(label)
-            a.setShortcut(QKeySequence(scut))
-            a.connect(a, SIGNAL("triggered()"), func)
-        runHook("Reviewer.contextMenuEvent",self,m)
-        m.exec_(QCursor.pos())
+            if scut:
+                a.setShortcut(QKeySequence(scut))
+            if opts.get("checked"):
+                a.setCheckable(True)
+                a.setChecked(True)
+            a.triggered.connect(func)
 
     def onOptions(self):
         self.mw.onDeckConf(self.mw.col.decks.get(
             self.card.odid or self.card.did))
+
+    def setFlag(self, flag):
+        # need to toggle off?
+        if self.card.userFlag() == flag:
+            flag = 0
+        self.card.setUserFlag(flag)
+        self.card.flush()
+        self._toggleFlag()
 
     def onMark(self):
         f = self.card.note()

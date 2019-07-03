@@ -51,17 +51,6 @@ img {
     -webkit-text-stroke-color: black;
 }
 
-.marked {
-    position: fixed;
-    left: 10px;
-    top: 5px;
-    font-size: 30px;
-    color: yellow;
-    display: none;
-    -webkit-text-stroke-width: 1px;
-    -webkit-text-stroke-color: black;
-}
-
 #typeans {
     width: 100%;
 }
