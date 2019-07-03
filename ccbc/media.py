@@ -88,7 +88,7 @@ class ExtMediaManager(MediaManager):
                 # try samba path, windows only
                 src='\\\\'+RE_LOCALHOST_URI.sub(r'\1', path)
             else:
-                src=RE_LOCALPATH_URI.sub('/', path)
+                src=RE_LOCALPATH_URI.sub('', path)
         else:
             src=RE_LOCALPATH_URI.sub('/', path)
         return open(src, "rb").read()
