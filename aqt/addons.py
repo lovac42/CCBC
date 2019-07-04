@@ -30,7 +30,7 @@ class AddonManager:
 
     ext = ".adze"
 
-    # todo?: use jsonschema package
+    # removed jsonschema as packages are harder to find on old systems.
     _manifest_schema = {
         "package": {"type": str, "req": True, "meta": False},
         "name": {"type": str, "req": True, "meta": True},
