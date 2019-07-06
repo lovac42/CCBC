@@ -148,6 +148,7 @@ button {
 }
 %s</style>
 <script>%s</script>
+<script>var pycmd=function(arg){return py.link(arg);}</script>
 %s
 
 </head>
