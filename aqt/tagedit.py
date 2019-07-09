@@ -82,9 +82,17 @@ class TagEdit(QLineEdit):
         self.completer.popup().hide()
 
     def hideCompleter(self):
-        if sip.isdeleted(self.completer):
+        # Replaced with try-catch to fix a regression in PyQt v4.12.3; see issue #10
+        # if sip.isdeleted(self.completer):
+            # return
+        try:
+            self.completer.popup().hide()
+        except RuntimeError:
+            #Suppress errors when TagCompleter has been deleted, (not Qt4 related?).
+            #https://github.com/dae/anki/commit/eca6ecf90faea01014fbe4f1a9d339a190ef97cb
+            #https://anki.tenderapp.com/discussions/beta-testing/884
             return
-        self.completer.popup().hide()
+
 
 class TagCompleter(QCompleter):
 
