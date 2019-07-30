@@ -684,6 +684,8 @@ title="%s">%s</button>''' % (
             if self.state == "overview":
                 self.col.startTimebox()
                 self.moveToState("review")
+                if self.state == "overview":
+                    tooltip(_("No cards are due yet."))
             else:
                 self.moveToState("overview")
         elif key == "a":
@@ -1227,10 +1229,8 @@ Please ensure a profile is open and Anki is not busy, then try again."""),
         faulthandler.enable(self._crashLog)
 
     def onAbout(self):
-        from sip import SIP_VERSION_STR
         abouttext = "Version %s"%versionWithBuild()
         abouttext += "\nQt %s PyQt %s"%(QT_VERSION_STR,PYQT_VERSION_STR)
-        abouttext += "\nSIP version: %s"%SIP_VERSION_STR
         print(abouttext)
 
     # Handle Drag n Drop
