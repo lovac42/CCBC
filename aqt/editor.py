@@ -884,7 +884,7 @@ class EditorWebView(AnkiWebView):
         if evt.source():
             if oldmime.hasHtml():
                 mime = QMimeData()
-                mime.setHtml(self.editor._filterHTML(oldmime.html()))
+                mime.setHtml(self.editor._filterHTML(oldmime.html(),localize=True))
             else:
                 # old qt on linux won't give us html when dragging an image;
                 # in that case just do the default action (which is to ignore
