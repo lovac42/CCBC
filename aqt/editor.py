@@ -9,6 +9,7 @@ import re
 import os
 import ctypes
 import base64
+import warnings
 import urllib.request, urllib.parse, urllib.error
 
 from anki.lang import _
@@ -682,7 +683,10 @@ to a cloze type first, via Edit>Change Note Type."""))
     ######################################################################
 
     def _filterHTML(self, html, localize=False):
-        doc = BeautifulSoup(html, features="html.parser")
+        with warnings.catch_warnings() as w:
+            warnings.simplefilter('ignore', UserWarning)
+            doc = BeautifulSoup(html, "html.parser")
+
         # remove implicit regular font style from outermost element
         if doc.span:
             try:
