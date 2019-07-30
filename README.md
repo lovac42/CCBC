@@ -46,6 +46,7 @@ Add-on window search bar, by ijgnd: https://ankiweb.net/shared/info/561945101
 Card Info Bar for Browser, by ijgnd: https://ankiweb.net/shared/info/2140680811  
 Frozen Fields, by tmbb: https://github.com/tmbb/FrozenFields  
 Large and Colorful Buttons (css only), by hkr: https://ankiweb.net/shared/info/1829090218  
+Replay buttons on card, by ospalh: https://ankiweb.net/shared/info/498789867
 
 
 ### Arthur-Milchior Must Haves:
