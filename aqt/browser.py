@@ -1072,8 +1072,10 @@ where id in %s""" % ids2str(sf))
         self._previewWeb.setLinkHandler(self._linkHandler)
 
     def _linkHandler(self, url):
-        if url.startswith("ankiplay"):
-            play(url[8:])
+        if url.startswith("ankiplay:"):
+            (cmd, arg) = url.split(":", 1)
+            clearAudioQueue()
+            play(arg)
 
     def _onPreviewFinished(self, ok):
         saveGeom(self._previewWindow, "preview")
@@ -1792,8 +1794,10 @@ class BrowserToolbar(Toolbar):
             self.browser.addTags()
         elif l == "deletetag":
             self.browser.deleteTags()
-        elif l.startswith("ankiplay"):
-            play(l[8:])
+        elif l.startswith("ankiplay:"):
+            (cmd, arg) = l.split(":", 1)
+            clearAudioQueue()
+            play(arg)
 
 # Favourites button
 ######################################################################

@@ -140,8 +140,10 @@ class CardLayout(QDialog):
         pform.backWeb.setLinkHandler(self._linkHandler)
 
     def _linkHandler(self, url):
-        if url.startswith("ankiplay"):
-            play(url[8:])
+        if url.startswith("ankiplay:"):
+            (cmd, arg) = url.split(":", 1)
+            clearAudioQueue()
+            play(arg)
 
     def onRemoveTab(self, idx):
         if len(self.model['tmpls']) < 2:

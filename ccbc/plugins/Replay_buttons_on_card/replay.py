@@ -32,11 +32,12 @@ def play_button_filter(
             title = u"Replay"
         else:
             title = sound.group(1)
-        return u"""{orig}<a href='javascript:py.link("ankiplay{fn}");' \
-title="{ttl}" class="replaybutton browserhide"><span><svg viewBox="0 0 32 32">\
+        return u"""%s\
+<a href='javascript:py.link("ankiplay:%s");' \
+title="%s" class="replaybutton browserhide"><span><svg viewBox="0 0 32 32">\
 <polygon points="11,25 25,16 11,7"/>Replay</svg></span></a>\
-<span style="display: none;">&#91;sound:{fn}&#93;</span>""".format(
-            orig=sound.group(0), fn=sound.group(1), ttl=title)
+<span style="display: none;">&#91;sound:%s&#93;</span>\
+"""%(sound.group(0), sound.group(1), title, sound.group(1))
         # The &#91; &#93; are the square brackets that we want to
         # appear as brackets and not trigger the playing of the
         # sound. The span inside the a around the svg is there to

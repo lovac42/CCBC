@@ -373,8 +373,10 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         elif url.startswith("typeans:"):
             (cmd, arg) = url.split(":", 1)
             self.typedAnswer = arg
-        elif url.startswith("ankiplay"):
-            play(url[8:])
+        elif url.startswith("ankiplay:"):
+            (cmd, arg) = url.split(":", 1)
+            clearAudioQueue()
+            play(arg)
         else:
             openLink(url)
 
