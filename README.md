@@ -22,6 +22,20 @@ What does CCBC stand for?
 What is an adze?  
 An adze is a tool used in woodworking that is extremely cheap to make and could be purchased for a buck at Dollar Generals. However, to make it right, and not scratch up the surface of the project, is a craftmanship in itself. They are hard to come by even for those willing to pay. Similarly, plugins are cheap to make, but to do it right is difficult and time consuming. For that reason, CCBC addons end with a .adze extension.
 
+## Sync:
+Sync has been disabled, but can be enabled for custom servers using modules.
+
+
+## Zooming:
+Fullscreen (F11) and zooming is builtin. Use Ctrl++/Ctrl+- to zoom-in/out or add Shift for finer control.  
+
+Zoom adjustments are saved per card model based on front or back view. IR cards are saved per card.
+
+
+## Shuffle or Show Next Card Button:
+Added a small button to drop current card from the reviewer. The card will re-appear again in a few moments, this helps to alleviate tip-of-the-tongue phenomenons without failing the card in the event of a temporary mental lapse. The shuffling will be performed by the Hoochie addons if available.
+
+Hotkey: CTRL+Enter (on question side)
 
 
 ## Addons:
@@ -63,16 +77,6 @@ Cacher in the rye: https://ankiweb.net/shared/info/1302452246
 Hold'em Cardfield: https://ankiweb.net/shared/info/363320830  
 Pennywise: https://ankiweb.net/shared/info/1032766035  
 rated0search: https://ankiweb.net/shared/info/1056004913  
-
-
-## Sync:
-Sync has been disabled, but can be enabled for custom servers using modules.
-
-
-## Zooming:
-Fullscreen (F11) and zooming is builtin. Use Ctrl++/Ctrl+- to zoom-in/out or add Shift for finer control.  
-
-Zoom adjustments are saved per card model based on front or back view. IR cards are saved per card.
 
 
 ## Screenshots:

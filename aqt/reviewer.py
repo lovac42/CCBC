@@ -57,6 +57,7 @@ class Reviewer(object):
             self.bottom.web.setFixedHeight(50+self.mw.fontHeightDelta*4)
         self.bottom.web.setLinkHandler(self._linkHandler)
         self._reps = None
+        self.card = None
         self.nextCard()
 
     def lastCard(self):
@@ -99,11 +100,14 @@ class Reviewer(object):
                 self.mw.col.reset()
                 self.hadCardQueue = False
             c = self.mw.col.sched.getCard()
+            if c and self.card and self.card.id == c.id:
+                # if previously dropped card
+                self.card=None
+                return self.nextCard()
         self.card = c
         clearAudioQueue()
         if not c:
-            self.mw.moveToState("overview")
-            return
+            return self.mw.moveToState("overview")
         if self._reps is None or self._reps % 100 == 0:
             # we recycle the webview periodically so webkit can free memory
             self._initWeb()
@@ -331,7 +335,10 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             self.mw.onEditCurrent()
         elif (key == " " or evt.key() in (Qt.Key_Return, Qt.Key_Enter)):
             if self.state == "question":
-                self._showAnswerHack()
+                if evt.modifiers()==Qt.ControlModifier:
+                    self.nextCard()
+                else:
+                    self._showAnswerHack()
             elif self.state == "answer":
                 self._answerCard(self._defaultEase())
         elif key == "r" or evt.key() == Qt.Key_F5:
@@ -351,8 +358,7 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         elif key == "o":
             self.onOptions()
         elif key in ("1", "2", "3", "4"):
-            mod = evt.modifiers()
-            if mod==Qt.ControlModifier:
+            if evt.modifiers()==Qt.ControlModifier:
                 self.setFlag(int(key))
             else:
                 self._answerCard(int(key))
@@ -362,6 +368,8 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
     def _linkHandler(self, url):
         if url == "ans":
             self._showAnswer()
+        elif url == "nxt":
+            self.nextCard()
         elif url == "ansHack":
             self.mw.progress.timer(100, self._showAnswerHack, False)
         elif url.startswith("ease"):
@@ -569,8 +577,13 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             self.bottom.web.setFocus()
         middle = '''
 <span class=stattxt>%s</span><br>
-<button title="%s" id=ansbut onclick='py.link(\"ans\");'>%s</button>''' % (
-        self._remaining(), _("Shortcut key: %s") % _("Space"), _("Show Answer"))
+<button title="%s" id=ansbut onclick='py.link(\"ans\");'>%s</button>
+<button title="%s" id=nxtbut onclick='py.link(\"nxt\");'>%s</button>
+''' % (
+            self._remaining(),
+            _("Shortcut key: %s") % _("Space"), _("Show Answer"),
+            _("Shuffle This Card, Shortcut key: %s") % _("Ctrl+Return"), _("»")
+        )
         # wrap it in a table so it has the same top margin as the ease buttons
         middle = "<table cellpadding=0><tr><td class=stat2 align=center>%s</td></tr></table>" % middle
         if self.card.shouldShowTimer():
