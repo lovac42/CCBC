@@ -42,7 +42,14 @@ title="%s" class="replaybutton browserhide"><span><svg viewBox="0 0 32 32">\
         # appear as brackets and not trigger the playing of the
         # sound. The span inside the a around the svg is there to
         # bring this closer in line with AnkiDroid.
-    return re.sub(r"\[sound:(.*?)\]", add_button, qa_html)
+
+    qa_html=re.sub(r"\[sound:(.*?)\]", add_button, qa_html)
+    #prevent focus on btn clicks/touches
+    return qa_html + """<script>
+$('.replaybutton').on('mousedown',function(e){e.preventDefault();});
+$('.replaybutton').on('touchdown',function(e){e.preventDefault();});
+</script>"""
+
 
 addHook("mungeQA", play_button_filter)
 
