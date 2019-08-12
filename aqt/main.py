@@ -15,13 +15,13 @@ from send2trash import send2trash
 from aqt.qt import *
 from anki import Collection
 from anki.utils import  isWin, isMac, intTime, splitFields, ids2str, versionWithBuild
-from anki.hooks import runHook, addHook
+from anki.hooks import runHook, addHook, runFilter
 import aqt
 import aqt.progress
 import aqt.webview
 import aqt.toolbar
 from aqt.utils import saveGeom, restoreGeom, showInfo, showWarning, \
-    restoreState, getOnlyText, askUser, applyStyles, showText, tooltip, \
+    restoreState, getOnlyText, askUser, showText, tooltip, \
     openLink, checkInvalidFilename
 import anki.db
 from anki.lang import ngettext, _
@@ -655,8 +655,14 @@ title="%s">%s</button>''' % (
         self.form.statusbar.showMessage(text, timeout)
 
     def setupStyle(self):
-        applyStyles(self)
-
+        buf = ""
+        # allow addons to modify the styling
+        buf = runFilter("setupStyle", buf)
+        # allow users to extend styling
+        p = os.path.join(aqt.mw.pm.base, "style.css")
+        if os.path.exists(p):
+            buf += open(p).read()
+        self.setStyleSheet(buf)
 
     # Key handling
     ##########################################################################

@@ -33,14 +33,16 @@ class ViewManager:
         self.mw.web.setMouseBtnHandler(self.ir.onEvent)
         self.mw.web.setWheelHandler(self._wheelHandler)
 
+        # I choose to use hooks in case old addons 
+        # override these methods, hooks are then much
+        # safer and backwards compatible.
+        addHook('profileLoaded', self.onProfileLoaded)
+        addHook('unloadProfile', self.flush)
         addHook('beforeStateChange', self.onBeforeStateChange)
         addHook('afterStateChange', self.onAfterStateChange)
-        addHook('unloadProfile', self.flush)
         addHook('checkpoint', self.flush) #suspend, bury, delete
-        addHook('showAnswer.before', self.flush) #save ir data on Q side
         addHook('showQuestion', self.onShowQuestion)
         addHook('showAnswer', self.onShowAnswer)
-        addHook('profileLoaded', self.onProfileLoaded)
 
     def onProfileLoaded(self):
         zi=self.mw.pm.profile.get("zoom.img",False)
@@ -373,11 +375,14 @@ class IR_View_Manager:
             return [0,0]
 
     def onEvent(self, evt):
+        if not self.ir_data:
+            return False
         if self.mw.state!="review":
             return False
-        elif not self.ir_data:
+        if self.mw.reviewer.state=="answer":
             return False
-        elif isinstance(evt,QKeyEvent):
+
+        if isinstance(evt,QKeyEvent):
             if evt.key() == Qt.Key_Space or \
             (evt.key() >= Qt.Key_Left and \
              evt.key() <= Qt.Key_PageDown):
@@ -403,7 +408,7 @@ class IR_View_Manager:
             self.ir_data = None
 
     def cache(self, flush=False):
-        if self.ir_data:
+        if self.ir_data and self.mw.reviewer.state=='question':
             self.count = 0
             s = self._scroll().y() #TODO: restore exact scroll pos & window geo
             z = self._zoom()
