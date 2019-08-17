@@ -11,23 +11,14 @@
 
 import re
 from anki.hooks import addHook
-from anki.cards import Card
 
-# this part wraps around aqt.util.mungeQA
-def play_button_filter(
-        qa_html, qa_type, dummy_fields, dummy_model, dummy_data, dummy_col):
-    u"""
-    Filter the questions and answers to add play buttons.
-    """
+
+RE=re.compile(r"\[sound:(.*?)\]")
+
+
+def play_button_filter(qa_html, qa_type, *args, **kwargs):
 
     def add_button(sound):
-        u"""
-        Add a button after the match.
-
-        Add a button after the match to replay the audio. The title is
-        set to "Replay" on the question side to hide information or to
-        the file name on the answer.
-        """
         if 'q' == qa_type:
             title = u"Replay"
         else:
@@ -43,7 +34,7 @@ title="%s" class="replaybutton browserhide"><span><svg viewBox="0 0 32 32">\
         # sound. The span inside the a around the svg is there to
         # bring this closer in line with AnkiDroid.
 
-    qa_html=re.sub(r"\[sound:(.*?)\]", add_button, qa_html)
+    qa_html=RE.sub(add_button, qa_html)
     #prevent focus on btn clicks/touches
     return qa_html + """<script>
 $('.replaybutton').on('mousedown',function(e){e.preventDefault();});
@@ -52,4 +43,3 @@ $('.replaybutton').on('touchdown',function(e){e.preventDefault();});
 
 
 addHook("mungeQA", play_button_filter)
-
