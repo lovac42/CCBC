@@ -10,12 +10,14 @@ import gc
 import faulthandler
 import signal
 import zipfile
+import time
 
 from send2trash import send2trash
 from aqt.qt import *
 from anki import Collection
 from anki.utils import  isWin, isMac, intTime, splitFields, ids2str, versionWithBuild
 from anki.hooks import runHook, addHook, runFilter
+
 import aqt
 import aqt.progress
 import aqt.webview
@@ -1017,12 +1019,39 @@ will be lost. Continue?"""))
             _("Delete unused media?")):
             return
         mdir = self.col.media.dir()
-        for f in unused:
-            path = os.path.join(mdir, f)
-            if os.path.exists(path):
-                send2trash(path)
+        # for f in unused:
+            # path = os.path.join(mdir, f)
+            # if os.path.exists(path):
+                # send2trash(path)
+        self.progress.start(immediate=True)
+        try:
+            lastProgress = 0
+            for c, f in enumerate(unused):
+                path = os.path.join(mdir, f)
+                if os.path.exists(path):
+                    send2trash(path)
+
+                now = time.time()
+                if now - lastProgress >= 0.3:
+                    lastProgress = now
+                    label = _("Deleted %s files...") % (c+1)
+                    self.progress.update(label)
+        finally:
+            self.progress.finish()
         tooltip(_("Deleted."))
         diag.close()
+
+
+
+
+
+
+
+
+
+
+
+
 
     def onStudyDeck(self):
         from aqt.studydeck import StudyDeck
