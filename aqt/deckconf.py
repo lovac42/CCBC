@@ -105,8 +105,9 @@ class DeckConf(QDialog):
         self.form.count.setText(txt)
 
     def addGroup(self):
-        name = getOnlyText(_("New options group name:"))
-        if not name:
+        old = self.conf['name']
+        name = getOnlyText(_("New options group name:"), default=old)
+        if not name or name == old:
             return
         # first, save currently entered data to current conf
         self.saveConf()
