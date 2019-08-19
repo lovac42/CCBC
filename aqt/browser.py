@@ -1045,10 +1045,13 @@ where id in %s""" % ids2str(sf))
         vbox.addWidget(self._previewWeb)
         bbox = QDialogButtonBox()
 
-        self._previewReplay = bbox.addButton(_("Replay Audio"), QDialogButtonBox.ActionRole)
+        self._previewReplay = bbox.addButton(_("Replay"), QDialogButtonBox.ActionRole)
         self._previewReplay.setAutoDefault(False)
         self._previewReplay.setShortcut(QKeySequence("R"))
         self._previewReplay.setToolTip(_("Shortcut key: %s" % "R"))
+
+        self._previewStop = bbox.addButton(_("Stop"), QDialogButtonBox.ActionRole)
+        self._previewStop.setAutoDefault(False)
 
         self._previewPrev = bbox.addButton("<", QDialogButtonBox.ActionRole)
         self._previewPrev.setAutoDefault(False)
@@ -1062,6 +1065,7 @@ where id in %s""" % ids2str(sf))
 
         c(self._previewPrev, SIGNAL("clicked()"), self._onPreviewPrev)
         c(self._previewNext, SIGNAL("clicked()"), self._onPreviewNext)
+        c(self._previewStop, SIGNAL("clicked()"), clearAudioQueue)
         c(self._previewReplay, SIGNAL("clicked()"), self._onReplayAudio)
 
         vbox.addWidget(bbox)
