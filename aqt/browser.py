@@ -1145,8 +1145,8 @@ where id in %s""" % ids2str(sf))
             bodyClass="card card%d" % (c.ord+1), head=base,
             js=ccbc.js.browserSel)
         clearAudioQueue()
-        if self.mw.reviewer.autoplay(c):
-            playFromText(txt)
+        # if self.mw.reviewer.autoplay(c):
+            # playFromText(txt)
 
     # Card deletion
     ######################################################################

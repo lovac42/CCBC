@@ -259,10 +259,10 @@ Please create a new card type first."""))
             js=ccbc.js.browserSel)
 
         clearAudioQueue()
-        if c.id not in self.playedAudio:
-            playFromText(c.q())
-            playFromText(c.a())
-            self.playedAudio[c.id] = True
+        # if c.id not in self.playedAudio:
+            # playFromText(c.q())
+            # playFromText(c.a())
+            # self.playedAudio[c.id] = True
 
     def maybeTextInput(self, txt, type='q'):
         if "[[type:" not in txt:
