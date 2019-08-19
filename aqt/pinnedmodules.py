@@ -20,3 +20,10 @@ if isWin:
 # included implicitly in the past, and relied upon by some add-ons
 import cgi
 import uuid
+
+# useful for add-ons (Not needed for now)
+# import logging
+# import logging.handlers
+# import logging.config
+
+from PIL import Image
