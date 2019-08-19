@@ -28,6 +28,7 @@ def getAudio(parent, encode=True):
     mb.setIconPixmap(QPixmap(":/icons/media-record.png"))
     but = QPushButton(_("Save"))
     mb.addButton(but, QMessageBox.AcceptRole)
+    but.setDefault(True)
     but = QPushButton(_("Cancel"))
     mb.addButton(but, QMessageBox.RejectRole)
     mb.setEscapeButton(but)
@@ -42,6 +43,7 @@ def getAudio(parent, encode=True):
         QApplication.instance().processEvents()
     if mb.clickedButton() == mb.escapeButton():
         r.stop()
+        r.cleanup()
         return
     saveGeom(mb, "audioRecorder")
     # ensure at least a second captured
