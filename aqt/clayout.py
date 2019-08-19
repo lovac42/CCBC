@@ -16,6 +16,7 @@ from aqt.utils import saveGeom, restoreGeom, getBase, mungeQA,\
 from anki.utils import isMac, isWin, joinFields
 from aqt.webview import AnkiWebView
 import ccbc.js
+from anki.hooks import runFilter
 from anki.lang import ngettext, _
 from anki.sound import play
 
@@ -238,15 +239,25 @@ Please create a new card type first."""))
     def renderPreview(self):
         c = self.card
         ti = self.maybeTextInput
+
         base = getBase(self.mw.col)
+
+        q = ti(mungeQA(self.mw.col, c.q(reload=True)))
+        q = runFilter("prepareQA", q, c, "clayoutQuestion")
+
+        a = ti(mungeQA(self.mw.col, c.a()), type='a')
+        a = runFilter("prepareQA", a, c, "clayoutAnswer")
+
         self.tab['pform'].frontWeb.stdHtml(
-            ti(mungeQA(self.mw.col, c.q(reload=True))), self.mw.reviewer._styles(),
+            q, self.mw.reviewer._styles(),
             bodyClass="card card%d frontSide" % (c.ord+1), head=base,
             js=ccbc.js.browserSel)
+
         self.tab['pform'].backWeb.stdHtml(
-            ti(mungeQA(self.mw.col, c.a()), type='a'), self.mw.reviewer._styles(),
+            a, self.mw.reviewer._styles(),
             bodyClass="card card%d backSide" % (c.ord+1), head=base,
             js=ccbc.js.browserSel)
+
         clearAudioQueue()
         if c.id not in self.playedAudio:
             playFromText(c.q())

@@ -20,7 +20,7 @@ from anki.utils import fmtTimeSpan, ids2str, htmlToTextLine, stripHTMLMedia, isW
 from aqt.utils import saveGeom, restoreGeom, saveSplitter, restoreSplitter, \
     saveHeader, restoreHeader, saveState, restoreState, applyStyles, getTag, \
     showInfo, askUser, tooltip, showWarning, shortcut, getBase, mungeQA
-from anki.hooks import runHook, addHook, remHook
+from anki.hooks import runHook, addHook, remHook, runFilter
 from aqt.webview import AnkiWebView
 from aqt.toolbar import Toolbar
 from anki.consts import *
@@ -1136,9 +1136,12 @@ where id in %s""" % ids2str(sf))
             txt = c.a()
         txt = re.sub("\[\[type:[^]]+\]\]", "", txt)
         ti = lambda x: x
+        txt = ti(mungeQA(self.col, txt))
+        txt = runFilter("prepareQA", txt, c,
+                        "preview"+self._previewState.capitalize())
         base = getBase(self.mw.col)
         self._previewWeb.stdHtml(
-            ti(mungeQA(self.col, txt)), self.mw.reviewer._styles(),
+            txt, self.mw.reviewer._styles(),
             bodyClass="card card%d" % (c.ord+1), head=base,
             js=ccbc.js.browserSel)
         clearAudioQueue()

@@ -15,7 +15,7 @@ import html.parser
 from anki.lang import _, ngettext
 from aqt.qt import *
 from anki.utils import  stripHTML, isMac, json
-from anki.hooks import addHook, runHook
+from anki.hooks import addHook, runHook, runFilter
 from anki.sound import playFromText, clearAudioQueue, play
 from aqt.utils import mungeQA, getBase, openLink, tooltip, askUserDialog, \
     downArrow
@@ -244,14 +244,13 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             playFromText(q)
         # render & update bottom
         q = self._mungeQA(q)
+        q = runFilter("prepareQA", q, c, "reviewQuestion")
         klass = "card card%d frontSide" % (c.ord+1)
         self.web.eval("_updateQA(%s, false, '%s');" % (json.dumps(q), klass))
-        self._toggleStar()
         self._toggleFlag()
+        self._toggleStar()
         if self._bottomReady:
             self._showAnswerButton()
-        # if we have a type answer field, focus main web
-        # if self.typeCorrect:
         self.mw.web.setFocus()
         # user hook
         runHook('showQuestion')
@@ -281,15 +280,20 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         if self.mw.state != "review":
             # showing resetRequired screen; ignore space
             return
-        runHook('showAnswer.before')
+        #save ir view on Q side, requires state=Q
+        self.mw.viewmanager.flush()
+
         self.state = "answer"
         c = self.card
         a = c.a()
         # play audio?
+        clearAudioQueue()
         if self.autoplay(c):
             playFromText(a)
         # render and update bottom
         a = self._mungeQA(a)
+        a = runFilter("prepareQA", a, c, "reviewAnswer")
+
         self.web.eval("_updateQA(%s, true);" % json.dumps(a))
         self._showEaseButtons()
         self.mw.web.setFocus()
