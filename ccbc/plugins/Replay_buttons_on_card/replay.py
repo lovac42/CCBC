@@ -34,9 +34,11 @@ title="%s" class="replaybutton browserhide"><span><svg viewBox="0 0 32 32">\
         # sound. The span inside the a around the svg is there to
         # bring this closer in line with AnkiDroid.
 
-    qa_html=RE.sub(add_button, qa_html)
+    s,cnt=RE.subn(add_button, qa_html)
+    if not cnt:
+        return qa_html
     #prevent focus on btn clicks/touches
-    return qa_html + """<script>
+    return s + """<script>
 $('.replaybutton').on('mousedown',function(e){e.preventDefault();});
 $('.replaybutton').on('touchdown',function(e){e.preventDefault();});
 </script>"""
