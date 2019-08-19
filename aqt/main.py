@@ -101,6 +101,7 @@ class AnkiQt(QMainWindow):
 
     def setupProfile(self):
         self.pendingImport = None
+        self.restoringBackup = False
         # profile not provided on command line?
         if not self.pm.name:
             # if there's a single profile, load it automatically
@@ -262,6 +263,7 @@ To import into a password protected profile, please open the profile before atte
         self.pm.save()
         self.pm.profile = None
         self.hide()
+        self.restoringBackup = False
         if browser:
             self.showProfileManager()
 

@@ -396,17 +396,20 @@ This will delete your existing collection and replace it with the data in \
 the file you're importing. Are you sure?"""), msgfunc=QMessageBox.warning,
                                               defaultno=True):
         return False
+
     # schedule replacement; don't do it immediately as we may have been
     # called as part of the startup routine
-
     mw.progress.timer(
         100, lambda mw=mw, f=importer.file: replaceWithApkg(mw, f, mw.restoringBackup), False)
 
 def replaceWithApkg(mw, file, backup):
-
-
-
-    mw.unloadCollection(lambda: _replaceWithApkg(mw, file, backup))
+    mw.pm.profile['numBackups']+=10
+    mw.unloadCollection()
+    _replaceWithApkg(mw, file, backup)
+    # TODO: rewrite backup/restore
+    # https://anki.tenderapp.com/discussions/ankidesktop/35084
+    # Just a hack to get around this issue w/o making to much changes for now.
+    mw.pm.profile['numBackups']-=10
 
 def _replaceWithApkg(mw, file, backup):
     mw.progress.start(immediate=True)
