@@ -341,7 +341,6 @@ class Editor(object):
         self.web.eval("setFields(%s, %d);" % (json.dumps(data), field))
         self.web.eval("setFonts(%s);" % (json.dumps(self.fonts())))
 
-
         self.checkValid()
         self.widget.show()
         self.updateTags()
@@ -360,17 +359,19 @@ class Editor(object):
 
     def saveNow(self, callback=None, keepFocus=False):
         "Must call this before adding cards, closing dialog, etc."
+        if not callback:
+            def nop():
+                pass
+            callback=nop
         if self.note:
             self.saveTags()
-            if self.mw.app.focusWidget() != self.web:
-                # if no fields are focused, there's nothing to save
-                return
-            # move focus out of fields and save tags
-            self.parentWindow.setFocus()
-            # and process events so any focus-lost hooks fire
-            self.mw.app.processEvents()
-        if callback:
-            return callback()
+            if self.mw.app.focusWidget() == self.web:
+                # move focus out of fields and save tags
+                self.parentWindow.setFocus()
+                # and process events so any focus-lost hooks fire
+                self.mw.app.processEvents()
+        # calling code may not expect the callback to fire immediately
+        self.mw.progress.timer(10, callback, False)
 
     def checkValid(self):
         cols = []
