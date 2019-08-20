@@ -170,7 +170,7 @@ class Editor(object):
         b("mail-attachment", self.onAddMedia, _("F3"),
           _("Attach pictures/audio/video (F3)"))
         b("media-record", self.onRecSound, _("F5"), _("Record audio (F5)"))
-        self._buttons=runFilter("setupEditorButtons", self._buttons, self)
+        # self._buttons=runFilter("setupEditorButtons", self._buttons, self) #require list
         b("adv", self.onAdvanced, text=downArrow())
         s = QShortcut(QKeySequence("Ctrl+T, T"), self.widget)
         s.connect(s, SIGNAL("activated()"), self.insertLatex)
