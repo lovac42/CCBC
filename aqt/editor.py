@@ -359,10 +359,6 @@ class Editor(object):
 
     def saveNow(self, callback=None, keepFocus=False):
         "Must call this before adding cards, closing dialog, etc."
-        if not callback:
-            def nop():
-                pass
-            callback=nop
         if self.note:
             self.saveTags()
             if self.mw.app.focusWidget() == self.web:
@@ -370,8 +366,9 @@ class Editor(object):
                 self.parentWindow.setFocus()
                 # and process events so any focus-lost hooks fire
                 self.mw.app.processEvents()
-        # calling code may not expect the callback to fire immediately
-        self.mw.progress.timer(10, callback, False)
+        if callback:
+            # calling code may not expect the callback to fire immediately
+            self.mw.progress.timer(10, callback, False)
 
     def checkValid(self):
         cols = []
