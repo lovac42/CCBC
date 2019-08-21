@@ -1019,10 +1019,6 @@ will be lost. Continue?"""))
             _("Delete unused media?")):
             return
         mdir = self.col.media.dir()
-        # for f in unused:
-            # path = os.path.join(mdir, f)
-            # if os.path.exists(path):
-                # send2trash(path)
         self.progress.start(immediate=True)
         try:
             lastProgress = 0
@@ -1040,18 +1036,6 @@ will be lost. Continue?"""))
             self.progress.finish()
         tooltip(_("Deleted."))
         diag.close()
-
-
-
-
-
-
-
-
-
-
-
-
 
     def onStudyDeck(self):
         from aqt.studydeck import StudyDeck
