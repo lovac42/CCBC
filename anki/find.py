@@ -535,21 +535,19 @@ def fieldNames(col, downcase=True):
     for m in col.models.all():
         for f in m['flds']:
             name=f['name'].lower() if downcase else f['name']
-            fields.add(name)
+            if name not in fields: #slower w/o
+                fields.add(name)
     return list(fields)
 
 def fieldNamesForNotes(col, nids):
-    downcasedNames = set()
-    origNames = []
+    fields = set()
     mids = col.db.list("select distinct mid from notes where id in %s" % ids2str(nids))
     for mid in mids:
         model = col.models.get(mid)
-        for field in col.models.fieldNames(model):
-            if field.lower() not in downcasedNames:
-                downcasedNames.add(field.lower())
-                origNames.append(field)
-
-    return sorted(origNames, key=lambda x: x.lower())
+        for name in col.models.fieldNames(model):
+            if name not in fields: #slower w/o
+                fields.add(name)
+    return sorted(list(fields), key=lambda x: x.lower())
 
 # Find duplicates
 ##########################################################################
