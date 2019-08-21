@@ -1385,7 +1385,7 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
         if not sf:
             return
         import anki.find
-        fields = sorted(anki.find.fieldNamesForNotes(self.col, sf))
+        fields = anki.find.fieldNamesForNotes(self.col, sf)
         d = QDialog(self)
         frm = aqt.forms.findreplace.Ui_Dialog()
         frm.setupUi(d)
@@ -1434,7 +1434,8 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
         frm = aqt.forms.finddupes.Ui_Dialog()
         frm.setupUi(d)
         restoreGeom(d, "findDupes")
-        fields = sorted(anki.find.fieldNames(self.col, downcase=False))
+        fields = anki.find.fieldNames(self.col, downcase=False)
+        fields = sorted(fields, key=lambda x: x.lower())
         frm.fields.addItems(fields)
         self._dupesButton = None
         # links
