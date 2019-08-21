@@ -532,15 +532,11 @@ def findReplace(col, nids, src, dst, regex=False, field=None, fold=True):
 
 def fieldNames(col, downcase=True):
     fields = set()
-    names = []
     for m in col.models.all():
         for f in m['flds']:
-            if f['name'].lower() not in fields:
-                names.append(f['name'])
-                fields.add(f['name'].lower())
-    if downcase:
-        return list(fields)
-    return names
+            name=f['name'].lower() if downcase else f['name']
+            fields.add(name)
+    return list(fields)
 
 def fieldNamesForNotes(col, nids):
     downcasedNames = set()
