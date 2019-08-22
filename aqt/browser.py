@@ -25,7 +25,7 @@ from aqt.webview import AnkiWebView
 from aqt.toolbar import Toolbar
 from anki.consts import *
 from anki.sound import playFromText, clearAudioQueue
-import ccbc.js, ccbc.css, ccbc.html
+import ccbc.css
 
 
 COLOUR_SUSPENDED = "#FFFFB2"
@@ -1146,8 +1146,7 @@ where id in %s""" % ids2str(sf))
         base = getBase(self.mw.col)
         self._previewWeb.stdHtml(
             txt, self.mw.reviewer._styles(),
-            bodyClass="card card%d" % (c.ord+1), head=base,
-            js=ccbc.js.browserSel)
+            bodyClass="card card%d" % (c.ord+1), head=base)
         clearAudioQueue()
         # if self.mw.reviewer.autoplay(c):
             # playFromText(txt)
