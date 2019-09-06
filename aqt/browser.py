@@ -16,16 +16,19 @@ from anki.sound import play
 from aqt.qt import *
 import anki
 import aqt.forms
+import anki.find
 from anki.utils import fmtTimeSpan, ids2str, htmlToTextLine, stripHTMLMedia, isWin, intTime, isMac
 from aqt.utils import saveGeom, restoreGeom, saveSplitter, restoreSplitter, \
     saveHeader, restoreHeader, saveState, restoreState, applyStyles, getTag, \
-    showInfo, askUser, tooltip, showWarning, shortcut, getBase, mungeQA
+    showInfo, askUser, getOnlyText, tooltip, showWarning, shortcut, getBase, mungeQA
 from anki.hooks import runHook, addHook, remHook, runFilter
 from aqt.webview import AnkiWebView
 from aqt.toolbar import Toolbar
 from anki.consts import *
 from anki.sound import playFromText, clearAudioQueue
 import ccbc.css
+
+from aqt.sidebar import SidebarTreeWidget
 
 
 COLOUR_SUSPENDED = "#FFFFB2"
@@ -363,6 +366,7 @@ class Browser(QMainWindow):
         self.form.splitter_2.setChildrenCollapsible(False)
         self.form.splitter.setChildrenCollapsible(False)
         self.card = None
+        self.dropItem = None
         self.setupToolbar()
         self.setupColumns()
         self.setupTable()
@@ -587,9 +591,8 @@ class Browser(QMainWindow):
         self.form.tableView.selectionModel()
         self.form.tableView.doubleClicked.connect(self._openPreview)
         self.form.tableView.setItemDelegate(StatusDelegate(self, self.model))
-        self.connect(self.form.tableView.selectionModel(),
-                     SIGNAL("selectionChanged(QItemSelection,QItemSelection)"),
-                     self.onRowChanged)
+        sm=self.form.tableView.selectionModel()
+        sm.selectionChanged.connect(self.onRowChanged)
 
     def setupEditor(self):
         import aqt.editor
@@ -647,7 +650,6 @@ class Browser(QMainWindow):
         self.setSortIndicator()
         hh.sortIndicatorChanged.connect(self.onSortChanged)
         hh.sectionMoved.connect(self.onColumnMoved)
-
 
     def onSortChanged(self, idx, ord):
         type = self.model.activeCols[idx]
@@ -741,25 +743,21 @@ by clicking on one on the left."""))
     ######################################################################
 
     class CallbackItem(QTreeWidgetItem):
-        def __init__(self, root, name, onclick, oncollapse=None):
+        def __init__(self, root, name, onclick, oncollapse=None, expanded=False):
             QTreeWidgetItem.__init__(self, root, [name])
+            self.setExpanded(expanded)
             self.onclick = onclick
             self.oncollapse = oncollapse
+            self.type = ""
 
     def setupTree(self):
-        self.connect(
-            self.form.tree, SIGNAL("itemClicked(QTreeWidgetItem*,int)"),
-            self.onTreeClick)
         p = QPalette()
         p.setColor(QPalette.Base, QColor("#d6dde0"))
         self.form.tree.setPalette(p)
+        self.form.tree.mw = self.mw
+        self.form.tree.col = self.mw.col
+        self.form.tree.browser = self
         self.buildTree()
-        self.connect(
-            self.form.tree, SIGNAL("itemExpanded(QTreeWidgetItem*)"),
-            lambda item: self.onTreeCollapse(item))
-        self.connect(
-            self.form.tree, SIGNAL("itemCollapsed(QTreeWidgetItem*)"),
-            lambda item: self.onTreeCollapse(item))
 
     def buildTree(self):
         self.form.tree.clear()
@@ -769,18 +767,9 @@ by clicking on one on the left."""))
         self._decksTree(root)
         self._modelTree(root)
         self._userTagTree(root)
-        self.form.tree.setIndentation(15)
+        root.setIndentation(15)
         self.sidebarTree=root #for 2.1
 
-
-    def onTreeClick(self, item, col):
-        if getattr(item, 'onclick', None):
-            item.onclick()
-
-    def onTreeCollapse(self, item):
-        if getattr(item, 'oncollapse', None):
-            item.oncollapse()
-            
     def setFilter(self, *args):
         if len(args) == 1:
             txt = args[0]
@@ -828,6 +817,8 @@ by clicking on one on the left."""))
         for name, icon, cmd in tags:
             item = self.CallbackItem(
                 root, name, lambda c=cmd: self.setFilter(c))
+            item.type="sys"
+            item.fullname = name
             item.setIcon(0, QIcon(":/icons/" + icon))
         return root
 
@@ -836,66 +827,72 @@ by clicking on one on the left."""))
         if not saved:
             # Don't add favourites to tree if none saved
             return
-        root = self.CallbackItem(root, _("My Searches"), None)
-        root.setExpanded(True)
+        root = self.CallbackItem(root, _("Searches"), None, expanded=True)
         root.setIcon(0, QIcon(":/icons/emblem-favorite-dark.png"))
         for name, filt in sorted(saved.items()):
             item = self.CallbackItem(root, name, lambda s=filt: self.setFilter(s))
+            item.type="fav"
+            item.fullname = name
             item.setIcon(0, QIcon(":/icons/emblem-favorite-dark.png"))
 
-    
     # Addon: Hierarchical Tags, https://ankiweb.net/shared/download/1089921461
     def _userTagTree(self, root):
+        root = self.CallbackItem(root, _("Tags"), None, expanded=True)
+        root.setIcon(0, QIcon(":/icons/anki-tag.png"))
+        root.setExpanded(True)
         tags_tree = {}
-        tags = sorted(self.col.tags.all())
-
-        for t in tags:
+        for t in sorted(self.col.tags.all(), key=lambda t: t.lower()):
             if t.lower() == "marked" or t.lower() == "leech":
                 continue
-
-            components = t.split('::')
-            for idx, c in enumerate(components):
-                partial_tag = '::'.join(components[0:idx + 1])
-                if not tags_tree.get(partial_tag):
+            node = t.split('::')
+            for idx, name in enumerate(node):
+                leaf_tag = '::'.join(node[0:idx + 1])
+                if not tags_tree.get(leaf_tag):
                     if idx == 0:
                         parent = root
                     else:
-                        parent_tag = '::'.join(components[0:idx])
+                        parent_tag = '::'.join(node[0:idx])
                         parent = tags_tree[parent_tag]
-
                     item = self.CallbackItem(
-                        parent, c,
-                        lambda p=partial_tag: self.setFilter("tag",p))
+                        parent, name,
+                        lambda p=leaf_tag: self.setFilter("tag",p),
+                        expanded=bool(len(node)>2)
+                    )
+                    item.type = "tag"
+                    item.fullname = leaf_tag
                     item.setIcon(0, QIcon(":/icons/anki-tag.png"))
-                    tags_tree[partial_tag] = item
-
+                    tags_tree[leaf_tag] = item
 
     def _decksTree(self, root):
+        root = self.CallbackItem(root, _("Decks"), None)
+        root.setIcon(0, QIcon(":/icons/deck16.png"))
+        root.setExpanded(True)
         grps = self.col.sched.deckDueTree()
         def fillGroups(root, grps, head=""):
             for g in grps:
                 item = self.CallbackItem(
                     root, g[0],
                     lambda g=g: self.setFilter("deck", head+g[0]),
-                    lambda g=g: self.mw.col.decks.collapseBrowser(g[1]))
+                    lambda g=g: self.mw.col.decks.collapseBrowser(g[1]),
+                    not self.mw.col.decks.get(g[1]).get('browserCollapsed', False))
+                item.type = "deck"
+                item.fullname = head + g[0]
                 item.setIcon(0, QIcon(":/icons/deck16.png"))
-                newhead = head + g[0]+"::"
-                collapsed = self.mw.col.decks.get(g[1]).get('browserCollapsed', False)
-                item.setExpanded(not collapsed)
+                newhead = head + g[0] + "::"
                 fillGroups(item, g[5], newhead)
+                # item.setExpanded(bool(len(newhead.split('::'))>2))
         fillGroups(root, grps)
 
     def _modelTree(self, root):
+        root = self.CallbackItem(root, _("Models"), None)
+        root.setIcon(0, QIcon(":/icons/product_design.png"))
+        root.setExpanded(False)
         for m in sorted(self.col.models.all(), key=itemgetter("name")):
             mitem = self.CallbackItem(
                 root, m['name'], lambda m=m: self.setFilter("mid", str(m['id'])))
+            mitem.type="model"
+            mitem.fullname = m['name']
             mitem.setIcon(0, QIcon(":/icons/product_design.png"))
-            # for t in m['tmpls']:
-            #     titem = self.CallbackItem(
-            #     t['name'], lambda m=m, t=t: self.setFilter(
-            #         "model", m['name'], "card", t['name']))
-            #     titem.setIcon(0, QIcon(":/icons/stock_new_template.png"))
-            #     mitem.addChild(titem)
 
     # Info
     ######################################################################
@@ -1375,6 +1372,9 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
         self.form.actionUndo.setEnabled(on)
         if on:
             self.form.actionUndo.setText(self.mw.form.actionUndo.text())
+        self.buildTree()
+
+
 
     # Edit: replacing
     ######################################################################
@@ -1383,7 +1383,6 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
         sf = self.selectedNotes()
         if not sf:
             return
-        import anki.find
         fields = anki.find.fieldNamesForNotes(self.col, sf)
         d = QDialog(self)
         frm = aqt.forms.findreplace.Ui_Dialog()
@@ -1877,7 +1876,7 @@ class FavouritesLineEdit(QLineEdit):
         if ok:
             self.mw.col.conf['savedFilters'][name] = txt
             self.mw.col.setMod()
-            
+
         self.updateButton()
         self.browser.buildTree()
     

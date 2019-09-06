@@ -54,7 +54,7 @@ from PyQt4 import QtCore, QtGui as QtWidgets, QtGui
 
 
 ### Included Addons:
-Hierarchical Tags, by Patrice Neff: https://ankiweb.net/shared/download/1089921461  
+Hierarchical Tags, by Patrice Neff: https://ankiweb.net/shared/info/1089921461  
 Advanced Copy Fields, by Ambriel Angel: https://ankiweb.net/shared/info/1898445115  
 Add-on window search bar, by ijgnd: https://ankiweb.net/shared/info/561945101  
 Card Info Bar for Browser, by ijgnd: https://ankiweb.net/shared/info/2140680811  
@@ -64,7 +64,6 @@ Replay buttons on card, by ospalh: https://ankiweb.net/shared/info/498789867
 
 
 ### Arthur-Milchior Must Haves:
-Using regexps to remove tags: https://ankiweb.net/shared/info/1502698883  
 Keep empty note: https://ankiweb.net/shared/info/2018640062  
 Tag missing media: https://ankiweb.net/shared/info/2027876532  
 Clearer empty card info: https://ankiweb.net/shared/info/25425599  
@@ -77,6 +76,13 @@ Cacher in the rye: https://ankiweb.net/shared/info/1302452246
 Hold'em Cardfield: https://ankiweb.net/shared/info/363320830  
 Pennywise: https://ankiweb.net/shared/info/1032766035  
 rated0search: https://ankiweb.net/shared/info/1056004913  
+Blitzkrieg: (insert ankiweb id)
+
+
+### Removed:
+Using regexps to remove tags, Arthur-Milchior: https://ankiweb.net/shared/info/1502698883  
+A better tagging system was put in place.
+Replaced by addon Blitzkrieg
 
 
 ## Screenshots:

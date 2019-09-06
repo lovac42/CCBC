@@ -17,7 +17,6 @@ from anki.decks import DeckManager
 
 from ccbc.find import ExtFinder
 from ccbc.media import ExtMediaManager
-from ccbc.tags import ExtTagManager
 from ccbc.plugins.fix_redue import redue as fix_redue
 
 
@@ -35,7 +34,7 @@ class _ExtCollection(anki.collection._Collection):
         self.media = ExtMediaManager(self, server)
         self.models = ModelManager(self)
         self.decks = DeckManager(self)
-        self.tags = ExtTagManager(self)
+        self.tags = TagManager(self)
         self.load()
         if not self.crt:
             d = datetime.datetime.today()
