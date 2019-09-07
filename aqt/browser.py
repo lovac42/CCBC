@@ -20,7 +20,7 @@ import anki.find
 from anki.utils import fmtTimeSpan, ids2str, htmlToTextLine, stripHTMLMedia, isWin, intTime, isMac
 from aqt.utils import saveGeom, restoreGeom, saveSplitter, restoreSplitter, \
     saveHeader, restoreHeader, saveState, restoreState, applyStyles, getTag, \
-    showInfo, askUser, getOnlyText, tooltip, showWarning, shortcut, getBase, mungeQA
+    showInfo, askUser, tooltip, showWarning, shortcut, getBase, mungeQA
 from anki.hooks import runHook, addHook, remHook, runFilter
 from aqt.webview import AnkiWebView
 from aqt.toolbar import Toolbar
@@ -760,7 +760,8 @@ by clicking on one on the left."""))
         self.buildTree()
 
     def buildTree(self):
-        self.form.tree.clear()
+        self.sidebarTree=self.form.tree
+        self.sidebarTree.clear()
         root = self.form.tree
         self._systemTagTree(root)
         self._favTree(root)
@@ -768,7 +769,6 @@ by clicking on one on the left."""))
         self._modelTree(root)
         self._userTagTree(root)
         root.setIndentation(15)
-        self.sidebarTree=root #for 2.1
 
     def setFilter(self, *args):
         if len(args) == 1:
@@ -827,7 +827,10 @@ by clicking on one on the left."""))
         if not saved:
             # Don't add favourites to tree if none saved
             return
-        root = self.CallbackItem(root, _("Searches"), None, expanded=True)
+        root = self.CallbackItem(root, _("Searches"), None)
+        root.type = "group"
+        root.fullname = "fav"
+        root.setExpanded(self.sidebarTree.node_state.get("group").get('fav',True))
         root.setIcon(0, QIcon(":/icons/emblem-favorite-dark.png"))
         for name, filt in sorted(saved.items()):
             item = self.CallbackItem(root, name, lambda s=filt: self.setFilter(s))
@@ -837,9 +840,11 @@ by clicking on one on the left."""))
 
     # Addon: Hierarchical Tags, https://ankiweb.net/shared/download/1089921461
     def _userTagTree(self, root):
-        root = self.CallbackItem(root, _("Tags"), None, expanded=True)
+        root = self.CallbackItem(root, _("Tags"), None)
+        root.type = "group"
+        root.fullname = "tag"
+        root.setExpanded(self.sidebarTree.node_state.get("group").get('tag',True))
         root.setIcon(0, QIcon(":/icons/anki-tag.png"))
-        root.setExpanded(True)
         tags_tree = {}
         for t in sorted(self.col.tags.all(), key=lambda t: t.lower()):
             if t.lower() == "marked" or t.lower() == "leech":
@@ -848,15 +853,11 @@ by clicking on one on the left."""))
             for idx, name in enumerate(node):
                 leaf_tag = '::'.join(node[0:idx + 1])
                 if not tags_tree.get(leaf_tag):
-                    if idx == 0:
-                        parent = root
-                    else:
-                        parent_tag = '::'.join(node[0:idx])
-                        parent = tags_tree[parent_tag]
+                    parent = tags_tree['::'.join(node[0:idx])] if idx else root
                     item = self.CallbackItem(
                         parent, name,
                         lambda p=leaf_tag: self.setFilter("tag",p),
-                        expanded=bool(len(node)>2)
+                        expanded=self.sidebarTree.node_state.get('tag').get(leaf_tag,False)
                     )
                     item.type = "tag"
                     item.fullname = leaf_tag
@@ -865,8 +866,10 @@ by clicking on one on the left."""))
 
     def _decksTree(self, root):
         root = self.CallbackItem(root, _("Decks"), None)
+        root.type = "group"
+        root.fullname = "deck"
+        root.setExpanded(self.sidebarTree.node_state.get("group").get('deck',True))
         root.setIcon(0, QIcon(":/icons/deck16.png"))
-        root.setExpanded(True)
         grps = self.col.sched.deckDueTree()
         def fillGroups(root, grps, head=""):
             for g in grps:
@@ -880,19 +883,30 @@ by clicking on one on the left."""))
                 item.setIcon(0, QIcon(":/icons/deck16.png"))
                 newhead = head + g[0] + "::"
                 fillGroups(item, g[5], newhead)
-                # item.setExpanded(bool(len(newhead.split('::'))>2))
         fillGroups(root, grps)
 
     def _modelTree(self, root):
         root = self.CallbackItem(root, _("Models"), None)
+        root.type = "group"
+        root.fullname = "model"
+        root.setExpanded(self.sidebarTree.node_state.get("group").get('model',False))
         root.setIcon(0, QIcon(":/icons/product_design.png"))
-        root.setExpanded(False)
+        models_tree = {}
         for m in sorted(self.col.models.all(), key=itemgetter("name")):
-            mitem = self.CallbackItem(
-                root, m['name'], lambda m=m: self.setFilter("mid", str(m['id'])))
-            mitem.type="model"
-            mitem.fullname = m['name']
-            mitem.setIcon(0, QIcon(":/icons/product_design.png"))
+            node = m['name'].split('::')
+            for idx, name in enumerate(node):
+                leaf_model = '::'.join(node[0:idx + 1])
+                if not models_tree.get(leaf_model):
+                    parent = models_tree['::'.join(node[0:idx])] if idx else root
+                    item = self.CallbackItem(
+                        parent, name,
+                        lambda m=m: self.setFilter("mid", str(m['id'])),
+                        expanded=self.sidebarTree.node_state.get('model').get(leaf_model,False)
+                    )
+                    item.type = "model"
+                    item.fullname = leaf_model
+                    item.setIcon(0, QIcon(":/icons/product_design.png"))
+                    models_tree[leaf_model] = item
 
     # Info
     ######################################################################
