@@ -17,6 +17,7 @@ class SidebarTreeWidget(QTreeWidget):
         #Decks are handled per deck settings
         'group': {},
         'tag': {},
+        'fav': {},
         'model': {},
     }
 
@@ -64,7 +65,7 @@ class SidebarTreeWidget(QTreeWidget):
 
     def dropEvent(self, event):
         dragItem = event.source().currentItem()
-        if dragItem.type not in ("tag","deck","model"):
+        if dragItem.type not in ("tag","deck","model","fav"):
             event.setDropAction(Qt.IgnoreAction)
             event.accept()
             return
@@ -85,6 +86,9 @@ class SidebarTreeWidget(QTreeWidget):
             elif dragItem.type == "model":
                 self._strDropEvent(dragName,dropName,self.moveModel)
                 self.node_state['model'][dropName] = True
+            elif dragItem.type == "fav":
+                self._strDropEvent(dragName,dropName,self.moveFav)
+                self.node_state['fav'][dropName] = True
         self.col.setMod()
         self.browser.buildTree()
 
@@ -107,6 +111,20 @@ class SidebarTreeWidget(QTreeWidget):
         except DeckRenameError as e:
             showWarning(e.description)
         self.col.decks.get(dropDid)['browserCollapsed'] = False
+
+    def moveFav(self, dragName, newName=""):
+        saved = self.col.conf['savedFilters']
+        for fav in list(saved):
+            act = self.col.conf['savedFilters'].get(fav)
+            if fav.startswith(dragName + "::"):
+                nn = fav.replace(dragName+"::", newName+"::", 1)
+                self.col.conf['savedFilters'][nn] = act
+                del(self.col.conf['savedFilters'][fav])
+                self.node_state['fav'][nn] = True
+            elif fav == dragName:
+                self.col.conf['savedFilters'][newName] = act
+                del(self.col.conf['savedFilters'][dragName])
+                self.node_state['fav'][newName] = True
 
     def moveModel(self, dragName, newName=""):
         "Rename or Delete models"
@@ -179,6 +197,9 @@ class SidebarTreeWidget(QTreeWidget):
             act = m.addAction("Rename")
             act.triggered.connect(lambda:
                 self._onTreeItemAction(item,"Rename",self._onTreeFavRename))
+            act = m.addAction("Modify")
+            act.triggered.connect(lambda:
+                self._onTreeItemAction(item,"Rename",self._onTreeFavModify))
             act = m.addAction("Delete")
             act.triggered.connect(lambda:
                 self._onTreeItemAction(item,"Delete",self._onTreeFavDelete))
@@ -244,14 +265,25 @@ class SidebarTreeWidget(QTreeWidget):
         self.moveTag(item.fullname,rename=False)
 
     def _onTreeFavDelete(self, item):
-        el=self.browser.form.searchEdit.lineEdit()
+        act=self.col.conf['savedFilters'].get(item.fullname)
+        if not act: return
+        el = self.browser.form.searchEdit.lineEdit()
         el.deleteClicked()
 
     def _onTreeFavRename(self, item):
+        act = self.col.conf['savedFilters'].get(item.fullname)
+        if not act: return
         newName = getOnlyText(_("New search name:"),default=item.fullname)
-        act=self.col.conf['savedFilters'][item.fullname]
-        self.col.conf['savedFilters'][newName]=act
-        del(self.col.conf['savedFilters'][item.fullname])
+        if newName:
+            self.col.conf['savedFilters'][newName] = act
+            del(self.col.conf['savedFilters'][item.fullname])
+
+    def _onTreeFavModify(self, item):
+        act = self.col.conf['savedFilters'].get(item.fullname)
+        if not act: return
+        act = getOnlyText(_("New Search:"), default=act)
+        if act:
+            self.col.conf['savedFilters'][item.fullname] = act
 
     def _onTreeModelRenameLeaf(self, item):
         self.browser.form.searchEdit.lineEdit().setText("")

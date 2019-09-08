@@ -54,7 +54,6 @@ from PyQt4 import QtCore, QtGui as QtWidgets, QtGui
 
 
 ### Included Addons:
-Hierarchical Tags, by Patrice Neff: https://ankiweb.net/shared/info/1089921461  
 Advanced Copy Fields, by Ambriel Angel: https://ankiweb.net/shared/info/1898445115  
 Add-on window search bar, by ijgnd: https://ankiweb.net/shared/info/561945101  
 Card Info Bar for Browser, by ijgnd: https://ankiweb.net/shared/info/2140680811  

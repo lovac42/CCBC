@@ -827,16 +827,22 @@ by clicking on one on the left."""))
         if not saved:
             # Don't add favourites to tree if none saved
             return
-        root = self.CallbackItem(root, _("Searches"), None)
-        root.type = "group"
-        root.fullname = "fav"
-        root.setExpanded(self.sidebarTree.node_state.get("group").get('fav',True))
-        root.setIcon(0, QIcon(":/icons/emblem-favorite-dark.png"))
-        for name, filt in sorted(saved.items()):
-            item = self.CallbackItem(root, name, lambda s=filt: self.setFilter(s))
-            item.type="fav"
-            item.fullname = name
-            item.setIcon(0, QIcon(":/icons/emblem-favorite-dark.png"))
+        favs_tree = {}
+        for fav, filt in sorted(saved.items()):
+            node = fav.split('::')
+            for idx, name in enumerate(node):
+                leaf_tag = '::'.join(node[0:idx + 1])
+                if not favs_tree.get(leaf_tag):
+                    parent = favs_tree['::'.join(node[0:idx])] if idx else root
+                    item = self.CallbackItem(
+                        parent, name,
+                        lambda s=filt: self.setFilter(s),
+                        expanded=self.sidebarTree.node_state.get('fav').get(leaf_tag,True)
+                    )
+                    item.type = "fav"
+                    item.fullname = leaf_tag
+                    item.setIcon(0, QIcon(":/icons/emblem-favorite-dark.png"))
+                    favs_tree[leaf_tag] = item
 
     # Addon: Hierarchical Tags, https://ankiweb.net/shared/download/1089921461
     def _userTagTree(self, root):
