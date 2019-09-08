@@ -126,7 +126,7 @@ class DataModel(QAbstractTableModel):
 
     def search(self, txt, reset=True):
         self.beginReset()
-        t = time.time()
+        # t = time.time()
         # the db progress handler may cause a refresh, so we need to zero out
         # old data first
         self.cards = []
