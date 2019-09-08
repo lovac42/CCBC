@@ -5,11 +5,14 @@
 # Support: https://github.com/lovac42/CCBC
 
 
+import re
 import anki.find
 from anki.lang import ngettext, _
 from aqt.qt import *
 from aqt.utils import getOnlyText, askUser, showWarning, showInfo
+from anki.utils import intTime, ids2str
 from anki.errors import DeckRenameError
+from anki.hooks import runHook
 
 
 class SidebarTreeWidget(QTreeWidget):
@@ -183,6 +186,10 @@ class SidebarTreeWidget(QTreeWidget):
             act = m.addAction("Delete")
             act.triggered.connect(lambda:
                 self._onTreeItemAction(item,"Delete",self._onTreeDeckDelete))
+            m.addSeparator()
+            act = m.addAction("Convert to tags")
+            act.triggered.connect(lambda:
+                self._onTreeItemAction(item,"Delete",self._onTreeDeck2Tag))
         elif item.type == "tag":
             act = m.addAction("Rename Leaf")
             act.triggered.connect(lambda:
@@ -213,8 +220,8 @@ class SidebarTreeWidget(QTreeWidget):
             act = m.addAction("Delete")
             act.triggered.connect(lambda:
                 self._onTreeItemAction(item,"Delete",self._onTreeModelDelete))
-        else:
-            return
+
+        runHook("Blitzkrieg.treeMenu", self, item, m)
         m.popup(QCursor.pos())
 
 
@@ -263,6 +270,43 @@ class SidebarTreeWidget(QTreeWidget):
 
     def _onTreeTagDelete(self, item):
         self.moveTag(item.fullname,rename=False)
+
+    def _onTreeDeck2Tag(self, item):
+        msg = _("Convert all notes in deck/subdecks to tags?")
+        if not askUser(msg, parent=self, defaultno=True):
+            return
+
+        self.browser.editor.saveNow()
+        self.browser.editor.setNote(None)
+        self.browser.singleCard=False
+
+        f = anki.find.Finder(self.col)
+        itemDid=self.col.decks.byName(item.fullname)["id"]
+        actv=self.col.decks.children(itemDid)
+        actv.append((item.fullname,itemDid))
+
+        self.mw.checkpoint("Convert %s to tag"%item.type)
+        for name,did in actv:
+            nids = f.findNotes('''"deck:%s" -"deck:%s::*"'''%(name,name))
+            tagName = re.sub(r"\s*(::)?\s*","\g<1>",name)
+            self.col.tags.bulkAdd(nids, tagName)
+
+            cids = self.col.db.list("select id from cards where (did=? or odid=?)", did, did)
+            self.col.sched.remFromDyn(cids)
+            self.col.db.execute(
+                "update cards set usn=?, mod=?, did=? where id in %s"%ids2str(cids),
+                self.col.usn(), intTime(), itemDid
+            )
+
+        #prevent runons due to random sorting
+        actv.pop()
+        for name,did in actv:
+            self.col.decks.rem(did)
+
+        self.col.tags.flush()
+        self.col.tags.registerNotes()
+        self.mw.requireReset()
+
 
     def _onTreeFavDelete(self, item):
         act=self.col.conf['savedFilters'].get(item.fullname)
@@ -315,7 +359,7 @@ class SidebarTreeWidget(QTreeWidget):
             msg = _("Delete this note type and all its cards?")
         else:
             msg = _("Delete this unused note type?")
-        if not askUser(msg, parent=self):
+        if not askUser(msg, parent=self, defaultno=True):
             return
         self.col.models.rem(model)
         model = None
