@@ -11,7 +11,7 @@ from anki.lang import ngettext, _
 from aqt.qt import *
 from aqt.utils import getOnlyText, askUser, showWarning, showInfo
 from anki.utils import intTime, ids2str
-from anki.errors import DeckRenameError
+from anki.errors import DeckRenameError, AnkiError
 from anki.hooks import runHook
 
 
@@ -172,6 +172,7 @@ class SidebarTreeWidget(QTreeWidget):
             self.col.tags.bulkAdd(ids,newName)
             self.node_state['tag'][newName] = True
         self.col.tags.bulkRem(ids,dragName)
+        self.col.tags.save()
         self.col.tags.flush()
         self.col.tags.registerNotes()
         self.browser.setupHooks()
@@ -297,18 +298,21 @@ class SidebarTreeWidget(QTreeWidget):
         deck = getOnlyText(_("Name for deck:"),default=item.fullname+"::")
         if deck:
             self.col.decks.id(deck)
+            self.col.decks.save()
             self.col.decks.flush()
             self.mw.reset(True)
 
     def _onTreeDeckDelete(self, item):
         did = self.col.decks.byName(item.fullname)["id"]
         self.mw.deckBrowser._delete(did)
+        self.col.decks.save()
         self.col.decks.flush()
         self.mw.reset(True)
 
     def _onTreeDeckRename(self, item):
         did = self.col.decks.byName(item.fullname)["id"]
         self.mw.deckBrowser._rename(did)
+        self.col.decks.save()
         self.col.decks.flush()
         self.mw.reset(True)
 
@@ -361,7 +365,9 @@ class SidebarTreeWidget(QTreeWidget):
             self.col.decks.rem(did,childrenToo=False)
             self.mw.progress.update(label=name)
 
+        self.col.decks.save()
         self.col.decks.flush()
+        self.col.tags.save()
         self.col.tags.flush()
         self.col.tags.registerNotes()
         self.mw.requireReset()
@@ -390,7 +396,9 @@ class SidebarTreeWidget(QTreeWidget):
         for tag in self.col.tags.all():
             if tag.startswith(parent + "::"):
                 tag2Deck(tag)
+        self.col.decks.save()
         self.col.decks.flush()
+        self.col.tags.save()
         self.col.tags.flush()
         self.col.tags.registerNotes()
         self.mw.requireReset()
@@ -447,10 +455,14 @@ class SidebarTreeWidget(QTreeWidget):
             msg = _("Delete this note type and all its cards?")
         else:
             msg = _("Delete this unused note type?")
-        if not askUser(msg, parent=self, defaultno=True):
-            return
-        self.col.models.rem(model)
-        model = None
+        if askUser(msg, parent=self, defaultno=True):
+            try:
+                self.col.models.rem(model)
+            except AnkiError:
+                #user says no to full sync requirement
+                return
+
+        self.col.models.save()
         self.col.models.flush()
         self.browser.setupTable()
         self.browser.model.reset()
