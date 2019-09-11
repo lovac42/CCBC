@@ -8,7 +8,7 @@ import re
 
 from aqt.qt import *
 from anki.consts import *
-from . import aqt
+import aqt
 from anki.sound import playFromText, clearAudioQueue
 from aqt.utils import saveGeom, restoreGeom, getBase, mungeQA,\
     showInfo, askUser, getOnlyText, \
