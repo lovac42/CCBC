@@ -18,11 +18,13 @@ from anki.hooks import runHook
 class SidebarTreeWidget(QTreeWidget):
     node_state = { # True for open, False for closed
         #Decks are handled per deck settings
-        'group': {}, 'tag': {}, 'fav': {}, 'model': {},
+        'group': {}, 'tag': {}, 'fav': {},
+        'model': {}, 'dyn': {}, 'deck': None,
     }
 
     marked = {
-        'group': {}, 'fav': {}, 'deck': {}, 'model': {}, 'tag': {},
+        'group': {}, 'tag': {}, 'fav': {},
+        'model': {}, 'dyn': {}, 'deck': {},
     }
 
     def __init__(self, parent):
@@ -57,7 +59,7 @@ class SidebarTreeWidget(QTreeWidget):
         try:
             exp = item.isExpanded()
             self.node_state[item.type][item.fullname] = exp
-        except: pass
+        except: pass #item type is a deck, which is handled elsewhere
 
     def dropMimeData(self, parent, row, data, action):
         # Dealing with qt serialized data is a headache,
@@ -69,7 +71,7 @@ class SidebarTreeWidget(QTreeWidget):
 
     def dropEvent(self, event):
         dragItem = event.source().currentItem()
-        if dragItem.type not in ("tag","deck","model","fav"):
+        if dragItem.type not in self.node_state:
             event.setDropAction(Qt.IgnoreAction)
             event.accept()
             return
@@ -82,7 +84,7 @@ class SidebarTreeWidget(QTreeWidget):
                 dropName = None #no parent
             self.mw.checkpoint("Dragged "+dragItem.type)
             parse=self.col.decks #used for parsing '::' separators
-            if dragItem.type == "deck":
+            if dragItem.type in ("deck", "dyn"):
                 self._deckDropEvent(dragName,dropName)
             elif dragItem.type == "tag":
                 self._strDropEvent(dragName,dropName,self.moveTag)
@@ -193,13 +195,12 @@ class SidebarTreeWidget(QTreeWidget):
                 act = m.addAction("Manage Model")
                 act.triggered.connect(self.onManageModel)
 
-        elif item.type == "deck":
+        elif item.type in ("deck", "dyn"):
             act = m.addAction("Rename")
             act.triggered.connect(lambda:
                 self._onTreeItemAction(item,"Rename",self._onTreeDeckRename))
 
-            sel = self.col.decks.byName(item.fullname)
-            if sel['dyn']:
+            if item.type=='dyn':
                 act = m.addAction("Empty")
                 act.triggered.connect(lambda:
                     self._onTreeItemAction(item,"Empty",self._onTreeDeckEmpty))
@@ -277,7 +278,7 @@ class SidebarTreeWidget(QTreeWidget):
 
         if item.type not in ("group","sys"):
             m.addSeparator()
-            if item.type in ("tag","deck"):
+            if item.type in ("tag","deck","dyn"):
                 act = m.addAction("Pin item")
                 act.triggered.connect(lambda:
                     self._onTreeItemAction(item,"Pinned",self._onTreePin))
