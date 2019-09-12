@@ -862,17 +862,21 @@ by clicking on one on the left."""))
                 leaf_tag = '::'.join(node[0:idx + 1])
                 if not tags_tree.get(leaf_tag):
                     parent = tags_tree['::'.join(node[0:idx])] if idx else root
+                    exp = self.sidebarTree.node_state.get('tag').get(leaf_tag,False)
                     item = self.CallbackItem(
                         parent, name,
                         lambda p=leaf_tag: self.setFilter("tag",p),
-                        expanded=self.sidebarTree.node_state.get('tag').get(leaf_tag,False)
+                        expanded=exp
                     )
                     item.type = "tag"
                     item.fullname = leaf_tag
                     item.setIcon(0, QIcon(":/icons/anki-tag.png"))
                     if self.sidebarTree.marked['tag'].get(leaf_tag, False):
                         item.setBackground(0, QBrush(Qt.yellow))
+                    elif exp and '::' not in leaf_tag:
+                        item.setBackground(0, QBrush(QColor(0,0,10,10)))
                     tags_tree[leaf_tag] = item
+
 
     def _decksTree(self, root):
         root = self.CallbackItem(root, _("Decks"), None)
