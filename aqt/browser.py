@@ -842,6 +842,8 @@ by clicking on one on the left."""))
                     item.type = "fav"
                     item.fullname = leaf_tag
                     item.setIcon(0, QIcon(":/icons/emblem-favorite-dark.png"))
+                    if self.sidebarTree.marked['fav'].get(leaf_tag, False):
+                        item.setBackground(0, QBrush(Qt.yellow))
                     favs_tree[leaf_tag] = item
 
     # Addon: Hierarchical Tags, https://ankiweb.net/shared/download/1089921461
@@ -868,6 +870,8 @@ by clicking on one on the left."""))
                     item.type = "tag"
                     item.fullname = leaf_tag
                     item.setIcon(0, QIcon(":/icons/anki-tag.png"))
+                    if self.sidebarTree.marked['tag'].get(leaf_tag, False):
+                        item.setBackground(0, QBrush(Qt.yellow))
                     tags_tree[leaf_tag] = item
 
     def _decksTree(self, root):
@@ -887,6 +891,10 @@ by clicking on one on the left."""))
                 item.type = "deck"
                 item.fullname = head + g[0]
                 item.setIcon(0, QIcon(":/icons/deck16.png"))
+                if self.sidebarTree.marked['deck'].get(item.fullname, False):
+                    item.setBackground(0, QBrush(Qt.yellow))
+                if self.col.decks.byName(item.fullname)['dyn']:
+                    item.setForeground(0, QBrush(Qt.blue))
                 newhead = head + g[0] + "::"
                 fillGroups(item, g[5], newhead)
         fillGroups(root, grps)
@@ -912,6 +920,8 @@ by clicking on one on the left."""))
                     item.type = "model"
                     item.fullname = leaf_model
                     item.setIcon(0, QIcon(":/icons/product_design.png"))
+                    if self.sidebarTree.marked['model'].get(leaf_model, False):
+                        item.setBackground(0, QBrush(Qt.yellow))
                     models_tree[leaf_model] = item
 
     # Info
