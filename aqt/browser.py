@@ -898,6 +898,8 @@ by clicking on one on the left."""))
                     item.setForeground(0, QBrush(Qt.blue))
                     item.type = "dyn"
                 else:
+                    if g[1]==1: #default deck
+                        item.setForeground(0, QBrush(Qt.darkRed))
                     item.type = "deck"
                 if self.sidebarTree.marked[item.type].get(item.fullname, False):
                     item.setBackground(0, QBrush(Qt.yellow))
