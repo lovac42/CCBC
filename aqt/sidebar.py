@@ -269,7 +269,7 @@ class SidebarTreeWidget(QTreeWidget):
         # rename children
         for tag in self.col.tags.all():
             if tag.startswith(dragName + "::"):
-                ids = f.findNotes("tag:"+tag)
+                ids = f.findNotes('"tag:%s"'%tag)
                 if rename:
                     nn = tag.replace(dragName+"::", newName+"::", 1)
                     self.col.tags.bulkAdd(ids,nn)
@@ -277,7 +277,7 @@ class SidebarTreeWidget(QTreeWidget):
                 self.col.tags.bulkRem(ids,tag)
                 self.mw.progress.update(label=tag)
         # rename parent
-        ids = f.findNotes("tag:"+dragName)
+        ids = f.findNotes('"tag:%s"'%dragName)
         if rename:
             self.col.tags.bulkAdd(ids,newName)
             self.node_state['tag'][newName] = True
@@ -439,6 +439,7 @@ class SidebarTreeWidget(QTreeWidget):
             return
 
         f = anki.find.Finder(self.col)
+        self.browser.form.searchEdit.lineEdit().setText("")
         parentDid = self.col.decks.byName(item.fullname)["id"]
         actv = self.col.decks.children(parentDid)
         actv = sorted(actv, key=lambda t: t[0])
@@ -473,13 +474,13 @@ class SidebarTreeWidget(QTreeWidget):
     def _onTreeTag2Deck(self, item):
         def tag2Deck(tag):
             did = self.col.decks.id(tag)
-            cids = f.findCards("tag:"+tag)
+            cids = f.findCards('"tag:%s"'%tag)
             self.col.sched.remFromDyn(cids)
             self.col.db.execute(
                 "update cards set usn=?, mod=?, did=? where id in %s"%ids2str(cids),
                 self.col.usn(), intTime(), did
             )
-            nids = f.findNotes("tag:"+tag)
+            nids = f.findNotes('"tag:%s"'%tag)
             self.col.tags.bulkRem(nids,tag)
             self.mw.progress.update(label=tag)
 
@@ -488,6 +489,7 @@ class SidebarTreeWidget(QTreeWidget):
             return
 
         f = anki.find.Finder(self.col)
+        self.browser.form.searchEdit.lineEdit().setText("")
         parent = item.fullname
         tag2Deck(parent)
         for tag in self.col.tags.all():
