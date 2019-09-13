@@ -829,7 +829,25 @@ by clicking on one on the left."""))
         favs_tree = {}
         for fav, filt in sorted(saved.items()):
             node = fav.split('::')
+            ico = "emblem-favorite-dark.png"
+            type = "fav"
+            fname = None
             for idx, name in enumerate(node):
+                if node[0]=='Pinned' and idx!=0:
+                    if filt.startswith('"dyn:'):
+                        type = "pinDyn"
+                        ico = "deck16.png"
+                        fname = filt[5:-1]
+                        filt='"deck'+filt[4:]
+                    elif filt.startswith('"deck:'):
+                        type = "pinDeck"
+                        ico = "deck16.png"
+                        fname = filt[6:-1]
+                    elif filt.startswith('"tag:'):
+                        type = "pinTag"
+                        ico = "anki-tag.png"
+                        fname = filt[5:-1]
+
                 leaf_tag = '::'.join(node[0:idx + 1])
                 if not favs_tree.get(leaf_tag):
                     parent = favs_tree['::'.join(node[0:idx])] if idx else root
@@ -838,10 +856,11 @@ by clicking on one on the left."""))
                         lambda s=filt: self.setFilter(s),
                         expanded=self.sidebarTree.node_state.get('fav').get(leaf_tag,True)
                     )
-                    item.type = "fav"
-                    item.fullname = leaf_tag
-                    item.setIcon(0, QIcon(":/icons/emblem-favorite-dark.png"))
-                    if self.sidebarTree.marked['fav'].get(leaf_tag, False):
+                    item.type = type
+                    item.fullname = fname or leaf_tag
+                    item.favname = leaf_tag
+                    item.setIcon(0, QIcon(":/icons/"+ico))
+                    if self.sidebarTree.marked[type].get(leaf_tag, False):
                         item.setBackground(0, QBrush(Qt.yellow))
                     favs_tree[leaf_tag] = item
 
