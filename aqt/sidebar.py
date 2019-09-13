@@ -7,6 +7,7 @@
 
 import re
 import anki.find
+import aqt
 from anki.lang import ngettext, _
 from aqt.qt import *
 from aqt.utils import getOnlyText, askUser, showWarning, showInfo
@@ -51,23 +52,26 @@ class SidebarTreeWidget(QTreeWidget):
               # type 1: non-folder path, actual item
         self.MENU_ITEMS = {
             "tag":(
+                (0,"Select All",None,self._onTreeTagSelectAll),
+                (0,"Add Notes",None,self._onTreeTagAddCard),
                 (0,"Rename Leaf","Rename",self._onTreeTagRenameLeaf),
                 (0,"Rename Branch","Rename",self._onTreeTagRenameBranch),
                 (0,"Delete","Delete",self._onTreeTagDelete),
                 (-1,),
-                (0,"Pin item","Pinned",self._onTreePin),
-                (0,"Mark item (tmp)","Marked",self._onTreeMark),
+                (0,"Pin item",None,self._onTreePin),
+                (0,"Mark item (tmp)",None,self._onTreeMark),
                 (0,"Convert to decks","Convert",self._onTreeTag2Deck),
             ),
             "deck":(
                 (0,"Rename","Rename",self._onTreeDeckRename),
+                (0,"Add Notes",None,self._onTreeDeckAddCard),
                 (0,"Add Subdeck","Add",self._onTreeDeckAdd),
                 (0,"Options","Options",self._onTreeDeckOptions),
                 (0,"Export","Export",self._onTreeDeckExport),
                 (0,"Delete","Delete",self._onTreeDeckDelete),
                 (-1,),
-                (0,"Pin item","Pinned",self._onTreePin),
-                (0,"Mark item (tmp)","Marked",self._onTreeMark),
+                (0,"Pin item",None,self._onTreePin),
+                (0,"Mark item (tmp)",None,self._onTreeMark),
                 (0,"Convert to tags","Convert",self._onTreeDeck2Tag),
             ),
             "dyn":(
@@ -78,15 +82,15 @@ class SidebarTreeWidget(QTreeWidget):
                 (0,"Export","Export",self._onTreeDeckExport),
                 (0,"Delete","Delete",self._onTreeDeckDelete),
                 (-1,),
-                (0,"Pin item","Pinned",self._onTreePin),
-                (0,"Mark item (tmp)","Marked",self._onTreeMark),
+                (0,"Pin item",None,self._onTreePin),
+                (0,"Mark item (tmp)",None,self._onTreeMark),
             ),
             "fav":(
                 (0,"Rename","Rename",self._onTreeFavRename),
                 (0,"Modify","Modify",self._onTreeFavModify),
                 (0,"Delete","Delete",self._onTreeFavDelete),
                 (-1,),
-                (0,"Mark item (tmp)","Marked",self._onTreeMark),
+                (0,"Mark item (tmp)",None,self._onTreeMark),
             ),
             "model":(
                 (0,"Rename Leaf","Rename",self._onTreeModelRenameLeaf),
@@ -96,13 +100,17 @@ class SidebarTreeWidget(QTreeWidget):
                 (1,"LaTeX Options","Edit",self.onTreeModelOptions),
                 (1,"Delete","Delete",self._onTreeModelDelete),
                 (-1,),
-                (0,"Mark item (tmp)","Marked",self._onTreeMark),
+                (0,"Mark item (tmp)",None,self._onTreeMark),
             ),
         }
 
 
     def keyPressEvent(self, evt):
         if evt.key() in (Qt.Key_Return, Qt.Key_Enter):
+            item = self.currentItem()
+            self.onTreeClick(item, 0)
+        elif evt.key() in (Qt.Key_Down, Qt.Key_Up):
+            super().keyPressEvent(evt)
             item = self.currentItem()
             self.onTreeClick(item, 0)
         else:
@@ -260,7 +268,18 @@ class SidebarTreeWidget(QTreeWidget):
             pass #skip
 
         elif item.type == "group":
-            if item.fullname == "model":
+            if item.fullname == "deck":
+                act = m.addAction("Add Deck")
+                act.triggered.connect(lambda:
+                    self._onTreeItemAction(item,"Add",self._onTreeDeckAdd))
+                act = m.addAction("Empty All Filters")
+                act.triggered.connect(lambda:
+                    self._onTreeItemAction(item,"Empty",self.onEmptyAll))
+                act = m.addAction("Rebuild All Filters")
+                act.triggered.connect(lambda:
+                    self._onTreeItemAction(item,"Rebuild",self.onRebuildAll))
+
+            elif item.fullname == "model":
                 act = m.addAction("Manage Model")
                 act.triggered.connect(self.onManageModel)
 
@@ -283,7 +302,8 @@ class SidebarTreeWidget(QTreeWidget):
         self.browser.editor.saveNow()
         self.browser.editor.setNote(None)
         self.browser.singleCard=False
-        self.mw.checkpoint(action+" "+item.type)
+        if action:
+            self.mw.checkpoint(action+" "+item.type)
         self.browser.teardownHooks() #RuntimeError: CallbackItem has been deleted
         self.mw.progress.start(label="Sidebar Action")
         try:
@@ -307,8 +327,14 @@ class SidebarTreeWidget(QTreeWidget):
         self.mw.reset()
 
     def _onTreeDeckOptions(self, item):
-        sel = self.col.decks.byName(item.fullname)
-        self.mw.onDeckConf(sel)
+        deck = self.col.decks.byName(item.fullname)
+        # self.mw.onDeckConf(sel)
+        if deck['dyn']:
+            import aqt.dyndeckconf
+            aqt.dyndeckconf.DeckConf(self.mw, deck=deck, parent=self.browser)
+        else:
+            import aqt.deckconf
+            aqt.deckconf.DeckConf(self.mw, deck, self.browser)
         self.mw.reset(True)
 
     def _onTreeDeckExport(self, item):
@@ -317,7 +343,8 @@ class SidebarTreeWidget(QTreeWidget):
         self.mw.reset(True)
 
     def _onTreeDeckAdd(self, item):
-        deck = getOnlyText(_("Name for deck:"),default=item.fullname+"::")
+        default=item.fullname+"::" if item.type=='deck' else ''
+        deck = getOnlyText(_("Name for deck:"),default=default)
         if deck:
             self.col.decks.id(deck)
             self.col.decks.save()
@@ -337,6 +364,22 @@ class SidebarTreeWidget(QTreeWidget):
         self.col.decks.save()
         self.col.decks.flush()
         self.mw.reset(True)
+
+    def _onTreeDeckAddCard(self, item):
+        from aqt import addcards
+        d = self.col.decks.byName(item.fullname)
+        self.col.decks.select(d["id"])
+        diag = aqt.dialogs.open("AddCards", self.mw)
+
+    def _onTreeTagAddCard(self, item):
+        from aqt import addcards
+        diag = aqt.dialogs.open("AddCards", self.mw)
+        diag.editor.tags.setText(item.fullname)
+
+    def _onTreeTagSelectAll(self, item):
+        el = self.browser.form.searchEdit.lineEdit()
+        el.setText(el.text()+"*")
+        self.browser.onSearch()
 
     def _onTreeTagRenameLeaf(self, item):
         oldNameArr = item.fullname.split("::")
@@ -493,7 +536,7 @@ class SidebarTreeWidget(QTreeWidget):
         self.browser.form.searchEdit.lineEdit().setText("")
         m = AddModel(self.mw, self.browser).get()
         if m:
-            #model is created regardless
+            #model is already created
             txt = getOnlyText(_("Name:"), default=item.fullname+'::')
             if txt:
                 m['name'] = txt
@@ -550,6 +593,16 @@ class SidebarTreeWidget(QTreeWidget):
             item.type,item.fullname.split("::")[-1])
         search = '"%s:%s"'%(item.type,item.fullname)
         self.col.conf['savedFilters'][name] = search
+
+    def onEmptyAll(self, item):
+        for d in self.col.decks.all():
+            if d['dyn']:
+                self.col.sched.emptyDyn(d['id'])
+
+    def onRebuildAll(self, item):
+        for d in self.col.decks.all():
+            if d['dyn']:
+                self.col.sched.rebuildDyn(d['id'])
 
     def hasValue(self, item):
         if item.type == "fav":
