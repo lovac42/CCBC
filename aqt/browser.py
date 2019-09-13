@@ -367,6 +367,7 @@ class Browser(QMainWindow):
         self.form.splitter.setChildrenCollapsible(False)
         self.card = None
         self.dropItem = None
+        self.mw.col.tags.registerNotes() #clean up tags
         self.setupToolbar()
         self.setupColumns()
         self.setupTable()
