@@ -18,8 +18,8 @@ import time
 
 class ExportDialog(QDialog):
 
-    def __init__(self, mw, did=None):
-        QDialog.__init__(self, mw, Qt.Window)
+    def __init__(self, mw, did=None, parent=None):
+        QDialog.__init__(self, parent or mw, Qt.Window)
         self.mw = mw
         self.col = mw.col
         self.frm = aqt.forms.exporting.Ui_ExportDialog()
