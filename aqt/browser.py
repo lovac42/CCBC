@@ -525,8 +525,6 @@ class Browser(QMainWindow):
 
     def onSearchActivated(self): #v2.1
         return self.onSearch()
-    def search(self): #v2.1
-        return self.onSearch(False)
 
     def onSearch(self, reset=True):
         "Careful: if reset is true, the current note is saved."
