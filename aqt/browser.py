@@ -822,7 +822,7 @@ by clicking on one on the left."""))
         return root
 
     def _favTree(self, root):
-        saved = self.col.conf.get('savedFilters', [])
+        saved = self.col.conf.get('savedFilters', {})
         if not saved:
             # Don't add favourites to tree if none saved
             return
@@ -831,11 +831,13 @@ by clicking on one on the left."""))
             node = fav.split('::')
             ico = "emblem-favorite-dark.png"
             type = "fav"
-            fname = None
+            fname = color = None
             for idx, name in enumerate(node):
                 if node[0]=='Pinned':
+                    # color=QColor(5,150,5,255) #can't find a good color
                     if idx==0:
                         type = "pin"
+                        ico = "emblem-favorite.png"
                     elif filt.startswith('"tag:'):
                         type = "pinTag"
                         ico = "anki-tag.png"
@@ -862,6 +864,8 @@ by clicking on one on the left."""))
                     item.fullname = fname or leaf_tag
                     item.favname = leaf_tag
                     item.setIcon(0, QIcon(":/icons/"+ico))
+                    # if color and idx:
+                        # item.setForeground(0, QBrush(color))
                     if self.sidebarTree.marked[type].get(leaf_tag, False):
                         item.setBackground(0, QBrush(Qt.yellow))
                     favs_tree[leaf_tag] = item
