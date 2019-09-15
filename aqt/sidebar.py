@@ -62,8 +62,6 @@ class SidebarTreeWidget(QTreeWidget):
                 (-1,),
                 (1,"Rename","Rename",self._onTreeFavRename),
                 (1,"Unpin",None,self._onTreePinDelete),
-                (-1,),
-                (0,"Mark item (tmp)",None,self._onTreeMarkPinned),
             ),
             "pinDeck":(
                 (1,"Add Notes",None,self._onTreeDeckAddCard),
@@ -72,8 +70,6 @@ class SidebarTreeWidget(QTreeWidget):
                 (-1,),
                 (1,"Rename","Rename",self._onTreeFavRename),
                 (1,"Unpin",None,self._onTreePinDelete),
-                (-1,),
-                (0,"Mark item (tmp)",None,self._onTreeMarkPinned),
             ),
             "pinTag":(
                 (1,"Show All",None,self._onTreeTagSelectAll),
@@ -81,8 +77,6 @@ class SidebarTreeWidget(QTreeWidget):
                 (-1,),
                 (1,"Rename","Rename",self._onTreeFavRename),
                 (1,"Unpin",None,self._onTreePinDelete),
-                (-1,),
-                (0,"Mark item (tmp)",None,self._onTreeMarkPinned),
             ),
             "tag":(
                 (0,"Show All",None,self._onTreeTagSelectAll),
@@ -92,7 +86,6 @@ class SidebarTreeWidget(QTreeWidget):
                 (0,"Delete","Delete",self._onTreeTagDelete),
                 (-1,),
                 (0,"Pin item",None,self._onTreePin),
-                (0,"Mark item (tmp)",None,self._onTreeMark),
                 (0,"Convert to decks","Convert",self._onTreeTag2Deck),
             ),
             "deck":(
@@ -104,7 +97,6 @@ class SidebarTreeWidget(QTreeWidget):
                 (0,"Delete","Delete",self._onTreeDeckDelete),
                 (-1,),
                 (0,"Pin item",None,self._onTreePin),
-                (0,"Mark item (tmp)",None,self._onTreeMark),
                 (0,"Convert to tags","Convert",self._onTreeDeck2Tag),
             ),
             "dyn":(
@@ -116,14 +108,11 @@ class SidebarTreeWidget(QTreeWidget):
                 (0,"Delete","Delete",self._onTreeDeckDelete),
                 (-1,),
                 (0,"Pin item",None,self._onTreePin),
-                (0,"Mark item (tmp)",None,self._onTreeMark),
             ),
             "fav":(
                 (1,"Rename","Rename",self._onTreeFavRename),
                 (1,"Modify","Modify",self._onTreeFavModify),
                 (1,"Delete","Delete",self._onTreeFavDelete),
-                (-1,),
-                (0,"Mark item (tmp)",None,self._onTreeMark),
             ),
             "model":(
                 (0,"Rename Leaf","Rename",self._onTreeModelRenameLeaf),
@@ -132,8 +121,6 @@ class SidebarTreeWidget(QTreeWidget):
                 (1,"Edit Fields","Edit",self.onTreeModelFields),
                 (1,"LaTeX Options","Edit",self.onTreeModelOptions),
                 (1,"Delete","Delete",self._onTreeModelDelete),
-                (-1,),
-                (0,"Mark item (tmp)",None,self._onTreeMark),
             ),
         }
 
@@ -165,6 +152,7 @@ class SidebarTreeWidget(QTreeWidget):
         exp = item.isExpanded()
         self.node_state[item.type][item.fullname] = exp
         if item.type == 'tag' and item.childCount() \
+        and not self.marked['tag'].get(item.fullname) \
         and '::' not in item.fullname:
             color = QColor(0,0,10,10) if exp else Qt.transparent
             item.setBackground(0, QBrush(color))
@@ -307,6 +295,16 @@ class SidebarTreeWidget(QTreeWidget):
         if item.type == "sys":
             pass #skip
 
+        elif self.mw.app.keyboardModifiers()==Qt.ShiftModifier:
+            act = m.addAction("Mark/Unmark item (tmp)")
+            act.triggered.connect(lambda:self._onTreeMark(item))
+            if item.childCount():
+                m.addSeparator()
+                act = m.addAction("Collapse All")
+                act.triggered.connect(lambda:self._expandAllChildren(item))
+                act = m.addAction("Expand All")
+                act.triggered.connect(lambda:self._expandAllChildren(item,True))
+
         elif item.type == "group":
             if item.fullname == "tag":
                 act = m.addAction("Refresh")
@@ -320,7 +318,7 @@ class SidebarTreeWidget(QTreeWidget):
                 act.triggered.connect(self.onEmptyAll)
                 act = m.addAction("Rebuild All Filters")
                 act.triggered.connect(self.onRebuildAll)
-                up = self.col.conf.get('Blitzkrieg.updateMW', False)
+                up = self.col.conf.get('Blitzkrieg.updateOV', False)
                 act = m.addAction("Auto Update Overview")
                 act.setCheckable(True)
                 act.setChecked(up)
@@ -330,6 +328,7 @@ class SidebarTreeWidget(QTreeWidget):
                 act = m.addAction("Manage Model")
                 act.triggered.connect(self.onManageModel)
 
+            m.addSeparator()
             act = m.addAction("Collapse All")
             act.triggered.connect(lambda:self._expandAllChildren(item))
             act = m.addAction("Expand All")
@@ -655,6 +654,9 @@ class SidebarTreeWidget(QTreeWidget):
     def _onTreeMark(self, item):
         tf=not self.marked[item.type].get(item.fullname, False)
         self.marked[item.type][item.fullname]=tf
+        color=Qt.yellow if tf else Qt.transparent
+        item.setBackground(0, QBrush(color))
+        item.setSelected(False)
 
     def _onTreeMarkPinned(self, item):
         tf=not self.marked[item.type].get(item.favname, False)
@@ -705,11 +707,11 @@ class SidebarTreeWidget(QTreeWidget):
         return dragName,dropName
 
     def _toggleMWUpdate(self):
-        up = self.col.conf.get('Blitzkrieg.updateMW', False)
-        self.col.conf['Blitzkrieg.updateMW'] = not up
+        up = self.col.conf.get('Blitzkrieg.updateOV', False)
+        self.col.conf['Blitzkrieg.updateOV'] = not up
 
     def _changeDecks(self, item):
-        up = self.col.conf.get('Blitzkrieg.updateMW', False)
+        up = self.col.conf.get('Blitzkrieg.updateOV', False)
         if up and item.type in ('deck','dyn','pinDeck','pinDyn') \
         and self.mw.state == 'overview':
             d = self.col.decks.byName(item.fullname)
@@ -719,7 +721,6 @@ class SidebarTreeWidget(QTreeWidget):
     def _expandAllChildren(self, item, expanded=False):
         for i in range(item.childCount()):
             itm = item.child(i)
-            itm.setExpanded(expanded)
             if itm.childCount():
                 self._expandAllChildren(itm, expanded)
         item.setExpanded(expanded)
