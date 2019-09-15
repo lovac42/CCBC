@@ -164,12 +164,10 @@ class SidebarTreeWidget(QTreeWidget):
             return
         exp = item.isExpanded()
         self.node_state[item.type][item.fullname] = exp
-        if item.type == 'tag' and '::' not in item.fullname:
-            if exp:
-                item.setBackground(0, QBrush(QColor(0,0,10,10)))
-            else:
-                item.setBackground(0, QBrush(Qt.transparent))
-
+        if item.type == 'tag' and item.childCount() \
+        and '::' not in item.fullname:
+            color = QColor(0,0,10,10) if exp else Qt.transparent
+            item.setBackground(0, QBrush(color))
 
     def dropMimeData(self, parent, row, data, action):
         # Dealing with qt serialized data is a headache,
@@ -283,7 +281,7 @@ class SidebarTreeWidget(QTreeWidget):
                     self.col.tags.bulkAdd(ids,nn)
                     self.node_state['tag'][nn] = True
                 self.col.tags.bulkRem(ids,tag)
-                self.mw.progress.update(label=tag)
+                # self.mw.progress.update(label=tag) #never pops up
         # rename parent
         ids = f.findNotes('"tag:%s"'%dragName)
         if rename:
@@ -332,6 +330,11 @@ class SidebarTreeWidget(QTreeWidget):
                 act = m.addAction("Manage Model")
                 act.triggered.connect(self.onManageModel)
 
+            act = m.addAction("Collapse All")
+            act.triggered.connect(lambda:self._expandAllChildren(item))
+            act = m.addAction("Expand All")
+            act.triggered.connect(lambda:self._expandAllChildren(item,True))
+
         else:
             for itm in self.MENU_ITEMS[item.type]:
                 if itm[0] < 0:
@@ -345,6 +348,7 @@ class SidebarTreeWidget(QTreeWidget):
 
         runHook("Blitzkrieg.treeMenu", self, item, m)
         m.popup(QCursor.pos())
+
 
     def _onTreeItemAction(self, item, action, callback):
         self.browser.editor.saveNow()
@@ -711,3 +715,11 @@ class SidebarTreeWidget(QTreeWidget):
             d = self.col.decks.byName(item.fullname)
             self.col.decks.select(d["id"])
             self.mw.reset(True)
+
+    def _expandAllChildren(self, item, expanded=False):
+        for i in range(item.childCount()):
+            itm = item.child(i)
+            itm.setExpanded(expanded)
+            if itm.childCount():
+                self._expandAllChildren(itm, expanded)
+        item.setExpanded(expanded)
