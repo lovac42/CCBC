@@ -31,6 +31,7 @@ class SidebarTreeWidget(QTreeWidget):
 
     def __init__(self, parent):
         QTreeWidget.__init__(self, parent)
+        self.timer = None
         self.dropItem = None
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
@@ -150,6 +151,8 @@ class SidebarTreeWidget(QTreeWidget):
     def onTreeClick(self, item, col):
         if getattr(item, 'onclick', None):
             item.onclick()
+            self.timer=self.mw.progress.timer(
+                20, lambda:self._changeDecks(item), False)
 
     def onTreeCollapse(self, item):
         """Decks do not call this method"""
@@ -293,6 +296,10 @@ class SidebarTreeWidget(QTreeWidget):
 
 
     def onTreeMenu(self, pos):
+        try: #isRightClick, stop timer
+            self.timer.stop()
+        except: pass
+
         item=self.currentItem()
         if not item or not isinstance(item.type, str):
             return
@@ -312,6 +319,11 @@ class SidebarTreeWidget(QTreeWidget):
                 act = m.addAction("Rebuild All Filters")
                 act.triggered.connect(lambda:
                     self._onTreeItemAction(item,"Rebuild",self.onRebuildAll))
+                up = self.col.conf.get('Blitzkrieg.updateMW', False)
+                act = m.addAction("Auto Update Overview")
+                act.setCheckable(True)
+                act.setChecked(up)
+                act.triggered.connect(self._toggleMWUpdate)
 
             elif item.fullname == "model":
                 act = m.addAction("Manage Model")
@@ -330,7 +342,6 @@ class SidebarTreeWidget(QTreeWidget):
 
         runHook("Blitzkrieg.treeMenu", self, item, m)
         m.popup(QCursor.pos())
-
 
     def _onTreeItemAction(self, item, action, callback):
         self.browser.editor.saveNow()
@@ -683,3 +694,15 @@ class SidebarTreeWidget(QTreeWidget):
         if not dropName and dragItem.type[:3] == "pin":
             dropName="Pinned"
         return dragName,dropName
+
+    def _toggleMWUpdate(self):
+        up = self.col.conf.get('Blitzkrieg.updateMW', False)
+        self.col.conf['Blitzkrieg.updateMW'] = not up
+
+    def _changeDecks(self, item):
+        up = self.col.conf.get('Blitzkrieg.updateMW', False)
+        if up and item.type in ('deck','dyn','pinDeck') \
+        and self.mw.state == 'overview':
+            d = self.col.decks.byName(item.fullname)
+            self.col.decks.select(d["id"])
+            self.mw.reset(True)
