@@ -155,6 +155,7 @@ class SidebarTreeWidget(QTreeWidget):
             return
         exp = item.isExpanded()
         self.node_state[item.type][item.fullname] = exp
+        #highlight parent decks
         if item.type == 'tag' and item.childCount() \
         and not self.marked['tag'].get(item.fullname) \
         and '::' not in item.fullname:
@@ -273,7 +274,6 @@ class SidebarTreeWidget(QTreeWidget):
                     self.col.tags.bulkAdd(ids,nn)
                     self.node_state['tag'][nn] = True
                 self.col.tags.bulkRem(ids,tag)
-                # self.mw.progress.update(label=tag) #never pops up
         # rename parent
         ids = f.findNotes('"tag:%s"'%dragName)
         if rename:
@@ -364,11 +364,9 @@ class SidebarTreeWidget(QTreeWidget):
         if action:
             self.mw.checkpoint(action+" "+item.type)
         self.browser.teardownHooks() #RuntimeError: CallbackItem has been deleted
-        self.mw.progress.start(label="Sidebar Action")
         try:
             callback(item)
         finally:
-            self.mw.progress.finish()
             self.col.setMod()
             self.browser.setupHooks()
             self.browser.onReset()
@@ -471,37 +469,41 @@ class SidebarTreeWidget(QTreeWidget):
         if not askUser(msg, parent=self, defaultno=True):
             return
 
-        f = anki.find.Finder(self.col)
-        self.browser.form.searchEdit.lineEdit().setText("")
-        parentDid = self.col.decks.byName(item.fullname)["id"]
-        actv = self.col.decks.children(parentDid)
-        actv = sorted(actv, key=lambda t: t[0])
-        actv.insert(0,(item.fullname,parentDid))
+        self.mw.progress.start(
+            label=_("Converting decks to tags"))
+        try:
+            f = anki.find.Finder(self.col)
+            self.browser.form.searchEdit.lineEdit().setText("")
+            parentDid = self.col.decks.byName(item.fullname)["id"]
+            actv = self.col.decks.children(parentDid)
+            actv = sorted(actv, key=lambda t: t[0])
+            actv.insert(0,(item.fullname,parentDid))
 
-        self.mw.checkpoint("Convert %s to tag"%item.type)
-        for name,did in actv:
-            #add subdeck tree structure as tags
-            nids = f.findNotes('''"deck:%s" -"deck:%s::*"'''%(name,name))
-            tagName = re.sub(r"\s*(::)?\s*","\g<1>",name)
-            self.col.tags.bulkAdd(nids, tagName)
-            #skip parent or dyn decks
-            if did == parentDid or self.col.decks.get(did)['dyn']:
-                continue
-            #collapse subdecks into one
-            self.col.sched.emptyDyn(None, "odid=%d"%did)
-            self.col.db.execute(
-                "update cards set usn=?, mod=?, did=? where did=?",
-                self.col.usn(), intTime(), parentDid, did
-            )
-            self.col.decks.rem(did,childrenToo=False)
-            self.mw.progress.update(label=name)
-
-        self.col.decks.save()
-        self.col.decks.flush()
-        self.col.tags.save()
-        self.col.tags.flush()
-        self.col.tags.registerNotes()
-        self.mw.requireReset()
+            for name,did in actv:
+                self.mw.progress.update(label=name)
+                #add subdeck tree structure as tags
+                nids = f.findNotes('''"deck:%s" -"deck:%s::*"'''%(name,name))
+                tagName = re.sub(r"\s*(::)\s*","\g<1>",name)
+                tagName = re.sub(r"\s+","_",tagName)
+                self.col.tags.bulkAdd(nids, tagName)
+                #skip parent or dyn decks
+                if did == parentDid or self.col.decks.get(did)['dyn']:
+                    continue
+                #collapse subdecks into one
+                self.col.sched.emptyDyn(None, "odid=%d"%did)
+                self.col.db.execute(
+                    "update cards set usn=?, mod=?, did=? where did=?",
+                    self.col.usn(), intTime(), parentDid, did
+                )
+                self.col.decks.rem(did,childrenToo=False)
+        finally:
+            self.mw.progress.finish()
+            self.col.decks.save()
+            self.col.decks.flush()
+            self.col.tags.save()
+            self.col.tags.flush()
+            self.col.tags.registerNotes()
+            self.mw.requireReset()
 
 
     def _onTreeTag2Deck(self, item):
@@ -515,25 +517,30 @@ class SidebarTreeWidget(QTreeWidget):
             )
             nids = f.findNotes('"tag:%s"'%tag)
             self.col.tags.bulkRem(nids,tag)
-            self.mw.progress.update(label=tag)
 
         msg = _("Convert all tags to deck structure?")
         if not askUser(msg, parent=self, defaultno=True):
             return
 
-        f = anki.find.Finder(self.col)
-        self.browser.form.searchEdit.lineEdit().setText("")
-        parent = item.fullname
-        tag2Deck(parent)
-        for tag in self.col.tags.all():
-            if tag.startswith(parent + "::"):
-                tag2Deck(tag)
-        self.col.decks.save()
-        self.col.decks.flush()
-        self.col.tags.save()
-        self.col.tags.flush()
-        self.col.tags.registerNotes()
-        self.mw.requireReset()
+        self.mw.progress.start(
+            label=_("Converting tags to decks"))
+        try:
+            f = anki.find.Finder(self.col)
+            self.browser.form.searchEdit.lineEdit().setText("")
+            parent = item.fullname
+            tag2Deck(parent)
+            for tag in self.col.tags.all():
+                self.mw.progress.update(label=tag)
+                if tag.startswith(parent + "::"):
+                    tag2Deck(tag)
+        finally:
+            self.mw.progress.finish()
+            self.col.decks.save()
+            self.col.decks.flush()
+            self.col.tags.save()
+            self.col.tags.flush()
+            self.col.tags.registerNotes()
+            self.mw.requireReset()
 
 
     def _onTreePinDelete(self, item):
@@ -797,3 +804,9 @@ class SidebarTreeWidget(QTreeWidget):
     def refresh(self):
         self.found = {}
         self.col.tags.registerNotes()
+        #Clear to create a smooth UX
+        self.marked['group'] = {}
+        self.marked['pinDeck'] = {}
+        self.marked['pinDyn'] = {}
+        self.marked['pinTag'] = {}
+
