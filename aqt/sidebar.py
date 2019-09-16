@@ -24,6 +24,8 @@ class SidebarTreeWidget(QTreeWidget):
         'deck': None, 'Deck': None,
     }
 
+    finder = {} # saved gui options
+
     marked = {
         'group': {}, 'tag': {}, 'fav': {}, 'pinDeck': {}, 'pinDyn': {},
         'model': {}, 'dyn': {}, 'deck': {}, 'pinTag': {}, 'pin': {},
@@ -32,6 +34,8 @@ class SidebarTreeWidget(QTreeWidget):
 
     def __init__(self, parent):
         QTreeWidget.__init__(self, parent)
+        self.found = {}
+        self.browser = None
         self.timer = None
         self.dropItem = None
         self.setDragEnabled(True)
@@ -299,7 +303,7 @@ class SidebarTreeWidget(QTreeWidget):
             act = m.addAction("Mark/Unmark item (tmp)")
             act.triggered.connect(lambda:self._onTreeMark(item))
             act = m.addAction("Refresh")
-            act.triggered.connect(self.col.tags.registerNotes)
+            act.triggered.connect(self.refresh)
             if item.childCount():
                 m.addSeparator()
                 act = m.addAction("Collapse All")
@@ -310,7 +314,7 @@ class SidebarTreeWidget(QTreeWidget):
         elif item.type == "group":
             if item.fullname == "tag":
                 act = m.addAction("Refresh")
-                act.triggered.connect(self.col.tags.registerNotes)
+                act.triggered.connect(self.refresh)
 
             elif item.fullname == "deck":
                 act = m.addAction("Add Deck")
@@ -383,20 +387,24 @@ class SidebarTreeWidget(QTreeWidget):
 
     def _onTreeDeckOptions(self, item):
         deck = self.col.decks.byName(item.fullname)
-        # self.mw.onDeckConf(sel)
-        if deck['dyn']:
-            import aqt.dyndeckconf
-            aqt.dyndeckconf.DeckConf(self.mw, deck=deck, parent=self.browser)
-        else:
-            import aqt.deckconf
-            aqt.deckconf.DeckConf(self.mw, deck, self.browser)
+        try: #new versions
+            if deck['dyn']:
+                import aqt.dyndeckconf
+                aqt.dyndeckconf.DeckConf(self.mw, deck=deck, parent=self.browser)
+            else:
+                import aqt.deckconf
+                aqt.deckconf.DeckConf(self.mw, deck, self.browser)
+        except TypeError: #old versions
+            self.mw.onDeckConf(deck)
         self.mw.reset(True)
 
     def _onTreeDeckExport(self, item):
-        sel = self.col.decks.byName(item.fullname)
-        # self.mw.onExport(did=sel['id'])
-        import aqt.exporting
-        aqt.exporting.ExportDialog(self.mw, sel['id'], self.browser)
+        deck = self.col.decks.byName(item.fullname)
+        try: #new versions
+            import aqt.exporting
+            aqt.exporting.ExportDialog(self.mw, deck['id'], self.browser)
+        except TypeError: #old versions
+            self.mw.onExport(did=deck['id'])
         self.mw.reset(True)
 
     def _onTreeDeckAdd(self, item):
@@ -730,15 +738,62 @@ class SidebarTreeWidget(QTreeWidget):
         item.setExpanded(expanded)
 
     def findRecursive(self, item):
-        TAG_TYPE=item.fullname
+        TAG_TYPE = item.fullname
+        self.found = {}
+        self.found[TAG_TYPE] = {}
+        d = QDialog(self.browser)
+        frm = aqt.forms.findtreeitems.Ui_Dialog()
+        frm.setupUi(d)
+
+        # Restore btn states
+        frm.input.setText(self.finder.get('txt',''))
+        frm.input.setFocus()
+        frm.cb_case.setChecked(self.finder.get('case',0))
+        for idx,func in enumerate((
+            frm.btn_contains, frm.btn_exactly,
+            frm.btn_startswith, frm.btn_endswith,
+            frm.btn_regexp
+        )):
+            func.setChecked(0)
+            if self.finder.get('radio',0)==idx:
+                func.setChecked(2)
+
+        if not d.exec_():
+            return
+
+        txt = frm.input.text()
+        if not txt:
+            return
+        options = Qt.MatchRecursive
+        self.finder['txt'] = txt
+        self.finder['case'] = frm.cb_case.isChecked()
+        if self.finder['case']:
+            options |= Qt.MatchCaseSensitive
+
+        if frm.btn_exactly.isChecked():
+            options |= Qt.MatchExactly
+            self.finder['radio'] = 1
+        elif frm.btn_startswith.isChecked():
+            options |= Qt.MatchStartsWith
+            self.finder['radio'] = 2
+        elif frm.btn_endswith.isChecked():
+            options |= Qt.MatchEndsWith
+            self.finder['radio'] = 3
+        elif frm.btn_regexp.isChecked():
+            options |= Qt.MatchRegExp
+            self.finder['radio'] = 4
+        else:
+            options |= Qt.MatchContains
+            self.finder['radio'] = 0
+
         self._expandAllChildren(item,True)
         self.browser.buildTree()
-        #TODO: Write dialog for complex searching options
-        s = getOnlyText(_("Search for:"))
-        if s:
-            itms=self.findItems(s,
-                Qt.MatchRecursive|Qt.MatchContains
-            )
-            for itm in itms:
-                if itm.type==TAG_TYPE:
-                    itm.setBackground(0, QBrush(Qt.cyan))
+        for itm in self.findItems(txt,options):
+            if itm.type == TAG_TYPE:
+                itm.setBackground(0, QBrush(Qt.cyan))
+                self.found[TAG_TYPE][itm.fullname] = True
+
+
+    def refresh(self):
+        self.found = {}
+        self.col.tags.registerNotes()

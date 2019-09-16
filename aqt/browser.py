@@ -895,7 +895,9 @@ by clicking on one on the left."""))
                     item.type = "tag"
                     item.fullname = leaf_tag
                     item.setIcon(0, QIcon(":/icons/anki-tag.png"))
-                    if self.sidebarTree.marked['tag'].get(leaf_tag, False):
+                    if self.sidebarTree.found.get(item.type,{}).get(leaf_tag, False):
+                        item.setBackground(0, QBrush(Qt.cyan))
+                    elif self.sidebarTree.marked[item.type].get(leaf_tag, False):
                         item.setBackground(0, QBrush(Qt.yellow))
                     elif exp and '::' not in leaf_tag:
                         item.setBackground(0, QBrush(QColor(0,0,10,10)))
@@ -925,7 +927,9 @@ by clicking on one on the left."""))
                     if g[1]==1: #default deck
                         item.setForeground(0, QBrush(Qt.darkRed))
                     item.type = "deck"
-                if self.sidebarTree.marked[item.type].get(item.fullname, False):
+                if self.sidebarTree.found.get(item.type,{}).get(item.fullname, False):
+                    item.setBackground(0, QBrush(Qt.cyan))
+                elif self.sidebarTree.marked[item.type].get(item.fullname, False):
                     item.setBackground(0, QBrush(Qt.yellow))
                 newhead = head + g[0] + "::"
                 fillGroups(item, g[5], newhead)
@@ -952,7 +956,9 @@ by clicking on one on the left."""))
                     item.type = "model"
                     item.fullname = leaf_model
                     item.setIcon(0, QIcon(":/icons/product_design.png"))
-                    if self.sidebarTree.marked['model'].get(leaf_model, False):
+                    if self.sidebarTree.found.get(item.type,{}).get(leaf_model, False):
+                        item.setBackground(0, QBrush(Qt.cyan))
+                    elif self.sidebarTree.marked[item.type].get(leaf_model, False):
                         item.setBackground(0, QBrush(Qt.yellow))
                     models_tree[leaf_model] = item
 

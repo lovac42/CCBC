@@ -21,6 +21,7 @@ __all__ = [
 	"fields",
 	"finddupes",
 	"findreplace",
+	"findtreeitems",
 	"getaddons",
 	"importing",
 	"main",
@@ -61,6 +62,7 @@ from . import exporting
 from . import fields
 from . import finddupes
 from . import findreplace
+from . import findtreeitems
 from . import getaddons
 from . import importing
 from . import main
