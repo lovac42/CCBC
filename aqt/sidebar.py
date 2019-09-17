@@ -748,7 +748,7 @@ class SidebarTreeWidget(QTreeWidget):
         and self.mw.state == 'overview':
             d = self.col.decks.byName(item.fullname)
             self.col.decks.select(d["id"])
-            self.mw.reset(True)
+            self.mw.moveToState("overview")
 
     def _expandAllChildren(self, item, expanded=False):
         for i in range(item.childCount()):
