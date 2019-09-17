@@ -878,8 +878,12 @@ by clicking on one on the left."""))
         root.setExpanded(self.sidebarTree.node_state.get("group").get('tag',True))
         root.setIcon(0, QIcon(":/icons/anki-tag.png"))
         tags_tree = {}
-        for t in sorted(self.col.tags.all(), key=lambda t: t.lower()):
-            if t.lower() == "marked" or t.lower() == "leech":
+
+        SORT = self.col.conf.get('Blitzkrieg.sort_tag',False)
+        TAGS = sorted(self.col.tags.all(),
+                key=lambda t: t.lower() if SORT else t)
+        for t in TAGS:
+            if t.lower() in ("marked","leech"):
                 continue
             node = t.split('::')
             for idx, name in enumerate(node):
@@ -910,7 +914,9 @@ by clicking on one on the left."""))
         root.fullname = "deck"
         root.setExpanded(self.sidebarTree.node_state.get("group").get('deck',True))
         root.setIcon(0, QIcon(":/icons/deck16.png"))
-        grps = self.col.sched.deckDueTree()
+        SORT = self.col.conf.get('Blitzkrieg.sort_deck',False)
+        grps = sorted(self.col.sched.deckDueTree(),
+                key=lambda g: g[0].lower() if SORT else g[0])
         def fillGroups(root, grps, head=""):
             for g in grps:
                 item = self.CallbackItem(
@@ -942,7 +948,10 @@ by clicking on one on the left."""))
         root.setExpanded(self.sidebarTree.node_state.get("group").get('model',False))
         root.setIcon(0, QIcon(":/icons/product_design.png"))
         models_tree = {}
-        for m in sorted(self.col.models.all(), key=itemgetter("name")):
+        SORT = self.col.conf.get('Blitzkrieg.sort_model',False)
+        MODELS = sorted(self.col.models.all(),
+                key=lambda m: m["name"].lower() if SORT else m["name"])
+        for m in MODELS:
             node = m['name'].split('::')
             for idx, name in enumerate(node):
                 leaf_model = '::'.join(node[0:idx + 1])
