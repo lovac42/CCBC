@@ -28,7 +28,7 @@ from anki.consts import *
 from anki.sound import playFromText, clearAudioQueue
 import ccbc.css
 
-from aqt.sidebar import SidebarTreeWidget
+from aqt.sidebar import TagTreeWidget
 
 
 COLOUR_SUSPENDED = "#FFFFB2"
@@ -858,7 +858,7 @@ by clicking on one on the left."""))
                     item = self.CallbackItem(
                         parent, name,
                         lambda s=filt: self.setFilter(s),
-                        expanded=self.sidebarTree.node_state.get(type).get(leaf_tag,True)
+                        expanded=root.node_state.get(type).get(leaf_tag,True)
                     )
                     item.type = type
                     item.fullname = fname or leaf_tag
@@ -866,17 +866,17 @@ by clicking on one on the left."""))
                     item.setIcon(0, QIcon(":/icons/"+ico))
                     # if color and idx:
                         # item.setForeground(0, QBrush(color))
-                    if self.sidebarTree.marked[type].get(leaf_tag, False):
+                    if root.marked[type].get(leaf_tag, False):
                         item.setBackground(0, QBrush(Qt.yellow))
                     favs_tree[leaf_tag] = item
 
     # Addon: Hierarchical Tags, https://ankiweb.net/shared/download/1089921461
     def _userTagTree(self, root):
-        root = self.CallbackItem(root, _("Tags"), None)
-        root.type = "group"
-        root.fullname = "tag"
-        root.setExpanded(self.sidebarTree.node_state.get("group").get('tag',True))
-        root.setIcon(0, QIcon(":/icons/anki-tag.png"))
+        rootNode = self.CallbackItem(root, _("Tags"), None)
+        rootNode.type = "group"
+        rootNode.fullname = "tag"
+        rootNode.setExpanded(root.node_state.get("group").get('tag',True))
+        rootNode.setIcon(0, QIcon(":/icons/anki-tag.png"))
         tags_tree = {}
 
         SORT = self.col.conf.get('Blitzkrieg.sort_tag',False)
@@ -889,8 +889,8 @@ by clicking on one on the left."""))
             for idx, name in enumerate(node):
                 leaf_tag = '::'.join(node[0:idx + 1])
                 if not tags_tree.get(leaf_tag):
-                    parent = tags_tree['::'.join(node[0:idx])] if idx else root
-                    exp = self.sidebarTree.node_state.get('tag').get(leaf_tag,False)
+                    parent = tags_tree['::'.join(node[0:idx])] if idx else rootNode
+                    exp = root.node_state.get('tag').get(leaf_tag,False)
                     item = self.CallbackItem(
                         parent, name,
                         lambda p=leaf_tag: self.setFilter("tag",p),
@@ -899,9 +899,9 @@ by clicking on one on the left."""))
                     item.type = "tag"
                     item.fullname = leaf_tag
                     item.setIcon(0, QIcon(":/icons/anki-tag.png"))
-                    if self.sidebarTree.found.get(item.type,{}).get(leaf_tag, False):
+                    if root.found.get(item.type,{}).get(leaf_tag, False):
                         item.setBackground(0, QBrush(Qt.cyan))
-                    elif self.sidebarTree.marked[item.type].get(leaf_tag, False):
+                    elif root.marked[item.type].get(leaf_tag, False):
                         item.setBackground(0, QBrush(Qt.yellow))
                     elif exp and '::' not in leaf_tag:
                         item.setBackground(0, QBrush(QColor(0,0,10,10)))
@@ -909,18 +909,18 @@ by clicking on one on the left."""))
 
 
     def _decksTree(self, root):
-        root = self.CallbackItem(root, _("Decks"), None)
-        root.type = "group"
-        root.fullname = "deck"
-        root.setExpanded(self.sidebarTree.node_state.get("group").get('deck',True))
-        root.setIcon(0, QIcon(":/icons/deck16.png"))
+        rootNode = self.CallbackItem(root, _("Decks"), None)
+        rootNode.type = "group"
+        rootNode.fullname = "deck"
+        rootNode.setExpanded(root.node_state.get("group").get('deck',True))
+        rootNode.setIcon(0, QIcon(":/icons/deck16.png"))
         SORT = self.col.conf.get('Blitzkrieg.sort_deck',False)
         grps = sorted(self.col.sched.deckDueTree(),
                 key=lambda g: g[0].lower() if SORT else g[0])
-        def fillGroups(root, grps, head=""):
+        def fillGroups(rootNode, grps, head=""):
             for g in grps:
                 item = self.CallbackItem(
-                    root, g[0],
+                    rootNode, g[0],
                     lambda g=g: self.setFilter("deck", head+g[0]),
                     lambda g=g: self.mw.col.decks.collapseBrowser(g[1]),
                     not self.mw.col.decks.get(g[1]).get('browserCollapsed', False))
@@ -933,20 +933,20 @@ by clicking on one on the left."""))
                     if g[1]==1: #default deck
                         item.setForeground(0, QBrush(Qt.darkRed))
                     item.type = "deck"
-                if self.sidebarTree.found.get(item.type,{}).get(item.fullname, False):
+                if root.found.get(item.type,{}).get(item.fullname, False):
                     item.setBackground(0, QBrush(Qt.cyan))
-                elif self.sidebarTree.marked[item.type].get(item.fullname, False):
+                elif root.marked[item.type].get(item.fullname, False):
                     item.setBackground(0, QBrush(Qt.yellow))
                 newhead = head + g[0] + "::"
                 fillGroups(item, g[5], newhead)
-        fillGroups(root, grps)
+        fillGroups(rootNode, grps)
 
     def _modelTree(self, root):
-        root = self.CallbackItem(root, _("Models"), None)
-        root.type = "group"
-        root.fullname = "model"
-        root.setExpanded(self.sidebarTree.node_state.get("group").get('model',False))
-        root.setIcon(0, QIcon(":/icons/product_design.png"))
+        rootNode = self.CallbackItem(root, _("Models"), None)
+        rootNode.type = "group"
+        rootNode.fullname = "model"
+        rootNode.setExpanded(root.node_state.get("group").get('model',False))
+        rootNode.setIcon(0, QIcon(":/icons/product_design.png"))
         models_tree = {}
         SORT = self.col.conf.get('Blitzkrieg.sort_model',False)
         MODELS = sorted(self.col.models.all(),
@@ -956,18 +956,18 @@ by clicking on one on the left."""))
             for idx, name in enumerate(node):
                 leaf_model = '::'.join(node[0:idx + 1])
                 if not models_tree.get(leaf_model):
-                    parent = models_tree['::'.join(node[0:idx])] if idx else root
+                    parent = models_tree['::'.join(node[0:idx])] if idx else rootNode
                     item = self.CallbackItem(
                         parent, name,
                         lambda m=m: self.setFilter("mid", str(m['id'])),
-                        expanded=self.sidebarTree.node_state.get('model').get(leaf_model,False)
+                        expanded=root.node_state.get('model').get(leaf_model,False)
                     )
                     item.type = "model"
                     item.fullname = leaf_model
                     item.setIcon(0, QIcon(":/icons/product_design.png"))
-                    if self.sidebarTree.found.get(item.type,{}).get(leaf_model, False):
+                    if root.found.get(item.type,{}).get(leaf_model, False):
                         item.setBackground(0, QBrush(Qt.cyan))
-                    elif self.sidebarTree.marked[item.type].get(leaf_model, False):
+                    elif root.marked[item.type].get(leaf_model, False):
                         item.setBackground(0, QBrush(Qt.yellow))
                     models_tree[leaf_model] = item
 
@@ -1298,30 +1298,62 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
     ######################################################################
 
     def addTags(self, tags=None, label=None, prompt=None, func=None):
-        if prompt is None:
-            prompt = _("Enter tags to add:")
-        if tags is None:
-            (tags, r) = getTag(self, self.col, prompt)
-        else:
-            r = True
-        if not r:
-            return
-        if func is None:
-            func = self.col.tags.bulkAdd
         if label is None:
             label = _("Add Tags")
-        if label:
+        d = QDialog(self)
+        d.setObjectName("DeleteTags")
+        d.setWindowTitle(label)
+        d.resize(360, 340)
+        tagTree = TagTreeWidget(self,d)
+        tagTree.addTags()
+        line = QLineEdit(d)
+        layout = QVBoxLayout(d)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(QLabel(_("""Select tags and close dialog, green items will be added.""")))
+        layout.addWidget(tagTree)
+        layout.addWidget(QLabel(_("Add Extra Tags:")))
+        layout.addWidget(line)
+        d.exec_()
+
+        txt=line.text()
+        tags=[txt] if txt else []
+        for k,v in tagTree.node.items():
+            if v: tags.append(k)
+        if tags:
             self.mw.checkpoint(label)
-        self.model.beginReset()
-        func(self.selectedNotes(), tags)
-        self.model.endReset()
-        self.mw.requireReset()
+            self.model.beginReset()
+            nids = self.selectedNotes()
+            self.col.tags.bulkAdd(nids," ".join(tags))
+            self.model.endReset()
+            self.mw.requireReset()
 
     def deleteTags(self, tags=None, label=None):
         if label is None:
             label = _("Delete Tags")
-        self.addTags(tags, label, _("Enter tags to delete:"),
-                     func=self.col.tags.bulkRem)
+        d = QDialog(self)
+        d.setObjectName("DeleteTags")
+        d.setWindowTitle(label)
+        d.resize(360, 340)
+        nids = self.selectedNotes()
+        tagTree = TagTreeWidget(self,d)
+        tagTree.removeTags(nids)
+        layout = QVBoxLayout(d)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(QLabel(_("""Select tags and close dialog, red items will be deleted.""")))
+        layout.addWidget(tagTree)
+        d.exec_()
+
+        tags=[]
+        for k,v in tagTree.node.items():
+            if v:
+                tags.append(k+'::*')
+                tags.append(k)
+        if tags:
+            self.mw.checkpoint(label)
+            self.model.beginReset()
+            self.col.tags.bulkRem(nids," ".join(tags))
+            self.model.endReset()
+            self.mw.requireReset()
 
     # Suspending and marking
     ######################################################################
