@@ -1298,60 +1298,72 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
     ######################################################################
 
     def addTags(self, tags=None, label=None, prompt=None, func=None):
+        nids = self.selectedNotes()
+        if not nids:
+            showInfo("No card selected")
+            return
         if label is None:
             label = _("Add Tags")
-        d = QDialog(self)
-        d.setObjectName("DeleteTags")
-        d.setWindowTitle(label)
-        d.resize(360, 340)
-        tagTree = TagTreeWidget(self,d)
-        tagTree.addTags()
-        line = QLineEdit(d)
-        layout = QVBoxLayout(d)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(QLabel(_("""Select tags and close dialog, green items will be added.""")))
-        layout.addWidget(tagTree)
-        layout.addWidget(QLabel(_("Add Extra Tags:")))
-        layout.addWidget(line)
-        d.exec_()
+        if not tags:
+            d = QDialog(self)
+            d.setObjectName("DeleteTags")
+            d.setWindowTitle(label)
+            d.resize(360, 340)
+            tagTree = TagTreeWidget(self,d)
+            tagTree.addTags()
+            line = QLineEdit(d)
+            layout = QVBoxLayout(d)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(QLabel(_("""Select tags and close dialog, green items will be added.""")))
+            layout.addWidget(tagTree)
+            layout.addWidget(QLabel(_("Add Extra Tags:")))
+            layout.addWidget(line)
+            d.exec_()
 
-        txt=line.text()
-        tags=[txt] if txt else []
-        for k,v in tagTree.node.items():
-            if v: tags.append(k)
+            txt=line.text()
+            tags=[txt] if txt else []
+            for k,v in tagTree.node.items():
+                if v: tags.append(k)
+            tags=" ".join(tags)
+
         if tags:
             self.mw.checkpoint(label)
             self.model.beginReset()
-            nids = self.selectedNotes()
-            self.col.tags.bulkAdd(nids," ".join(tags))
+            self.col.tags.bulkAdd(nids,tags)
             self.model.endReset()
             self.mw.requireReset()
 
     def deleteTags(self, tags=None, label=None):
+        nids = self.selectedNotes()
+        if not nids:
+            showInfo("No card selected")
+            return
         if label is None:
             label = _("Delete Tags")
-        d = QDialog(self)
-        d.setObjectName("DeleteTags")
-        d.setWindowTitle(label)
-        d.resize(360, 340)
-        nids = self.selectedNotes()
-        tagTree = TagTreeWidget(self,d)
-        tagTree.removeTags(nids)
-        layout = QVBoxLayout(d)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(QLabel(_("""Select tags and close dialog, red items will be deleted.""")))
-        layout.addWidget(tagTree)
-        d.exec_()
+        if not tags:
+            d = QDialog(self)
+            d.setObjectName("DeleteTags")
+            d.setWindowTitle(label)
+            d.resize(360, 340)
+            tagTree = TagTreeWidget(self,d)
+            tagTree.removeTags(nids)
+            layout = QVBoxLayout(d)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(QLabel(_("""Select tags and close dialog, red items will be deleted.""")))
+            layout.addWidget(tagTree)
+            d.exec_()
 
-        tags=[]
-        for k,v in tagTree.node.items():
-            if v:
-                tags.append(k+'::*')
-                tags.append(k)
+            tags=[]
+            for k,v in tagTree.node.items():
+                if v:
+                    # tags.append(k+'::*') #inc subtags?
+                    tags.append(k)
+            tags=" ".join(tags)
+
         if tags:
             self.mw.checkpoint(label)
             self.model.beginReset()
-            self.col.tags.bulkRem(nids," ".join(tags))
+            self.col.tags.bulkRem(nids,tags)
             self.model.endReset()
             self.mw.requireReset()
 
