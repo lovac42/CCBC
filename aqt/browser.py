@@ -852,6 +852,7 @@ by clicking on one on the left."""))
                         fname = filt[5:-1]
                         filt='"deck'+filt[4:]
 
+                item = None
                 leaf_tag = '::'.join(node[0:idx + 1])
                 if not favs_tree.get(leaf_tag):
                     parent = favs_tree['::'.join(node[0:idx])] if idx else root
@@ -863,15 +864,18 @@ by clicking on one on the left."""))
                     item.type = type
                     item.fullname = fname or leaf_tag
                     item.favname = leaf_tag
-                    item.setIcon(0, QIcon(":/icons/"+ico))
+                    if not idx or self.col.conf.get('Blitzkrieg.icon_fav',True):
+                        item.setIcon(0, QIcon(":/icons/"+ico))
                     # if color and idx:
                         # item.setForeground(0, QBrush(color))
                     if root.marked[type].get(leaf_tag, False):
                         item.setBackground(0, QBrush(Qt.yellow))
                     favs_tree[leaf_tag] = item
+            item.setIcon(0, QIcon(":/icons/"+ico))
 
     # Addon: Hierarchical Tags, https://ankiweb.net/shared/download/1089921461
     def _userTagTree(self, root):
+        icoOpt = self.col.conf.get('Blitzkrieg.icon_tag',True)
         rootNode = self.CallbackItem(root, _("Tags"), None)
         rootNode.type = "group"
         rootNode.fullname = "tag"
@@ -885,6 +889,7 @@ by clicking on one on the left."""))
         for t in TAGS:
             if t.lower() in ("marked","leech"):
                 continue
+            item = None
             node = t.split('::')
             for idx, name in enumerate(node):
                 leaf_tag = '::'.join(node[0:idx + 1])
@@ -898,7 +903,8 @@ by clicking on one on the left."""))
                     )
                     item.type = "tag"
                     item.fullname = leaf_tag
-                    item.setIcon(0, QIcon(":/icons/anki-tag.png"))
+                    if icoOpt:
+                        item.setIcon(0, QIcon(":/icons/anki-tag.png"))
                     if root.found.get(item.type,{}).get(leaf_tag, False):
                         item.setBackground(0, QBrush(Qt.cyan))
                     elif root.marked[item.type].get(leaf_tag, False):
@@ -906,6 +912,7 @@ by clicking on one on the left."""))
                     elif exp and '::' not in leaf_tag:
                         item.setBackground(0, QBrush(QColor(0,0,10,10)))
                     tags_tree[leaf_tag] = item
+            item.setIcon(0, QIcon(":/icons/anki-tag.png"))
 
 
     def _decksTree(self, root):
@@ -942,6 +949,8 @@ by clicking on one on the left."""))
         fillGroups(rootNode, grps)
 
     def _modelTree(self, root):
+        ico = QIcon(":/icons/product_design.png")
+        icoOpt = self.col.conf.get('Blitzkrieg.icon_model',True)
         rootNode = self.CallbackItem(root, _("Models"), None)
         rootNode.type = "group"
         rootNode.fullname = "model"
@@ -952,6 +961,7 @@ by clicking on one on the left."""))
         MODELS = sorted(self.col.models.all(),
                 key=lambda m: m["name"].lower() if SORT else m["name"])
         for m in MODELS:
+            item = None
             node = m['name'].split('::')
             for idx, name in enumerate(node):
                 leaf_model = '::'.join(node[0:idx + 1])
@@ -964,12 +974,14 @@ by clicking on one on the left."""))
                     )
                     item.type = "model"
                     item.fullname = leaf_model
-                    item.setIcon(0, QIcon(":/icons/product_design.png"))
+                    if icoOpt:
+                        item.setIcon(0, ico)
                     if root.found.get(item.type,{}).get(leaf_model, False):
                         item.setBackground(0, QBrush(Qt.cyan))
                     elif root.marked[item.type].get(leaf_model, False):
                         item.setBackground(0, QBrush(Qt.yellow))
                     models_tree[leaf_model] = item
+            item.setIcon(0, ico)
 
     # Info
     ######################################################################
@@ -1364,6 +1376,7 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
             self.mw.checkpoint(label)
             self.model.beginReset()
             self.col.tags.bulkRem(nids,tags)
+            self.col.tags.registerNotes()
             self.model.endReset()
             self.mw.requireReset()
 
