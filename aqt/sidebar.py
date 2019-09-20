@@ -172,7 +172,7 @@ class SidebarTreeWidget(QTreeWidget):
         # Dealing with qt serialized data is a headache,
         # so I'm just going to save a reference to the dropped item.
         # data.data('application/x-qabstractitemmodeldatalist')
-        if isinstance(parent.type, str):
+        if parent and isinstance(parent.type, str):
             #clear item to allow dropping to groups
             self.dropItem = parent if parent.type!='group' else None
         return True
@@ -220,13 +220,15 @@ class SidebarTreeWidget(QTreeWidget):
 
     def _deckDropEvent(self, dragName, dropName):
         parse=self.col.decks #used for parsing '::' separators
-        dragDid = parse.byName(dragName)["id"]
+        dragDeck = parse.byName(dragName)
+        dragDid = dragDeck["id"]
         dropDid = parse.byName(dropName)["id"] if dropName else None
         try:
             parse.renameForDragAndDrop(dragDid,dropDid)
         except DeckRenameError as e:
             showWarning(e.description)
         self.col.decks.get(dropDid)['browserCollapsed'] = False
+        self.highlight('deck',dragDeck['name'])
 
     def moveFav(self, dragName, newName=""):
         try:
@@ -462,10 +464,11 @@ class SidebarTreeWidget(QTreeWidget):
     def _onTreeDeckRename(self, item):
         sel = self.col.decks.byName(item.fullname)
         self.mw.deckBrowser._rename(sel["id"])
-        self.col.decks.save()
-        self.col.decks.flush()
-        self.highlight('deck',sel['name'])
-        self.mw.reset(True)
+        if item.fullname != sel['name']:
+            self.col.decks.save()
+            self.col.decks.flush()
+            self.highlight('deck',sel['name'])
+            self.mw.reset(True)
 
     def _onTreeDeckAddCard(self, item):
         from aqt import addcards
