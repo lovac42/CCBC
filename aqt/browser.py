@@ -871,7 +871,9 @@ by clicking on one on the left."""))
                     if root.marked[type].get(leaf_tag, False):
                         item.setBackground(0, QBrush(Qt.yellow))
                     favs_tree[leaf_tag] = item
-            item.setIcon(0, QIcon(":/icons/"+ico))
+            try:
+                item.setIcon(0, QIcon(":/icons/"+ico))
+            except AttributeError: pass
 
     # Addon: Hierarchical Tags, https://ankiweb.net/shared/download/1089921461
     def _userTagTree(self, root):
@@ -912,7 +914,9 @@ by clicking on one on the left."""))
                     elif exp and '::' not in leaf_tag:
                         item.setBackground(0, QBrush(QColor(0,0,10,10)))
                     tags_tree[leaf_tag] = item
-            item.setIcon(0, QIcon(":/icons/anki-tag.png"))
+            try:
+                item.setIcon(0, QIcon(":/icons/anki-tag.png"))
+            except AttributeError: pass
 
 
     def _decksTree(self, root):
@@ -981,7 +985,10 @@ by clicking on one on the left."""))
                     elif root.marked[item.type].get(leaf_model, False):
                         item.setBackground(0, QBrush(Qt.yellow))
                     models_tree[leaf_model] = item
-            item.setIcon(0, ico)
+            try:
+                item.setIcon(0, ico)
+            except AttributeError: pass
+
 
     # Info
     ######################################################################
@@ -1322,7 +1329,7 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
             d.setWindowTitle(label)
             d.resize(360, 340)
             tagTree = TagTreeWidget(self,d)
-            tagTree.addTags()
+            tagTree.addTags(nids)
             line = QLineEdit(d)
             layout = QVBoxLayout(d)
             layout.setContentsMargins(0, 0, 0, 0)
