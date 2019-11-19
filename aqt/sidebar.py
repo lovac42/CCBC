@@ -96,7 +96,8 @@ class SidebarTreeWidget(QTreeWidget):
                 (0,"Convert to decks","Convert",self._onTreeTag2Deck),
             ),
             "deck":(
-                (0,"Rename","Rename",self._onTreeDeckRename),
+                (0,"Rename Leaf","Rename",self._onTreeDeckRenameLeaf),
+                (0,"Rename Branch","Rename",self._onTreeDeckRename),
                 (0,"Add Notes",None,self._onTreeDeckAddCard),
                 (0,"Add Subdeck","Add",self._onTreeDeckAdd),
                 (0,"Options","Options",self._onTreeDeckOptions),
@@ -106,7 +107,8 @@ class SidebarTreeWidget(QTreeWidget):
                 (0,"Convert to tags","Convert",self._onTreeDeck2Tag),
             ),
             "dyn":(
-                (0,"Rename","Rename",self._onTreeDeckRename),
+                (0,"Rename Leaf","Rename",self._onTreeDeckRenameLeaf),
+                (0,"Rename Branch","Rename",self._onTreeDeckRename),
                 (0,"Empty","Empty",self._onTreeDeckEmpty),
                 (0,"Rebuild","Rebuild",self._onTreeDeckRebuild),
                 (0,"Options","Options",self._onTreeDeckOptions),
@@ -460,6 +462,29 @@ class SidebarTreeWidget(QTreeWidget):
         self.mw.deckBrowser._delete(did)
         self.col.decks.save()
         self.col.decks.flush()
+        self.mw.reset(True)
+
+    def _onTreeDeckRenameLeaf(self, item):
+        self.mw.checkpoint(_("Rename Deck"))
+        from aqt.utils import showWarning
+        from anki.errors import DeckRenameError
+
+        sel = self.col.decks.byName(item.fullname)
+        try:
+            path,leaf = item.fullname.rsplit('::',1)
+            newName = path+'::'+ getOnlyText(_("New deck name:"), default=leaf)
+        except ValueError:
+            newName = getOnlyText(_("New deck name:"), default=item.fullname)
+        newName = newName.replace('"', "")
+        if not newName or newName == item.fullname:
+            return
+
+        deck = self.col.decks.get(sel["id"])
+        try:
+            self.col.decks.rename(deck, newName)
+        except DeckRenameError as e:
+            return showWarning(e.description)
+        self.mw.show()
         self.mw.reset(True)
 
     def _onTreeDeckRename(self, item):
