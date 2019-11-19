@@ -29,6 +29,7 @@ from anki.sound import playFromText, clearAudioQueue
 import ccbc.css
 
 from aqt.sidebar import TagTreeWidget
+from aqt.tagedit import TagEdit
 
 
 COLOUR_SUSPENDED = "#FFFFB2"
@@ -888,6 +889,7 @@ by clicking on one on the left."""))
         SORT = self.col.conf.get('Blitzkrieg.sort_tag',False)
         TAGS = sorted(self.col.tags.all(),
                 key=lambda t: t.lower() if SORT else t)
+
         for t in TAGS:
             if t.lower() in ("marked","leech"):
                 continue
@@ -917,6 +919,11 @@ by clicking on one on the left."""))
             try:
                 item.setIcon(0, QIcon(":/icons/anki-tag.png"))
             except AttributeError: pass
+
+        totTags=len(TAGS)
+        if totTags>1000:
+            rootNode.setText(0, _("Tags (Warning: too many tags)"))
+        rootNode.setToolTip(0, _("Total: %d tags"%totTags))
 
 
     def _decksTree(self, root):
@@ -951,6 +958,12 @@ by clicking on one on the left."""))
                 newhead = head + g[0] + "::"
                 fillGroups(item, g[5], newhead)
         fillGroups(rootNode, grps)
+
+        tot=len(grps)
+        if tot>500:
+            rootNode.setText(0, _("Decks (Warning: too many decks)"))
+        rootNode.setToolTip(0, _("Total: %d decks"%tot))
+
 
     def _modelTree(self, root):
         ico = QIcon(":/icons/product_design.png")
@@ -989,6 +1002,10 @@ by clicking on one on the left."""))
                 item.setIcon(0, ico)
             except AttributeError: pass
 
+        tot=len(MODELS)
+        if tot>300:
+            rootNode.setText(0, _("Decks (Warning: too many models)"))
+        rootNode.setToolTip(0, _("Total: %d models"%tot))
 
     # Info
     ######################################################################
@@ -1330,10 +1347,14 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
             d.resize(360, 340)
             tagTree = TagTreeWidget(self,d)
             tagTree.addTags(nids)
-            line = QLineEdit(d)
+            line = TagEdit(d)
+            line.setCol(self.col)
             layout = QVBoxLayout(d)
             layout.setContentsMargins(0, 0, 0, 0)
-            layout.addWidget(QLabel(_("""Select tags and close dialog, green items will be added.""")))
+            layout.addWidget(QLabel(_("""\
+Select tags and close dialog: \
+Yellow is for existing tags. \
+Green items will be added.""")))
             layout.addWidget(tagTree)
             layout.addWidget(QLabel(_("Add Extra Tags:")))
             layout.addWidget(line)
@@ -1368,7 +1389,9 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
             tagTree.removeTags(nids)
             layout = QVBoxLayout(d)
             layout.setContentsMargins(0, 0, 0, 0)
-            layout.addWidget(QLabel(_("""Select tags and close dialog, red items will be deleted.""")))
+            layout.addWidget(QLabel(_("""\
+Select tags and close dialog. \
+Red items will be deleted.""")))
             layout.addWidget(tagTree)
             d.exec_()
 
