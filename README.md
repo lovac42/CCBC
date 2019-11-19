@@ -3,7 +3,7 @@
 This is Anki 2.1.13 with Qt4 & QtWebkit.
 
 ## About:
-The reason for this is because QWebEngine is too sluggish for ebook reading. After importing any uncompressed 200kb file or "The Complete History of Supermemo" or "Supermemo 20 Rules", the webpage really starts to lag behind and in some cases freeze five seconds after every extraction. This project takes the codes from 2.1 and 2.0 and meshed them together.
+This project takes the user interface of 2.0 and combine it with the backend code from 2.1. It's essentially upgrading 2.0 to python 3. The reason behind this is because QWebEngine is too sluggish for ebook reading. After importing any uncompressed 200kb file or "The Complete History of Supermemo" or "Supermemo 20 Rules", the webpage really starts to lag behind and in some cases freeze five seconds after every extraction.
 
 Use cases of QtWebKit: https://github.com/annulen/webkit/wiki/Use-cases-of-QtWebKit
 
@@ -103,4 +103,7 @@ Replaced by addon Blitzkrieg
 <img src="https://github.com/lovac42/CCBC/blob/master/screenshots/orange_pi.png?raw=true">  
 
 <img src="https://github.com/lovac42/CCBC/blob/master/screenshots/orange_pi2.png?raw=true">  
+
+
+<img src="https://github.com/lovac42/CCBC/blob/master/screenshots/2021ccbc.png?raw=true">  
 
