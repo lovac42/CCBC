@@ -198,7 +198,7 @@ class SidebarTreeWidget(QTreeWidget):
             parse = self.col.decks #used for parsing '::' separators
             cb = None
             if dgType in ("deck", "dyn"):
-                self._deckDropEvent(dragName,dropName)
+                self._deckDropEvent(dgType,dragName,dropName)
             elif dgType == "tag":
                 cb = self.moveTag
             elif dgType == "model":
@@ -220,18 +220,32 @@ class SidebarTreeWidget(QTreeWidget):
             assert dropName.strip()
             callback(dragName, dropName + "::" + parse._basename(dragName))
 
-    def _deckDropEvent(self, dragName, dropName):
-        parse=self.col.decks #used for parsing '::' separators
+    def _deckDropEvent(self, dgType, dragName, dropName):
+        #TODO: sub-decks are not rehighlighted when dragging from parent deck.
+        parse = self.col.decks #used for parsing '::' separators
         dragDeck = parse.byName(dragName)
         dragDid = dragDeck["id"]
-        dropDid = parse.byName(dropName)["id"] if dropName else None
+        dropDid = None
+        try:
+            _,newName = dragName.rsplit('::',1)
+        except ValueError:
+            newName = None
+
+        if dropName:
+            dropItem = parse.byName(dropName)
+            dropDid = dropItem["id"]
+            newName = dropItem["name"]+"::"+(newName or dragName)
+
         try:
             parse.renameForDragAndDrop(dragDid,dropDid)
         except DeckRenameError as e:
             showWarning(e.description)
         self.col.decks.get(dropDid)['browserCollapsed'] = False
+
+        if newName:
+            self._swapHighlight(dgType,dragName,newName)
         # Adding HL here gets really annoying
-        # self.highlight('deck',dragDeck['name'])
+        # self.highlight(dgType,dragDeck['name'])
 
     def moveFav(self, dragName, newName=""):
         try:
@@ -246,10 +260,12 @@ class SidebarTreeWidget(QTreeWidget):
                 self.col.conf['savedFilters'][nn] = act
                 del(self.col.conf['savedFilters'][fav])
                 self.node_state[type][nn] = True
+                self._swapHighlight(type,dragName,newName)
             elif fav == dragName:
                 self.col.conf['savedFilters'][newName] = act
                 del(self.col.conf['savedFilters'][dragName])
                 self.node_state[type][newName] = True
+                self._swapHighlight(type,dragName,newName)
 
     def moveModel(self, dragName, newName=""):
         "Rename or Delete models"
@@ -266,6 +282,7 @@ class SidebarTreeWidget(QTreeWidget):
                 m['name'] = newName
                 self.col.models.save(m)
             self.node_state['model'][newName] = True
+            self._swapHighlight('model',dragName,newName)
         self.col.models.flush()
         self.browser.model.reset()
         self.browser.setupHooks()
@@ -286,12 +303,15 @@ class SidebarTreeWidget(QTreeWidget):
                     nn = tag.replace(dragName+"::", newName+"::", 1)
                     self.col.tags.bulkAdd(ids,nn)
                     self.node_state['tag'][nn] = True
+                self._swapHighlight('tag',tag,nn,rename)
                 self.col.tags.bulkRem(ids,tag)
         # rename parent
         ids = f.findNotes('"tag:%s"'%dragName)
         if rename:
             self.col.tags.bulkAdd(ids,newName)
             self.node_state['tag'][newName] = True
+        self._swapHighlight('tag',dragName,newName,rename)
+
         self.col.tags.bulkRem(ids,dragName)
         self.col.tags.save()
         self.col.tags.flush()
@@ -484,6 +504,10 @@ class SidebarTreeWidget(QTreeWidget):
             self.col.decks.rename(deck, newName)
         except DeckRenameError as e:
             return showWarning(e.description)
+        self._swapHighlight(item.type,item.fullname,newName)
+        self.col.decks.save()
+        self.col.decks.flush()
+        self.highlight('deck',newName)
         self.mw.show()
         self.mw.reset(True)
 
@@ -491,6 +515,7 @@ class SidebarTreeWidget(QTreeWidget):
         sel = self.col.decks.byName(item.fullname)
         self.mw.deckBrowser._rename(sel["id"])
         if item.fullname != sel['name']:
+            self._swapHighlight(item.type,item.fullname,sel['name'])
             self.col.decks.save()
             self.col.decks.flush()
             self.highlight('deck',sel['name'])
@@ -923,8 +948,11 @@ class SidebarTreeWidget(QTreeWidget):
     def highlight(self, type, name):
         def unhighlight():
             del(self.marked[type][name])
-        self.marked[type][name] = True
-        self.mw.progress.timer(100,unhighlight,False)
+            # This requires double refresh to clear the mark.
+            # TODO: find a way to delete highlight as if it's fading away.
+        if not self.marked[type].get(name, False):
+            self.marked[type][name] = True
+            self.mw.progress.timer(100,unhighlight,False)
         if type == 'deck':
             return
         #set parent expanded
@@ -933,6 +961,14 @@ class SidebarTreeWidget(QTreeWidget):
             nodes.pop()
             n='::'.join(nodes)
             self.node_state[type][n] = True
+
+
+    def _swapHighlight(self, type, oName, nName, swap=True):
+        if swap and self.marked[type].get(oName, False):
+            self.marked[type][nName] = True
+        try:
+            del(self.marked[type][oName])
+        except KeyError: pass
 
 
 class TagTreeWidget(QTreeWidget):
