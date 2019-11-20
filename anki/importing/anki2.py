@@ -90,9 +90,14 @@ class Anki2Importer(Importer):
         dupesIdentical = []
         dupesIgnored = []
         total = 0
+        script = 0
         for note in self.src.db.execute(
             "select * from notes"):
             total += 1
+
+            if note[6].find('<script') > 0:
+                script += 1
+
             # turn the db result into a mutable list
             note = list(note)
             shouldAdd = self._uniquifyNote(note)
@@ -147,6 +152,8 @@ class Anki2Importer(Importer):
             self.log.append(
                 _("Notes skipped, as they're already in your collection: %d") %
                 len(dupesIdentical))
+        if script:
+            self.log.append(_("Notes with \"<Script\" tags: %d") % script)
 
         self.log.append("")
 
