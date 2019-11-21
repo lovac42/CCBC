@@ -11,8 +11,8 @@ from aqt.utils import  showWarning, askUser, saveGeom, restoreGeom
 from anki.lang import _
 
 class DeckConf(QDialog):
-    def __init__(self, mw, first=False, search="", deck=None):
-        QDialog.__init__(self, mw)
+    def __init__(self, mw, first=False, search="", deck=None, parent=None):
+        QDialog.__init__(self, parent or mw)
         self.mw = mw
         self.deck = deck or self.mw.col.decks.current()
         self.search = search

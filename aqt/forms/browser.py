@@ -9,6 +9,7 @@
 
 from PyQt4 import QtCore, QtGui as QtWidgets, QtGui
 from anki.lang import _
+from aqt.sidebar import SidebarTreeWidget
 import ccbc.plugins.Card_Info_Bar_for_Browser.browser
 
 
@@ -29,7 +30,7 @@ class Ui_Dialog(object):
         self.splitter_2 = QtGui.QSplitter(self.centralwidget)
         self.splitter_2.setOrientation(QtCore.Qt.Horizontal)
         self.splitter_2.setObjectName("splitter_2")
-        self.tree = QtGui.QTreeWidget(self.splitter_2)
+        self.tree = SidebarTreeWidget(self.splitter_2)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)

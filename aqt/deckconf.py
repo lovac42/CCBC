@@ -15,8 +15,8 @@ from anki.lang import _, ngettext
 
 
 class DeckConf(QDialog):
-    def __init__(self, mw, deck):
-        QDialog.__init__(self, mw)
+    def __init__(self, mw, deck, parent=None):
+        QDialog.__init__(self, parent or mw)
         self.mw = mw
         self.deck = deck
         self.childDids = [

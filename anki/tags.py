@@ -107,9 +107,7 @@ class TagManager:
             **dict([("_%d" % x, '%% %s %%' % y.replace('*', '%'))
                     for x, y in enumerate(newTags)]))
         # update tags
-        nids = []
         def fix(row):
-            nids.append(row[0])
             return {'id': row[0], 't': fn(tags, row[1]), 'n':intTime(),
                 'u':self.col.usn()}
         self.col.db.executemany(

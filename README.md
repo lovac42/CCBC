@@ -3,7 +3,7 @@
 This is Anki 2.1.13 with Qt4 & QtWebkit.
 
 ## About:
-The reason for this is because QWebEngine is too sluggish for ebook reading. After importing any uncompressed 200kb file or "The Complete History of Supermemo" or "Supermemo 20 Rules", the webpage really starts to lag behind and in some cases freeze five seconds after every extraction. This project takes the codes from 2.1 and 2.0 and meshed them together.
+This project takes the user interface of 2.0 and combine it with the backend code from 2.1. It's essentially upgrading 2.0 to python 3. The reason behind this is because QWebEngine is too sluggish for ebook reading. After importing any uncompressed 200kb file or "The Complete History of Supermemo" or "Supermemo 20 Rules", the webpage really starts to lag behind and in some cases freeze five seconds after every extraction.
 
 Use cases of QtWebKit: https://github.com/annulen/webkit/wiki/Use-cases-of-QtWebKit
 
@@ -54,7 +54,6 @@ from PyQt4 import QtCore, QtGui as QtWidgets, QtGui
 
 
 ### Included Addons:
-Hierarchical Tags, by Patrice Neff: https://ankiweb.net/shared/download/1089921461  
 Advanced Copy Fields, by Ambriel Angel: https://ankiweb.net/shared/info/1898445115  
 Add-on window search bar, by ijgnd: https://ankiweb.net/shared/info/561945101  
 Card Info Bar for Browser, by ijgnd: https://ankiweb.net/shared/info/2140680811  
@@ -64,7 +63,6 @@ Replay buttons on card, by ospalh: https://ankiweb.net/shared/info/498789867
 
 
 ### Arthur-Milchior Must Haves:
-Using regexps to remove tags: https://ankiweb.net/shared/info/1502698883  
 Keep empty note: https://ankiweb.net/shared/info/2018640062  
 Tag missing media: https://ankiweb.net/shared/info/2027876532  
 Clearer empty card info: https://ankiweb.net/shared/info/25425599  
@@ -77,6 +75,13 @@ Cacher in the rye: https://ankiweb.net/shared/info/1302452246
 Hold'em Cardfield: https://ankiweb.net/shared/info/363320830  
 Pennywise: https://ankiweb.net/shared/info/1032766035  
 rated0search: https://ankiweb.net/shared/info/1056004913  
+Blitzkrieg: (insert ankiweb id)
+
+
+### Removed:
+Using regexps to remove tags, Arthur-Milchior: https://ankiweb.net/shared/info/1502698883  
+A better tagging system was put in place.
+Replaced by addon Blitzkrieg
 
 
 ## Screenshots:
@@ -98,4 +103,7 @@ rated0search: https://ankiweb.net/shared/info/1056004913
 <img src="https://github.com/lovac42/CCBC/blob/master/screenshots/orange_pi.png?raw=true">  
 
 <img src="https://github.com/lovac42/CCBC/blob/master/screenshots/orange_pi2.png?raw=true">  
+
+
+<img src="https://github.com/lovac42/CCBC/blob/master/screenshots/2021ccbc.png?raw=true">  
 

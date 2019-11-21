@@ -16,6 +16,7 @@ from anki.sound import play
 from aqt.qt import *
 import anki
 import aqt.forms
+import anki.find
 from anki.utils import fmtTimeSpan, ids2str, htmlToTextLine, stripHTMLMedia, isWin, intTime, isMac
 from aqt.utils import saveGeom, restoreGeom, saveSplitter, restoreSplitter, \
     saveHeader, restoreHeader, saveState, restoreState, applyStyles, getTag, \
@@ -26,6 +27,9 @@ from aqt.toolbar import Toolbar
 from anki.consts import *
 from anki.sound import playFromText, clearAudioQueue
 import ccbc.css
+
+from aqt.sidebar import TagTreeWidget
+from aqt.tagedit import TagEdit
 
 
 COLOUR_SUSPENDED = "#FFFFB2"
@@ -123,7 +127,7 @@ class DataModel(QAbstractTableModel):
 
     def search(self, txt, reset=True):
         self.beginReset()
-        t = time.time()
+        # t = time.time()
         # the db progress handler may cause a refresh, so we need to zero out
         # old data first
         self.cards = []
@@ -363,6 +367,8 @@ class Browser(QMainWindow):
         self.form.splitter_2.setChildrenCollapsible(False)
         self.form.splitter.setChildrenCollapsible(False)
         self.card = None
+        self.dropItem = None
+        self.mw.col.tags.registerNotes() #clean up tags
         self.setupToolbar()
         self.setupColumns()
         self.setupTable()
@@ -521,8 +527,6 @@ class Browser(QMainWindow):
 
     def onSearchActivated(self): #v2.1
         return self.onSearch()
-    def search(self): #v2.1
-        return self.onSearch(False)
 
     def onSearch(self, reset=True):
         "Careful: if reset is true, the current note is saved."
@@ -587,9 +591,8 @@ class Browser(QMainWindow):
         self.form.tableView.selectionModel()
         self.form.tableView.doubleClicked.connect(self._openPreview)
         self.form.tableView.setItemDelegate(StatusDelegate(self, self.model))
-        self.connect(self.form.tableView.selectionModel(),
-                     SIGNAL("selectionChanged(QItemSelection,QItemSelection)"),
-                     self.onRowChanged)
+        sm=self.form.tableView.selectionModel()
+        sm.selectionChanged.connect(self.onRowChanged)
 
     def setupEditor(self):
         import aqt.editor
@@ -647,7 +650,6 @@ class Browser(QMainWindow):
         self.setSortIndicator()
         hh.sortIndicatorChanged.connect(self.onSortChanged)
         hh.sectionMoved.connect(self.onColumnMoved)
-
 
     def onSortChanged(self, idx, ord):
         type = self.model.activeCols[idx]
@@ -741,46 +743,33 @@ by clicking on one on the left."""))
     ######################################################################
 
     class CallbackItem(QTreeWidgetItem):
-        def __init__(self, root, name, onclick, oncollapse=None):
+        def __init__(self, root, name, onclick, oncollapse=None, expanded=False):
             QTreeWidgetItem.__init__(self, root, [name])
+            self.setExpanded(expanded)
             self.onclick = onclick
             self.oncollapse = oncollapse
+            self.type = ""
 
     def setupTree(self):
-        self.connect(
-            self.form.tree, SIGNAL("itemClicked(QTreeWidgetItem*,int)"),
-            self.onTreeClick)
         p = QPalette()
         p.setColor(QPalette.Base, QColor("#d6dde0"))
         self.form.tree.setPalette(p)
+        self.form.tree.mw = self.mw
+        self.form.tree.col = self.mw.col
+        self.form.tree.browser = self
         self.buildTree()
-        self.connect(
-            self.form.tree, SIGNAL("itemExpanded(QTreeWidgetItem*)"),
-            lambda item: self.onTreeCollapse(item))
-        self.connect(
-            self.form.tree, SIGNAL("itemCollapsed(QTreeWidgetItem*)"),
-            lambda item: self.onTreeCollapse(item))
 
     def buildTree(self):
-        self.form.tree.clear()
+        self.sidebarTree=self.form.tree
+        self.sidebarTree.clear()
         root = self.form.tree
         self._systemTagTree(root)
         self._favTree(root)
         self._decksTree(root)
         self._modelTree(root)
         self._userTagTree(root)
-        self.form.tree.setIndentation(15)
-        self.sidebarTree=root #for 2.1
+        root.setIndentation(15)
 
-
-    def onTreeClick(self, item, col):
-        if getattr(item, 'onclick', None):
-            item.onclick()
-
-    def onTreeCollapse(self, item):
-        if getattr(item, 'oncollapse', None):
-            item.oncollapse()
-            
     def setFilter(self, *args):
         if len(args) == 1:
             txt = args[0]
@@ -828,74 +817,195 @@ by clicking on one on the left."""))
         for name, icon, cmd in tags:
             item = self.CallbackItem(
                 root, name, lambda c=cmd: self.setFilter(c))
+            item.type="sys"
+            item.fullname = name
             item.setIcon(0, QIcon(":/icons/" + icon))
         return root
 
     def _favTree(self, root):
-        saved = self.col.conf.get('savedFilters', [])
+        saved = self.col.conf.get('savedFilters', {})
         if not saved:
             # Don't add favourites to tree if none saved
             return
-        root = self.CallbackItem(root, _("My Searches"), None)
-        root.setExpanded(True)
-        root.setIcon(0, QIcon(":/icons/emblem-favorite-dark.png"))
-        for name, filt in sorted(saved.items()):
-            item = self.CallbackItem(root, name, lambda s=filt: self.setFilter(s))
-            item.setIcon(0, QIcon(":/icons/emblem-favorite-dark.png"))
+        favs_tree = {}
+        for fav, filt in sorted(saved.items()):
+            node = fav.split('::')
+            ico = "emblem-favorite-dark.png"
+            type = "fav"
+            fname = color = None
+            for idx, name in enumerate(node):
+                if node[0]=='Pinned':
+                    # color=QColor(5,150,5,255) #can't find a good color
+                    if idx==0:
+                        type = "pin"
+                        ico = "emblem-favorite.png"
+                    elif filt.startswith('"tag:'):
+                        type = "pinTag"
+                        ico = "anki-tag.png"
+                        fname = filt[5:-1]
+                    elif filt.startswith('"deck:'):
+                        type = "pinDeck"
+                        ico = "deck16.png"
+                        fname = filt[6:-1]
+                    elif filt.startswith('"dyn:'):
+                        type = "pinDyn"
+                        ico = "deck16.png"
+                        fname = filt[5:-1]
+                        filt='"deck'+filt[4:]
 
-    
+                item = None
+                leaf_tag = '::'.join(node[0:idx + 1])
+                if not favs_tree.get(leaf_tag):
+                    parent = favs_tree['::'.join(node[0:idx])] if idx else root
+                    item = self.CallbackItem(
+                        parent, name,
+                        lambda s=filt: self.setFilter(s),
+                        expanded=root.node_state.get(type).get(leaf_tag,True)
+                    )
+                    item.type = type
+                    item.fullname = fname or leaf_tag
+                    item.favname = leaf_tag
+                    if not idx or self.col.conf.get('Blitzkrieg.icon_fav',True):
+                        item.setIcon(0, QIcon(":/icons/"+ico))
+                    # if color and idx:
+                        # item.setForeground(0, QBrush(color))
+                    if root.marked[type].get(leaf_tag, False):
+                        item.setBackground(0, QBrush(Qt.yellow))
+                    favs_tree[leaf_tag] = item
+            try:
+                item.setIcon(0, QIcon(":/icons/"+ico))
+            except AttributeError: pass
+
     # Addon: Hierarchical Tags, https://ankiweb.net/shared/download/1089921461
     def _userTagTree(self, root):
+        icoOpt = self.col.conf.get('Blitzkrieg.icon_tag',True)
+        rootNode = self.CallbackItem(root, _("Tags"), None)
+        rootNode.type = "group"
+        rootNode.fullname = "tag"
+        rootNode.setExpanded(root.node_state.get("group").get('tag',True))
+        rootNode.setIcon(0, QIcon(":/icons/anki-tag.png"))
         tags_tree = {}
-        tags = sorted(self.col.tags.all())
 
-        for t in tags:
-            if t.lower() == "marked" or t.lower() == "leech":
+        SORT = self.col.conf.get('Blitzkrieg.sort_tag',False)
+        TAGS = sorted(self.col.tags.all(),
+                key=lambda t: t.lower() if SORT else t)
+
+        for t in TAGS:
+            if t.lower() in ("marked","leech"):
                 continue
-
-            components = t.split('::')
-            for idx, c in enumerate(components):
-                partial_tag = '::'.join(components[0:idx + 1])
-                if not tags_tree.get(partial_tag):
-                    if idx == 0:
-                        parent = root
-                    else:
-                        parent_tag = '::'.join(components[0:idx])
-                        parent = tags_tree[parent_tag]
-
+            item = None
+            node = t.split('::')
+            for idx, name in enumerate(node):
+                leaf_tag = '::'.join(node[0:idx + 1])
+                if not tags_tree.get(leaf_tag):
+                    parent = tags_tree['::'.join(node[0:idx])] if idx else rootNode
+                    exp = root.node_state.get('tag').get(leaf_tag,False)
                     item = self.CallbackItem(
-                        parent, c,
-                        lambda p=partial_tag: self.setFilter("tag",p))
-                    item.setIcon(0, QIcon(":/icons/anki-tag.png"))
-                    tags_tree[partial_tag] = item
+                        parent, name,
+                        lambda p=leaf_tag: self.setFilter("tag",p),
+                        expanded=exp
+                    )
+                    item.type = "tag"
+                    item.fullname = leaf_tag
+                    if icoOpt:
+                        item.setIcon(0, QIcon(":/icons/anki-tag.png"))
+                    if root.found.get(item.type,{}).get(leaf_tag, False):
+                        item.setBackground(0, QBrush(Qt.cyan))
+                    elif root.marked[item.type].get(leaf_tag, False):
+                        item.setBackground(0, QBrush(Qt.yellow))
+                    elif exp and '::' not in leaf_tag:
+                        item.setBackground(0, QBrush(QColor(0,0,10,10)))
+                    tags_tree[leaf_tag] = item
+            try:
+                item.setIcon(0, QIcon(":/icons/anki-tag.png"))
+            except AttributeError: pass
+
+        totTags=len(TAGS)
+        if totTags>1000:
+            rootNode.setText(0, _("Tags ( ! )"))
+        rootNode.setToolTip(0, _("Total: %d tags"%totTags))
 
 
     def _decksTree(self, root):
-        grps = self.col.sched.deckDueTree()
-        def fillGroups(root, grps, head=""):
+        rootNode = self.CallbackItem(root, _("Decks"), None)
+        rootNode.type = "group"
+        rootNode.fullname = "deck"
+        rootNode.setExpanded(root.node_state.get("group").get('deck',True))
+        rootNode.setIcon(0, QIcon(":/icons/deck16.png"))
+        SORT = self.col.conf.get('Blitzkrieg.sort_deck',False)
+        grps = sorted(self.col.sched.deckDueTree(),
+                key=lambda g: g[0].lower() if SORT else g[0])
+        def fillGroups(rootNode, grps, head=""):
             for g in grps:
                 item = self.CallbackItem(
-                    root, g[0],
+                    rootNode, g[0],
                     lambda g=g: self.setFilter("deck", head+g[0]),
-                    lambda g=g: self.mw.col.decks.collapseBrowser(g[1]))
+                    lambda g=g: self.mw.col.decks.collapseBrowser(g[1]),
+                    not self.mw.col.decks.get(g[1]).get('browserCollapsed', False))
+                item.fullname = head + g[0]
                 item.setIcon(0, QIcon(":/icons/deck16.png"))
-                newhead = head + g[0]+"::"
-                collapsed = self.mw.col.decks.get(g[1]).get('browserCollapsed', False)
-                item.setExpanded(not collapsed)
+                if self.col.decks.byName(item.fullname)['dyn']:
+                    item.setForeground(0, QBrush(Qt.blue))
+                    item.type = "dyn"
+                else:
+                    if g[1]==1: #default deck
+                        item.setForeground(0, QBrush(Qt.darkRed))
+                    item.type = "deck"
+                if root.found.get(item.type,{}).get(item.fullname, False):
+                    item.setBackground(0, QBrush(Qt.cyan))
+                elif root.marked[item.type].get(item.fullname, False):
+                    item.setBackground(0, QBrush(Qt.yellow))
+                newhead = head + g[0] + "::"
                 fillGroups(item, g[5], newhead)
-        fillGroups(root, grps)
+        fillGroups(rootNode, grps)
+
+        tot=self.col.decks.count()
+        if tot>1000:
+            rootNode.setText(0, _("Decks ( ! )"))
+        rootNode.setToolTip(0, _("Total: %d decks"%tot))
+
 
     def _modelTree(self, root):
-        for m in sorted(self.col.models.all(), key=itemgetter("name")):
-            mitem = self.CallbackItem(
-                root, m['name'], lambda m=m: self.setFilter("mid", str(m['id'])))
-            mitem.setIcon(0, QIcon(":/icons/product_design.png"))
-            # for t in m['tmpls']:
-            #     titem = self.CallbackItem(
-            #     t['name'], lambda m=m, t=t: self.setFilter(
-            #         "model", m['name'], "card", t['name']))
-            #     titem.setIcon(0, QIcon(":/icons/stock_new_template.png"))
-            #     mitem.addChild(titem)
+        ico = QIcon(":/icons/product_design.png")
+        icoOpt = self.col.conf.get('Blitzkrieg.icon_model',True)
+        rootNode = self.CallbackItem(root, _("Models"), None)
+        rootNode.type = "group"
+        rootNode.fullname = "model"
+        rootNode.setExpanded(root.node_state.get("group").get('model',False))
+        rootNode.setIcon(0, QIcon(":/icons/product_design.png"))
+        models_tree = {}
+        SORT = self.col.conf.get('Blitzkrieg.sort_model',False)
+        MODELS = sorted(self.col.models.all(),
+                key=lambda m: m["name"].lower() if SORT else m["name"])
+        for m in MODELS:
+            item = None
+            node = m['name'].split('::')
+            for idx, name in enumerate(node):
+                leaf_model = '::'.join(node[0:idx + 1])
+                if not models_tree.get(leaf_model):
+                    parent = models_tree['::'.join(node[0:idx])] if idx else rootNode
+                    item = self.CallbackItem(
+                        parent, name,
+                        lambda m=m: self.setFilter("mid", str(m['id'])),
+                        expanded=root.node_state.get('model').get(leaf_model,False)
+                    )
+                    item.type = "model"
+                    item.fullname = leaf_model
+                    if icoOpt:
+                        item.setIcon(0, ico)
+                    if root.found.get(item.type,{}).get(leaf_model, False):
+                        item.setBackground(0, QBrush(Qt.cyan))
+                    elif root.marked[item.type].get(leaf_model, False):
+                        item.setBackground(0, QBrush(Qt.yellow))
+                    models_tree[leaf_model] = item
+            try:
+                item.setIcon(0, ico)
+            except AttributeError: pass
+
+        tot=len(MODELS)
+        if tot>1000:
+            rootNode.setText(0, _("Models ( ! )"))
+        rootNode.setToolTip(0, _("Total: %d models"%tot))
 
     # Info
     ######################################################################
@@ -1224,30 +1334,81 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
     ######################################################################
 
     def addTags(self, tags=None, label=None, prompt=None, func=None):
-        if prompt is None:
-            prompt = _("Enter tags to add:")
-        if tags is None:
-            (tags, r) = getTag(self, self.col, prompt)
-        else:
-            r = True
-        if not r:
+        nids = self.selectedNotes()
+        if not nids:
+            showInfo("No card selected")
             return
-        if func is None:
-            func = self.col.tags.bulkAdd
         if label is None:
             label = _("Add Tags")
-        if label:
+        if not tags:
+            d = QDialog(self)
+            d.setObjectName("DeleteTags")
+            d.setWindowTitle(label)
+            d.resize(360, 340)
+            tagTree = TagTreeWidget(self,d)
+            tagTree.addTags(nids)
+            line = TagEdit(d)
+            line.setCol(self.col)
+            layout = QVBoxLayout(d)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(QLabel(_("""\
+Select tags and close dialog: \
+Yellow is for existing tags. \
+Green items will be added.""")))
+            layout.addWidget(tagTree)
+            layout.addWidget(QLabel(_("Add Extra Tags:")))
+            layout.addWidget(line)
+            d.exec_()
+
+            txt=line.text()
+            tags=[txt] if txt else []
+            for k,v in tagTree.node.items():
+                if v: tags.append(k)
+            tags=" ".join(tags)
+
+        if tags:
             self.mw.checkpoint(label)
-        self.model.beginReset()
-        func(self.selectedNotes(), tags)
-        self.model.endReset()
-        self.mw.requireReset()
+            self.model.beginReset()
+            self.col.tags.bulkAdd(nids,tags)
+            self.model.endReset()
+            self.mw.requireReset()
 
     def deleteTags(self, tags=None, label=None):
+        nids = self.selectedNotes()
+        if not nids:
+            showInfo("No card selected")
+            return
         if label is None:
             label = _("Delete Tags")
-        self.addTags(tags, label, _("Enter tags to delete:"),
-                     func=self.col.tags.bulkRem)
+        if not tags:
+            d = QDialog(self)
+            d.setObjectName("DeleteTags")
+            d.setWindowTitle(label)
+            d.resize(360, 340)
+            tagTree = TagTreeWidget(self,d)
+            tagTree.removeTags(nids)
+            layout = QVBoxLayout(d)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(QLabel(_("""\
+Select tags and close dialog. \
+Red items will be deleted.""")))
+            layout.addWidget(tagTree)
+            d.exec_()
+
+            tags=[]
+            for k,v in tagTree.node.items():
+                if v:
+                    # tags.append(k+'::*') #inc subtags?
+                    tags.append(k)
+            tags=" ".join(tags)
+
+        if tags:
+            self.mw.checkpoint(label)
+            self.model.beginReset()
+            self.col.tags.bulkRem(nids,tags)
+            self.col.tags.registerNotes()
+            self.model.endReset()
+            self.mw.requireReset()
 
     # Suspending and marking
     ######################################################################
@@ -1375,6 +1536,9 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
         self.form.actionUndo.setEnabled(on)
         if on:
             self.form.actionUndo.setText(self.mw.form.actionUndo.text())
+        self.buildTree()
+
+
 
     # Edit: replacing
     ######################################################################
@@ -1383,7 +1547,6 @@ update cards set usn=?, mod=?, did=? where id in """ + scids,
         sf = self.selectedNotes()
         if not sf:
             return
-        import anki.find
         fields = anki.find.fieldNamesForNotes(self.col, sf)
         d = QDialog(self)
         frm = aqt.forms.findreplace.Ui_Dialog()
@@ -1877,7 +2040,7 @@ class FavouritesLineEdit(QLineEdit):
         if ok:
             self.mw.col.conf['savedFilters'][name] = txt
             self.mw.col.setMod()
-            
+
         self.updateButton()
         self.browser.buildTree()
     

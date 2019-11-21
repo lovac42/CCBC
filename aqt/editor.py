@@ -449,8 +449,7 @@ class Editor(object):
         l = QLabel(_("Tags"))
         tb.addWidget(l, 1, 0)
         self.tags = aqt.tagedit.TagEdit(self.widget)
-        self.tags.connect(self.tags, SIGNAL("lostFocus"),
-                          self.saveTags)
+        self.tags.lostFocus.connect(self.saveTags)
         self.tags.setToolTip(shortcut(_("Jump to tags with Ctrl+Shift+T")))
         tb.addWidget(self.tags, 1, 1)
         g.setLayout(tb)
