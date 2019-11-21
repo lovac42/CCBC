@@ -52,7 +52,12 @@ class Ui_Preferences(object):
         self.pastePNG.setObjectName("pastePNG")
         self.verticalLayout.addWidget(self.pastePNG)
 
-        # For TidyTags to clean up when editing HTML 
+
+        self.noTypeAnsCase = QtWidgets.QCheckBox(self.tab_1)
+        self.noTypeAnsCase.setObjectName("noTypeAnsCase")
+        self.verticalLayout.addWidget(self.noTypeAnsCase)
+
+        # For TidyTags to clean up when editing HTML
         self.noScript = QtWidgets.QCheckBox(self.tab_1)
         self.noScript.setObjectName("noScript")
         self.verticalLayout.addWidget(self.noScript)
@@ -231,7 +236,8 @@ class Ui_Preferences(object):
         Preferences.setTabOrder(self.showProgress, self.pastePNG)
         # Preferences.setTabOrder(self.pastePNG, self.nightMode)
         # Preferences.setTabOrder(self.nightMode, self.dayLearnFirst)
-        Preferences.setTabOrder(self.pastePNG, self.noScript)
+        Preferences.setTabOrder(self.pastePNG, self.noTypeAnsCase)
+        Preferences.setTabOrder(self.noTypeAnsCase, self.noScript)
         Preferences.setTabOrder(self.noScript, self.importMedia)
         Preferences.setTabOrder(self.importMedia, self.newSched)
         Preferences.setTabOrder(self.newSched, self.useCurrent)
@@ -254,6 +260,7 @@ class Ui_Preferences(object):
         self.showEstimates.setText(_("Show next review time above answer buttons"))
         self.showProgress.setText(_("Show remaining card count during review"))
         self.pastePNG.setText(_("Paste clipboard images as PNG"))
+        self.noTypeAnsCase.setText(_("Typed in answer is not case sensitive"))
         self.noScript.setText(_("Remove <script> when editing HTML (add more conf later)"))
         self.importMedia.setText(_("Import and localize media during edits"))
         # self.nightMode.setText(_("Show cards as white on black (night mode)"))

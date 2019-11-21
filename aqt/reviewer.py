@@ -503,11 +503,15 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         # compare in NFC form so accents appear correct
         given = ucd.normalize("NFC", given)
         correct = ucd.normalize("NFC", correct)
-        try:
+        if self.mw.pm.profile.get("noTypeAnsCase", False):
+            s = difflib.SequenceMatcher(
+                    None,
+                    given.lower(),
+                    correct.lower(),
+                    autojunk=False
+                )
+        else:
             s = difflib.SequenceMatcher(None, given, correct, autojunk=False)
-        except:
-            # autojunk was added in python 2.7.1
-            s = difflib.SequenceMatcher(None, given, correct)
         givenElems = []
         correctElems = []
         givenPoint = 0
@@ -544,6 +548,9 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         def missed(s):
             return "<span class=typeMissed>"+cgi.escape(s)+"</span>"
         if given == correct:
+            res = good(given)
+        elif self.mw.pm.profile.get("noTypeAnsCase", False) \
+        and given.lower() == correct.lower():
             res = good(given)
         else:
             res = ""

@@ -229,6 +229,7 @@ Not currently enabled; click the sync button in the main window to enable."""))
 
     def setupOptions(self):
         self.form.pastePNG.setChecked(self.prof.get("pastePNG", False))
+        self.form.noTypeAnsCase.setChecked(self.prof.get("noTypeAnsCase", False))
         self.form.noScript.setChecked(self.prof.get("tidyTags.noScript", True))
         self.form.importMedia.setChecked(self.prof.get("tidyTags.importMedia", True))
         if self.mw.col.sched.type == "anki":
@@ -241,6 +242,7 @@ Not currently enabled; click the sync button in the main window to enable."""))
 
     def updateOptions(self):
         self.prof['pastePNG'] = self.form.pastePNG.isChecked()
+        self.prof['noTypeAnsCase'] = self.form.noTypeAnsCase.isChecked()
         self.prof['tidyTags.noScript'] = self.form.noScript.isChecked()
         self.prof['tidyTags.importMedia'] = self.form.importMedia.isChecked()
         qc = self.mw.col.conf
