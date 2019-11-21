@@ -213,9 +213,9 @@ class DeckConf(QDialog):
         # leech action
         if self.mw.col.sched.type == "anki":
             rm=f.leechAction.removeItem
-            rm(2)
-            rm(3)
             rm(4)
+            rm(3)
+            rm(2)
         f.leechAction.setCurrentIndex(c['leechAction'])
         # general
         c = self.conf
