@@ -95,7 +95,7 @@ class Anki2Importer(Importer):
             "select * from notes"):
             total += 1
 
-            if note[6].find('<script') > 0:
+            if note[6].find('<script') > -1:
                 script += 1
 
             # turn the db result into a mutable list
