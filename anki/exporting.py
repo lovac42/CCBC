@@ -136,6 +136,7 @@ class AnkiExporter(Exporter):
     ext = ".anki2"
     includeSched = False
     includeMedia = True
+    includeAllMedia = False
 
     def __init__(self, col):
         Exporter.__init__(self, col)
@@ -262,6 +263,8 @@ class AnkiExporter(Exporter):
         return self.src.tags.remFromStr("marked leech", tags)
 
     def _modelHasMedia(self, model, fname):
+        if self.includeAllMedia:
+            return True
         # First check the styling
         if fname in model["css"]:
             return True
@@ -362,6 +365,7 @@ class AnkiCollectionPackageExporter(AnkiPackageExporter):
     ext = ".colpkg"
     verbatim = True
     includeSched = None
+    includeAllMedia = None
 
     def __init__(self, col):
         AnkiPackageExporter.__init__(self, col)

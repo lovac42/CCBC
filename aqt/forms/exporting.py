@@ -41,6 +41,12 @@ class Ui_ExportDialog(object):
         self.includeMedia.setChecked(True)
         self.includeMedia.setObjectName("includeMedia")
         self.vboxlayout1.addWidget(self.includeMedia)
+
+        self.includeAllMedia = QtWidgets.QCheckBox(ExportDialog)
+        self.includeAllMedia.setChecked(False)
+        self.includeAllMedia.setObjectName("includeAllMedia")
+        self.vboxlayout1.addWidget(self.includeAllMedia)
+
         self.includeTags = QtWidgets.QCheckBox(ExportDialog)
         self.includeTags.setChecked(True)
         self.includeTags.setObjectName("includeTags")
@@ -64,7 +70,8 @@ class Ui_ExportDialog(object):
         ExportDialog.setTabOrder(self.format, self.deck)
         ExportDialog.setTabOrder(self.deck, self.includeSched)
         ExportDialog.setTabOrder(self.includeSched, self.includeMedia)
-        ExportDialog.setTabOrder(self.includeMedia, self.includeTags)
+        ExportDialog.setTabOrder(self.includeMedia, self.includeAllMedia)
+        ExportDialog.setTabOrder(self.includeAllMedia, self.includeTags)
         ExportDialog.setTabOrder(self.includeTags, self.buttonBox)
 
     def retranslateUi(self, ExportDialog):
@@ -74,6 +81,7 @@ class Ui_ExportDialog(object):
         self.label_2.setText(_("<b>Include</b>:"))
         self.includeSched.setText(_("Include scheduling information"))
         self.includeMedia.setText(_("Include media"))
+        self.includeAllMedia.setText(_("Include all _ prefixed media"))
         self.includeTags.setText(_("Include tags"))
         self.includeHTML.setText(_("Include HTML and media references"))
 

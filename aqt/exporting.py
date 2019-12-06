@@ -63,6 +63,8 @@ class ExportDialog(QDialog):
             getattr(self.exporter, "includeSched", None) is not None)
         self.frm.includeMedia.setVisible(
             getattr(self.exporter, "includeMedia", None) is not None)
+        self.frm.includeAllMedia.setVisible(
+            getattr(self.exporter, "includeAllMedia", None) is not None)
         self.frm.includeTags.setVisible(
             getattr(self.exporter, "includeTags", None) is not None)
         html = getattr(self.exporter, "includeHTML", None)
@@ -74,11 +76,21 @@ class ExportDialog(QDialog):
         # show deck list?
         self.frm.deck.setVisible(not self.isVerbatim)
 
+        # indicate akpg exports won't dereference field names in templates,
+        # so not all related medias are not exported.
+        if self.isApkg:
+            self.frm.includeMedia.setText("Include related media")
+        else:
+            self.frm.includeMedia.setText("Include media")
+
+
     def accept(self):
         self.exporter.includeSched = (
             self.frm.includeSched.isChecked())
         self.exporter.includeMedia = (
             self.frm.includeMedia.isChecked())
+        self.exporter.includeAllMedia = (
+            self.frm.includeAllMedia.isChecked())
         self.exporter.includeTags = (
             self.frm.includeTags.isChecked())
         self.exporter.includeHTML = (
