@@ -1,6 +1,6 @@
 # Anki: CCBC Edition
 
-This is Anki 2.1.13 with Qt4 & QtWebkit.
+This is Anki 2.1.15 with Qt4 & QtWebkit.
 
 ## About:
 This project takes the user interface of 2.0 and combine it with the backend code from 2.1. It's essentially upgrading 2.0 to python 3. The reason behind this is because QWebEngine is too sluggish for ebook reading. After importing any uncompressed 200kb file or "The Complete History of Supermemo" or "Supermemo 20 Rules", the webpage really starts to lag behind and in some cases freeze five seconds after every extraction.
@@ -60,6 +60,7 @@ Card Info Bar for Browser, by ijgnd: https://ankiweb.net/shared/info/2140680811
 Frozen Fields, by tmbb: https://github.com/tmbb/FrozenFields  
 Large and Colorful Buttons (css only), by hkr: https://ankiweb.net/shared/info/1829090218  
 Replay buttons on card, by ospalh: https://ankiweb.net/shared/info/498789867
+Don't remove mark on export, by Soren Bjornstad: https://ankiweb.net/shared/info/909480379
 
 
 ### Arthur-Milchior Must Haves:

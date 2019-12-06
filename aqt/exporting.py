@@ -65,6 +65,8 @@ class ExportDialog(QDialog):
             getattr(self.exporter, "includeMedia", None) is not None)
         self.frm.includeAllMedia.setVisible(
             getattr(self.exporter, "includeAllMedia", None) is not None)
+        self.frm.includeMarked.setVisible(
+            getattr(self.exporter, "includeMarked", None) is not None)
         self.frm.includeTags.setVisible(
             getattr(self.exporter, "includeTags", None) is not None)
         html = getattr(self.exporter, "includeHTML", None)
@@ -91,6 +93,8 @@ class ExportDialog(QDialog):
             self.frm.includeMedia.isChecked())
         self.exporter.includeAllMedia = (
             self.frm.includeAllMedia.isChecked())
+        self.exporter.includeMarked = (
+            self.frm.includeMarked.isChecked())
         self.exporter.includeTags = (
             self.frm.includeTags.isChecked())
         self.exporter.includeHTML = (

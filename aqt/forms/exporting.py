@@ -41,12 +41,14 @@ class Ui_ExportDialog(object):
         self.includeMedia.setChecked(True)
         self.includeMedia.setObjectName("includeMedia")
         self.vboxlayout1.addWidget(self.includeMedia)
-
         self.includeAllMedia = QtWidgets.QCheckBox(ExportDialog)
         self.includeAllMedia.setChecked(False)
         self.includeAllMedia.setObjectName("includeAllMedia")
         self.vboxlayout1.addWidget(self.includeAllMedia)
-
+        self.includeMarked = QtWidgets.QCheckBox(ExportDialog)
+        self.includeMarked.setChecked(False)
+        self.includeMarked.setObjectName("includeMarked")
+        self.vboxlayout1.addWidget(self.includeMarked)
         self.includeTags = QtWidgets.QCheckBox(ExportDialog)
         self.includeTags.setChecked(True)
         self.includeTags.setObjectName("includeTags")
@@ -82,6 +84,7 @@ class Ui_ExportDialog(object):
         self.includeSched.setText(_("Include scheduling information"))
         self.includeMedia.setText(_("Include media"))
         self.includeAllMedia.setText(_("Include all _ prefixed media"))
+        self.includeMarked.setText(_("Include marked tags"))
         self.includeTags.setText(_("Include tags"))
         self.includeHTML.setText(_("Include HTML and media references"))
 

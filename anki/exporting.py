@@ -137,6 +137,7 @@ class AnkiExporter(Exporter):
     includeSched = False
     includeMedia = True
     includeAllMedia = False
+    includeMarked = False
 
     def __init__(self, col):
         Exporter.__init__(self, col)
@@ -260,6 +261,8 @@ class AnkiExporter(Exporter):
         pass
     
     def removeSystemTags(self, tags):
+        if self.includeMarked:
+            return self.src.tags.remFromStr("leech", tags)
         return self.src.tags.remFromStr("marked leech", tags)
 
     def _modelHasMedia(self, model, fname):
@@ -366,6 +369,7 @@ class AnkiCollectionPackageExporter(AnkiPackageExporter):
     verbatim = True
     includeSched = None
     includeAllMedia = None
+    includeMarked = None
 
     def __init__(self, col):
         AnkiPackageExporter.__init__(self, col)
