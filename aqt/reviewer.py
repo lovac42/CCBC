@@ -540,13 +540,13 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
 
     def correct(self, given, correct, showBad=True):
         "Diff-corrects the typed-in answer."
-        givenElems, correctElems = self.tokenizeComparison(given, correct)
         def good(s):
             return "<span class=typeGood>"+cgi.escape(s)+"</span>"
         def bad(s):
             return "<span class=typeBad>"+cgi.escape(s)+"</span>"
         def missed(s):
             return "<span class=typeMissed>"+cgi.escape(s)+"</span>"
+
         if given == correct:
             res = good(given)
         elif self.mw.pm.profile.get("noTypeAnsCase", False) \
@@ -554,6 +554,7 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             res = good(given)
         else:
             res = ""
+            givenElems, correctElems = self.tokenizeComparison(given, correct)
             for ok, txt in givenElems:
                 if ok:
                     res += good(txt)
