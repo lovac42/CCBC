@@ -22,7 +22,7 @@ class EditCurrent(QDialog):
         self.form.setupUi(self)
         self.setWindowTitle(_("Edit Current"))
         self.setMinimumHeight(400)
-        self.setMinimumWidth(500)
+        self.setMinimumWidth(250)
         self.rejected.connect(self.onSave)
         self.form.buttonBox.button(QDialogButtonBox.Close).setShortcut(
                 QKeySequence("Ctrl+Return"))
