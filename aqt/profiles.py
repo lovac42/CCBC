@@ -16,7 +16,6 @@ import os
 import random
 import pickle
 import locale
-import re
 import shutil
 
 from aqt.qt import *
@@ -364,14 +363,12 @@ create table if not exists profiles
             (lang, enc) = locale.getdefaultlocale()
         except:
             # fails on osx
-            lang = "en"
-        if lang and lang not in ("pt_BR", "zh_CN", "zh_TW"):
-            lang = re.sub("(.*)_.*", "\\1", lang)
+            lang = "en_US"
         # find index
         idx = None
         en = None
         for c, (name, code) in enumerate(anki.lang.langs):
-            if code == "en":
+            if code == "en_US":
                 en = c
             if code == lang:
                 idx = c
