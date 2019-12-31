@@ -770,7 +770,7 @@ to a cloze type first, via Edit>Change Note Type."""))
             for tag in doc(elem):
                 tag.replaceWithChildren()
 
-        return str(doc)
+        return re.sub(r"(\<br\/\>)+$", "", str(doc))
 
     # Advanced menu
     ######################################################################
@@ -865,14 +865,14 @@ class EditorWebView(AnkiWebView):
         self._flagAnkiText()
 
     def onPaste(self, shiftKey=False):
-        #for the mouse + shift
+        #for the shift + RClick > paste
         self.strip=not(shiftKey or \
-        self.editor.mw.app.queryKeyboardModifiers()==Qt.ShiftModifier)
+            self.editor.mw.app.queryKeyboardModifiers()==Qt.ShiftModifier)
 
         mime = self.mungeClip()
         self.triggerPageAction(QWebPage.Paste)
         self.restoreClip()
-        self.strip=True
+        self.strip=True #Restore init value after paste
 
     def mouseReleaseEvent(self, evt):
         if not isMac and not isWin and evt.button() == Qt.MidButton:
