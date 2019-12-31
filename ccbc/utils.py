@@ -33,6 +33,13 @@ def readFile(fname):
             return f.read()
 
 
+def readBinary(fname):
+    path=webBundlePath(fname)
+    if os.path.exists(path):
+        with open(path, 'rb') as f:
+            return f.read()
+
+
 RE_URI = re.compile(r"^(https?|file|ftp)://", re.I)
 def isURL(s):
     return not not RE_URI.search(s)

@@ -136,38 +136,68 @@ class Editor(object):
         b("fields", self.onFields, "",
           shortcut(_("Customize Fields")), size=False, text=_("Fields..."),
           native=True, canDisable=False)
-        self.iconsBox.addItem(QSpacerItem(6,1, QSizePolicy.Fixed))
+        self.iconsBox.addItem(QSpacerItem(2,1, QSizePolicy.Fixed))
         b("layout", self.onCardLayout, _("Ctrl+L"),
           shortcut(_("Customize Cards (Ctrl+L)")),
           size=False, text=_("Cards..."), native=True, canDisable=False)
+
         # align to right
         self.iconsBox.addItem(QSpacerItem(20,1, QSizePolicy.Expanding))
 
-        #hack to add in ordered/unordered list buttons
-        btn=b("text_ulist", self.toggleUnorderedList, _("Ctrl+Shift+U"), _("Unordered List (Ctrl+Shift+U)"),
-          check=True)
-        p=QPixmap()
-        p.loadFromData(QByteArray.fromBase64("""R0lGODlhFgAWAMIGAAAAAB1ChF9vj1iE33mOrqezxv///////yH5BAEAAAcALAAAAAAWABYAAAMyeLrc/jDKSesppNhGRlBAKIZRERBbqm6YtnbfMY7lud64UwiuKnigGQliQuWOyKQykgAAOw=="""))
-        btn.setIcon(QIcon(p))
-
-        btn=b("text_olist", self.toggleOrderedList, _("Ctrl+Shift+O"), _("Ordered List (Ctrl+Shift+O)"),
-          check=True)
-        p=QPixmap()
-        p.loadFromData(QByteArray.fromBase64("""R0lGODlhFgAWAMIGAAAAADljwliE35GjuaezxtHa7P///////yH5BAEAAAcALAAAAAAWABYAAAM2eLrc/jDKSespwjoRFvggCBUBoTFBeq6QIAysQnRHaEOzyaZ07Lu9lUBnC0UGQU1K52s6n5oEADs="""))
-        btn.setIcon(QIcon(p))
-
-        b("text_bold", self.toggleBold, _("Ctrl+B"), _("Bold text (Ctrl+B)"),
-          check=True)
-        b("text_italic", self.toggleItalic, _("Ctrl+I"), _("Italic text (Ctrl+I)"),
-          check=True)
+        b("text_bold", self.toggleBold, _("Ctrl+B"),
+            _("Bold text (Ctrl+B)"), check=True)
+        b("text_italic", self.toggleItalic, _("Ctrl+I"),
+            _("Italic text (Ctrl+I)"), check=True)
         b("text_under", self.toggleUnderline, _("Ctrl+U"),
-          _("Underline text (Ctrl+U)"), check=True)
+            _("Underline text (Ctrl+U)"), check=True)
         b("text_super", self.toggleSuper, _("Ctrl+Shift+="),
-          _("Superscript (Ctrl+Shift+=)"), check=True)
+            _("Superscript (Ctrl+Shift+=)"), check=True)
         b("text_sub", self.toggleSub, _("Ctrl+="),
-          _("Subscript (Ctrl+=)"), check=True)
+            _("Subscript (Ctrl+=)"), check=True)
+
+        #adds ordered/unordered list buttons
+        import ccbc.ico
+
+        btn=b("text_ulist", self.insertUnorderedList, _("Ctrl+["),
+            _("Unordered List (Ctrl+[)"))
+        btn.setIcon(ccbc.ico.ICO_UNORDERED_LIST)
+
+        btn=b("text_olist", self.insertOrderedList, _("Ctrl+]"),
+            _("Ordered List (Ctrl+])"))
+        btn.setIcon(ccbc.ico.ICO_ORDERED_LIST)
+
+        self.iconsBox.addItem(QSpacerItem(3,1, QSizePolicy.Fixed))
+
+        #adds indent
+        btn=b("text_indent", self.indentText, _("Ctrl+Shift+]"),
+            _("Indent Text (Ctrl+Shift+])"))
+        btn.setIcon(ccbc.ico.ICO_INDENT)
+
+        btn=b("text_outdent", self.outdentText, _("Ctrl+Shift+["),
+            _("Outdent Text (Ctrl+Shift+[)"))
+        btn.setIcon(ccbc.ico.ICO_OUTDENT)
+
+        #adds justify left/right/etc...
+        btn=b("justify_left", self.justifyLeft, _("Ctrl+Alt+Shift+L"),
+            _("Justify Left (Ctrl+Shift+L)"))
+        btn.setIcon(ccbc.ico.ICO_JUSTIFY_LEFT)
+
+        btn=b("justify_center", self.justifyCenter, _("Ctrl+Alt+Shift+B"),
+            _("Justify Center (Ctrl+Alt+Shift+B)"))
+        btn.setIcon(ccbc.ico.ICO_JUSTIFY_CENTER)
+
+        btn=b("justify_right", self.justifyRight, _("Ctrl+Alt+Shift+R"),
+            _("Justify Right (Ctrl+Alt+Shift+R)"))
+        btn.setIcon(ccbc.ico.ICO_JUSTIFY_RIGHT)
+
+        btn=b("justify_full", self.justifyFull, _("Ctrl+Alt+Shift+S"),
+            _("Justify Full (Ctrl+Alt+Shift+S)"))
+        btn.setIcon(ccbc.ico.ICO_JUSTIFY_FULL)
+
         b("text_clear", self.removeFormat, _("Ctrl+R"),
-          _("Remove formatting (Ctrl+R)"))
+            _("Remove formatting (Ctrl+R)"))
+        self.iconsBox.addItem(QSpacerItem(3,1, QSizePolicy.Fixed))
+
         but = b("foreground", self.onForeground, _("F7"), text=" ")
         but.setToolTip(_("Set foreground colour (F7)"))
         self.setupForegroundButton(but)
@@ -199,6 +229,7 @@ class Editor(object):
         # tags
         s = QShortcut(QKeySequence("Ctrl+Shift+T"), self.widget)
         s.connect(s, SIGNAL("activated()"), lambda: self.tags.setFocus())
+        self.iconsBox.addItem(QSpacerItem(5,1, QSizePolicy.Fixed))
         runHook("setupEditorButtons", self)
 
     def enableButtons(self, val=True):
@@ -287,8 +318,6 @@ class Editor(object):
         elif str.startswith("state"):
             (cmd, txt) = str.split(":", 1)
             r = json.loads(txt)
-            self._buttons['text_ulist'].setChecked(r['ulist'])
-            self._buttons['text_olist'].setChecked(r['olist'])
             self._buttons['text_bold'].setChecked(r['bold'])
             self._buttons['text_italic'].setChecked(r['italic'])
             self._buttons['text_under'].setChecked(r['under'])
@@ -500,12 +529,6 @@ class Editor(object):
     # Format buttons
     ######################################################################
 
-    def toggleUnorderedList(self, bool):
-        self.web.eval("setFormat('insertUnorderedList');")
-
-    def toggleOrderedList(self, bool):
-        self.web.eval("setFormat('insertOrderedList');")
-
     def toggleBold(self, bool):
         self.web.eval("setFormat('bold');")
 
@@ -523,6 +546,30 @@ class Editor(object):
 
     def removeFormat(self):
         self.web.eval("setFormat('removeFormat');")
+
+    def insertUnorderedList(self):
+        self.web.eval("setFormat('insertUnorderedList');")
+
+    def insertOrderedList(self):
+        self.web.eval("setFormat('insertOrderedList');")
+
+    def indentText(self):
+        self.web.eval("setFormat('indent');")
+
+    def outdentText(self):
+        self.web.eval("setFormat('outdent');")
+
+    def justifyLeft(self):
+        self.web.eval("setFormat('justifyLeft');")
+
+    def justifyCenter(self):
+        self.web.eval("setFormat('justifyCenter');")
+
+    def justifyRight(self):
+        self.web.eval("setFormat('justifyRight');")
+
+    def justifyFull(self):
+        self.web.eval("setFormat('justifyFull');")
 
     def onCloze(self):
         # check that the model is set up for cloze deletion
