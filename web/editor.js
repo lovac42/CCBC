@@ -33,6 +33,8 @@ function onKey() {
 
 function sendState() {
     var r = {
+        'ulist': document.queryCommandState("ulist"),
+        'olist': document.queryCommandState("olist"),
         'bold': document.queryCommandState("bold"),
         'italic': document.queryCommandState("italic"),
         'under': document.queryCommandState("underline"),

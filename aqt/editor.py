@@ -142,6 +142,20 @@ class Editor(object):
           size=False, text=_("Cards..."), native=True, canDisable=False)
         # align to right
         self.iconsBox.addItem(QSpacerItem(20,1, QSizePolicy.Expanding))
+
+        #hack to add in ordered/unordered list buttons
+        btn=b("text_ulist", self.toggleUnorderedList, _("Ctrl+Shift+U"), _("Unordered List (Ctrl+Shift+U)"),
+          check=True)
+        p=QPixmap()
+        p.loadFromData(QByteArray.fromBase64("""R0lGODlhFgAWAMIGAAAAAB1ChF9vj1iE33mOrqezxv///////yH5BAEAAAcALAAAAAAWABYAAAMyeLrc/jDKSesppNhGRlBAKIZRERBbqm6YtnbfMY7lud64UwiuKnigGQliQuWOyKQykgAAOw=="""))
+        btn.setIcon(QIcon(p))
+
+        btn=b("text_olist", self.toggleOrderedList, _("Ctrl+Shift+O"), _("Ordered List (Ctrl+Shift+O)"),
+          check=True)
+        p=QPixmap()
+        p.loadFromData(QByteArray.fromBase64("""R0lGODlhFgAWAMIGAAAAADljwliE35GjuaezxtHa7P///////yH5BAEAAAcALAAAAAAWABYAAAM2eLrc/jDKSespwjoRFvggCBUBoTFBeq6QIAysQnRHaEOzyaZ07Lu9lUBnC0UGQU1K52s6n5oEADs="""))
+        btn.setIcon(QIcon(p))
+
         b("text_bold", self.toggleBold, _("Ctrl+B"), _("Bold text (Ctrl+B)"),
           check=True)
         b("text_italic", self.toggleItalic, _("Ctrl+I"), _("Italic text (Ctrl+I)"),
@@ -273,6 +287,8 @@ class Editor(object):
         elif str.startswith("state"):
             (cmd, txt) = str.split(":", 1)
             r = json.loads(txt)
+            self._buttons['text_ulist'].setChecked(r['ulist'])
+            self._buttons['text_olist'].setChecked(r['olist'])
             self._buttons['text_bold'].setChecked(r['bold'])
             self._buttons['text_italic'].setChecked(r['italic'])
             self._buttons['text_under'].setChecked(r['under'])
@@ -483,6 +499,12 @@ class Editor(object):
 
     # Format buttons
     ######################################################################
+
+    def toggleUnorderedList(self, bool):
+        self.web.eval("setFormat('insertUnorderedList');")
+
+    def toggleOrderedList(self, bool):
+        self.web.eval("setFormat('insertOrderedList');")
 
     def toggleBold(self, bool):
         self.web.eval("setFormat('bold');")
