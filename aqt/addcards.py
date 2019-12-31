@@ -155,7 +155,7 @@ class AddCards(QDialog):
 
     def addHistory(self, note):
         self.history.insert(0, note.id)
-        self.history = self.history[:30]
+        del self.history[30:]
         self.historyButton.setEnabled(True)
 
     def onHistory(self):
