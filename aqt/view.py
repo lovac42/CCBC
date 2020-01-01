@@ -11,6 +11,7 @@ import json
 from aqt import mw
 from aqt.qt import *
 from anki.hooks import addHook
+from anki.consts import MODEL_CLOZE
 
 
 class ViewManager:
@@ -207,10 +208,17 @@ class ZoomManager():
             return "zoom."+self.mw.state
         if self.isIR:
             return None
+
         m = self.mw.reviewer.card.model()
+        ord = "" #target template card number
+        if m['type'] != MODEL_CLOZE:
+            card_num = self.mw.reviewer.card.ord
+            if card_num: # discard 0, backwards compatible reasons
+                ord = "_c%d"%card_num
+
         if self.mw.reviewer.state == "answer":
-            return "zoom.a_m%s"%str(m['id'])
-        return "zoom.q_m%s"%str(m['id'])
+            return "zoom.a_m%s%s"%(str(m['id']),ord)
+        return "zoom.q_m%s%s"%(str(m['id']),ord)
 
     def reset(self, z=1): #called by menuitems
         key = self._getKey()
