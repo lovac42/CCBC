@@ -123,6 +123,10 @@ class Ui_Preferences(object):
         self.showFormatBtns = QtWidgets.QCheckBox(self.tab_adv)
         self.showFormatBtns.setObjectName("showFormatBtns")
         self.tabAdvVLayout.addWidget(self.showFormatBtns)
+        # stop audio on show answer
+        self.stpAudOnShwAns = QtWidgets.QCheckBox(self.tab_adv)
+        self.stpAudOnShwAns.setObjectName("stpAudOnShwAns")
+        self.tabAdvVLayout.addWidget(self.stpAudOnShwAns)
         # case sensitive type in answers
         self.noTypeAnsCase = QtWidgets.QCheckBox(self.tab_adv)
         self.noTypeAnsCase.setObjectName("noTypeAnsCase")
@@ -279,7 +283,9 @@ class Ui_Preferences(object):
         Preferences.setTabOrder(self.fullSync, self.syncMedia)
         Preferences.setTabOrder(self.syncMedia, self.syncDeauth)
 
-        Preferences.setTabOrder(self.syncDeauth, self.noTypeAnsCase)
+        Preferences.setTabOrder(self.syncDeauth, self.showFormatBtns)
+        Preferences.setTabOrder(self.showFormatBtns, self.stpAudOnShwAns)
+        Preferences.setTabOrder(self.stpAudOnShwAns, self.noTypeAnsCase)
         Preferences.setTabOrder(self.noTypeAnsCase, self.importMedia)
         Preferences.setTabOrder(self.importMedia, self.noScript)
 
@@ -321,6 +327,7 @@ class Ui_Preferences(object):
         # Advanced tab
         # self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_adv), _("Advanced"))
         self.showFormatBtns.setText(_("Show extra formatting buttons in editor"))
+        self.stpAudOnShwAns.setText(_("Stop media playback on show answer"))
         self.noTypeAnsCase.setText(_("Typed in answer is not case sensitive"))
         self.importMedia.setText(_("Import and localize media during edits"))
         self.noScript.setText(_("Remove <script> when editing HTML (add more conf later)"))

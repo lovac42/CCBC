@@ -286,8 +286,10 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         self.state = "answer"
         c = self.card
         a = c.a()
+        # stop audio? No for 2.0, Yes for 2.1
+        if self.mw.pm.profile.get("ccbc.stpAudOnShwAns", True):
+            clearAudioQueue()
         # play audio?
-        clearAudioQueue()
         if self.autoplay(c):
             playFromText(a)
         # render and update bottom
