@@ -7,6 +7,8 @@
 import os, re
 from anki.utils import isMac
 
+from PyQt4 import QtCore, QtGui
+
 
 def _getExportFolder():
     # running from source?
@@ -38,6 +40,12 @@ def readBinary(fname):
     if os.path.exists(path):
         with open(path, 'rb') as f:
             return f.read()
+
+
+def getIcon(fn):
+    p = _getExportFolder()
+    f = os.path.join(p,"images",fn)
+    return QtGui.QIcon(os.path.abspath(f))
 
 
 RE_URI = re.compile(r"^(https?|file|ftp)://", re.I)
