@@ -503,7 +503,7 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         # compare in NFC form so accents appear correct
         given = ucd.normalize("NFC", given)
         correct = ucd.normalize("NFC", correct)
-        if self.mw.pm.profile.get("noTypeAnsCase", False):
+        if self.mw.pm.profile.get("ccbc.noTypeAnsCase", False):
             s = difflib.SequenceMatcher(
                     None,
                     given.lower(),
@@ -549,7 +549,7 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
 
         if given == correct:
             res = good(given)
-        elif self.mw.pm.profile.get("noTypeAnsCase", False) \
+        elif self.mw.pm.profile.get("ccbc.noTypeAnsCase", False) \
         and given.lower() == correct.lower():
             res = good(given)
         else:

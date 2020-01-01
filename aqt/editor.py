@@ -157,42 +157,44 @@ class Editor(object):
         b("text_sub", self.toggleSub, _("Ctrl+="),
             _("Subscript (Ctrl+=)"), check=True)
 
-        #adds ordered/unordered list buttons
-        btn=b("text_ulist", self.insertUnorderedList, _("Ctrl+["),
-            _("Unordered List (Ctrl+[)"))
-        btn.setIcon(getIcon("unordered_list.png"))
+        if self.mw.pm.profile.get("ccbc.showFormatBtns", True):
+            #adds ordered/unordered list buttons
+            btn=b("text_ulist", self.insertUnorderedList, _("Ctrl+["),
+                _("Unordered List (Ctrl+[)"))
+            btn.setIcon(getIcon("unordered_list.png"))
 
-        btn=b("text_olist", self.insertOrderedList, _("Ctrl+]"),
-            _("Ordered List (Ctrl+])"))
-        btn.setIcon(getIcon("ordered_list.png"))
+            btn=b("text_olist", self.insertOrderedList, _("Ctrl+]"),
+                _("Ordered List (Ctrl+])"))
+            btn.setIcon(getIcon("ordered_list.png"))
 
-        self.iconsBox.addItem(QSpacerItem(3,1, QSizePolicy.Fixed))
+            self.iconsBox.addItem(QSpacerItem(3,1, QSizePolicy.Fixed))
 
-        #adds indent
-        btn=b("text_indent", self.indentText, _("Ctrl+Shift+]"),
-            _("Indent Text (Ctrl+Shift+])"))
-        btn.setIcon(getIcon("indent.png"))
+            #adds indent
+            btn=b("text_indent", self.indentText, _("Ctrl+Shift+]"),
+                _("Indent Text (Ctrl+Shift+])"))
+            btn.setIcon(getIcon("indent.png"))
 
-        btn=b("text_outdent", self.outdentText, _("Ctrl+Shift+["),
-            _("Outdent Text (Ctrl+Shift+[)"))
-        btn.setIcon(getIcon("outdent.png"))
+            btn=b("text_outdent", self.outdentText, _("Ctrl+Shift+["),
+                _("Outdent Text (Ctrl+Shift+[)"))
+            btn.setIcon(getIcon("outdent.png"))
 
-        #adds justify left/right/etc...
-        btn=b("justify_left", self.justifyLeft, _("Ctrl+Alt+Shift+L"),
-            _("Justify Left (Ctrl+Shift+L)"))
-        btn.setIcon(getIcon("text_align_flush_left.png"))
+            #adds justify left/right/etc...
+            btn=b("justify_left", self.justifyLeft, _("Ctrl+Alt+Shift+L"),
+                _("Justify Left (Ctrl+Shift+L)"))
+            btn.setIcon(getIcon("text_align_flush_left.png"))
 
-        btn=b("justify_center", self.justifyCenter, _("Ctrl+Alt+Shift+B"),
-            _("Justify Center (Ctrl+Alt+Shift+B)"))
-        btn.setIcon(getIcon("text_align_centered.png"))
+            btn=b("justify_center", self.justifyCenter, _("Ctrl+Alt+Shift+B"),
+                _("Justify Center (Ctrl+Alt+Shift+B)"))
+            btn.setIcon(getIcon("text_align_centered.png"))
 
-        btn=b("justify_right", self.justifyRight, _("Ctrl+Alt+Shift+R"),
-            _("Justify Right (Ctrl+Alt+Shift+R)"))
-        btn.setIcon(getIcon("text_align_flush_right.png"))
+            btn=b("justify_right", self.justifyRight, _("Ctrl+Alt+Shift+R"),
+                _("Justify Right (Ctrl+Alt+Shift+R)"))
+            btn.setIcon(getIcon("text_align_flush_right.png"))
 
-        btn=b("justify_full", self.justifyFull, _("Ctrl+Alt+Shift+S"),
-            _("Justify Full (Ctrl+Alt+Shift+S)"))
-        btn.setIcon(getIcon("text_align_justified.png"))
+            btn=b("justify_full", self.justifyFull, _("Ctrl+Alt+Shift+S"),
+                _("Justify Full (Ctrl+Alt+Shift+S)"))
+            btn.setIcon(getIcon("text_align_justified.png"))
+
 
         b("text_clear", self.removeFormat, _("Ctrl+R"),
             _("Remove formatting (Ctrl+R)"))

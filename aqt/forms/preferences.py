@@ -18,6 +18,9 @@ class Ui_Preferences(object):
         self.tabWidget = QtWidgets.QTabWidget(Preferences)
         self.tabWidget.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.tabWidget.setObjectName("tabWidget")
+
+
+        # Basic tab
         self.tab_1 = QtWidgets.QWidget()
         self.tab_1.setObjectName("tab_1")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.tab_1)
@@ -51,19 +54,6 @@ class Ui_Preferences(object):
         self.pastePNG = QtWidgets.QCheckBox(self.tab_1)
         self.pastePNG.setObjectName("pastePNG")
         self.verticalLayout.addWidget(self.pastePNG)
-
-
-        self.noTypeAnsCase = QtWidgets.QCheckBox(self.tab_1)
-        self.noTypeAnsCase.setObjectName("noTypeAnsCase")
-        self.verticalLayout.addWidget(self.noTypeAnsCase)
-
-        # For TidyTags to clean up when editing HTML
-        self.noScript = QtWidgets.QCheckBox(self.tab_1)
-        self.noScript.setObjectName("noScript")
-        self.verticalLayout.addWidget(self.noScript)
-        self.importMedia = QtWidgets.QCheckBox(self.tab_1)
-        self.importMedia.setObjectName("importMedia")
-        self.verticalLayout.addWidget(self.importMedia)
 
         # self.nightMode = QtWidgets.QCheckBox(self.tab_1)
         # self.nightMode.setObjectName("nightMode")
@@ -120,7 +110,38 @@ class Ui_Preferences(object):
         self.verticalLayout.addLayout(self.gridLayout_4)
         spacerItem = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
-        self.tabWidget.addTab(self.tab_1, "")
+        self.tabWidget.addTab(self.tab_1, _("Basic"))
+
+
+        # Create Advanced Tab
+        self.tab_adv=QtWidgets.QWidget()
+        self.tab_adv.setObjectName("tab_adv")
+        self.tabAdvGLayout=QtWidgets.QGridLayout()
+        self.tabAdvVLayout=QtWidgets.QVBoxLayout(self.tab_adv)
+        self.tabAdvVLayout.addLayout(self.tabAdvGLayout)
+        # formatting buttons
+        self.showFormatBtns = QtWidgets.QCheckBox(self.tab_adv)
+        self.showFormatBtns.setObjectName("showFormatBtns")
+        self.tabAdvVLayout.addWidget(self.showFormatBtns)
+        # case sensitive type in answers
+        self.noTypeAnsCase = QtWidgets.QCheckBox(self.tab_adv)
+        self.noTypeAnsCase.setObjectName("noTypeAnsCase")
+        self.tabAdvVLayout.addWidget(self.noTypeAnsCase)
+        # For localizing media
+        self.importMedia = QtWidgets.QCheckBox(self.tab_adv)
+        self.importMedia.setObjectName("importMedia")
+        self.tabAdvVLayout.addWidget(self.importMedia)
+        # For TidyTags to clean up when editing HTML
+        self.noScript = QtWidgets.QCheckBox(self.tab_adv)
+        self.noScript.setObjectName("noScript")
+        self.tabAdvVLayout.addWidget(self.noScript)
+        # push everything up
+        spacerItem=QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.tabAdvVLayout.addItem(spacerItem)
+        self.tabWidget.addTab(self.tab_adv, _("Advanced"))
+
+
+        # Network tab
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.tab_2)
@@ -163,7 +184,10 @@ class Ui_Preferences(object):
         self.verticalLayout_4.addLayout(self.hboxlayout)
         spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_4.addItem(spacerItem2)
-        self.tabWidget.addTab(self.tab_2, "")
+        self.tabWidget.addTab(self.tab_2, _("Network"))
+
+
+        # Backup tab
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.tab)
@@ -203,13 +227,8 @@ class Ui_Preferences(object):
         self.label_21.setAlignment(QtCore.Qt.AlignCenter)
         self.label_21.setObjectName("label_21")
         self.verticalLayout_3.addWidget(self.label_21)
-        self.tabWidget.addTab(self.tab, "")
-        self.verticalLayout_2.addWidget(self.tabWidget)
-        self.buttonBox = QtWidgets.QDialogButtonBox(Preferences)
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Close)
-        self.buttonBox.setObjectName("buttonBox")
-        self.verticalLayout_2.addWidget(self.buttonBox)
+        self.tabWidget.addTab(self.tab, _("Backups"))
+
 
         # Muffins tab
         self.lrnStage=QtWidgets.QWidget()
@@ -225,6 +244,16 @@ class Ui_Preferences(object):
         self.lrnStageGLayout.addWidget(self.skipFinalDrill, 1, 0, 1, 3)
         self.skipFinalDrill.setTristate(True)
 
+
+        # Close button
+        self.verticalLayout_2.addWidget(self.tabWidget)
+        self.buttonBox = QtWidgets.QDialogButtonBox(Preferences)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Close)
+        self.buttonBox.setObjectName("buttonBox")
+        self.verticalLayout_2.addWidget(self.buttonBox)
+
+
         self.retranslateUi(Preferences)
         self.tabWidget.setCurrentIndex(0)
         self.buttonBox.accepted.connect(Preferences.accept)
@@ -236,10 +265,8 @@ class Ui_Preferences(object):
         Preferences.setTabOrder(self.showProgress, self.pastePNG)
         # Preferences.setTabOrder(self.pastePNG, self.nightMode)
         # Preferences.setTabOrder(self.nightMode, self.dayLearnFirst)
-        Preferences.setTabOrder(self.pastePNG, self.noTypeAnsCase)
-        Preferences.setTabOrder(self.noTypeAnsCase, self.noScript)
-        Preferences.setTabOrder(self.noScript, self.importMedia)
-        Preferences.setTabOrder(self.importMedia, self.newSched)
+        Preferences.setTabOrder(self.pastePNG, self.noScript)
+        Preferences.setTabOrder(self.noScript, self.newSched)
         Preferences.setTabOrder(self.newSched, self.useCurrent)
         Preferences.setTabOrder(self.useCurrent, self.newSpread)
         Preferences.setTabOrder(self.newSpread, self.dayOffset)
@@ -252,6 +279,11 @@ class Ui_Preferences(object):
         Preferences.setTabOrder(self.fullSync, self.syncMedia)
         Preferences.setTabOrder(self.syncMedia, self.syncDeauth)
 
+        Preferences.setTabOrder(self.syncDeauth, self.noTypeAnsCase)
+        Preferences.setTabOrder(self.noTypeAnsCase, self.importMedia)
+        Preferences.setTabOrder(self.importMedia, self.noScript)
+
+
     def retranslateUi(self, Preferences):
         _translate = QtCore.QCoreApplication.translate
         Preferences.setWindowTitle(_("Preferences"))
@@ -260,9 +292,6 @@ class Ui_Preferences(object):
         self.showEstimates.setText(_("Show next review time above answer buttons"))
         self.showProgress.setText(_("Show remaining card count during review"))
         self.pastePNG.setText(_("Paste clipboard images as PNG"))
-        self.noTypeAnsCase.setText(_("Typed in answer is not case sensitive"))
-        self.noScript.setText(_("Remove <script> when editing HTML (add more conf later)"))
-        self.importMedia.setText(_("Import and localize media during edits"))
         # self.nightMode.setText(_("Show cards as white on black (night mode)"))
         self.dayLearnFirst.setText(_("Show learning cards with larger steps before reviews"))
         self.newSched.setText(_("Experimental V2 scheduler"))
@@ -274,13 +303,13 @@ class Ui_Preferences(object):
         self.label_30.setText(_("Timebox time limit"))
         self.label_39.setText(_("mins"))
         self.label_40.setText(_("hours past midnight"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_1), _("Basic"))
+        # self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_1), _("Basic"))
         self.syncLabel.setText(_("<b>Synchronisation</b>"))
         self.syncMedia.setText(_("Synchronize audio and images too"))
         self.syncOnProgramOpen.setText(_("Automatically sync on profile open/close"))
         self.fullSync.setText(_("On next sync, force changes in one direction"))
         self.syncDeauth.setText(_("Deauthorize"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _("Network"))
+        # self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _("Network"))
         self.label_9.setText(_("<b>Backups</b><br>Anki will create a backup of your collection each time it is closed or synchronized."))
         self.label_10.setText(_("Keep"))
         self.label_11.setText(_("backups"))
@@ -289,4 +318,12 @@ class Ui_Preferences(object):
         self.label_21.setText(_("Some settings will take effect after you restart Anki."))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _("Backups"))
 
+        # Advanced tab
+        # self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_adv), _("Advanced"))
+        self.showFormatBtns.setText(_("Show extra formatting buttons in editor"))
+        self.noTypeAnsCase.setText(_("Typed in answer is not case sensitive"))
+        self.importMedia.setText(_("Import and localize media during edits"))
+        self.noScript.setText(_("Remove <script> when editing HTML (add more conf later)"))
+
+        # Muffins tab
         self.skipFinalDrill.setText(_('Skip Final Drill'))
