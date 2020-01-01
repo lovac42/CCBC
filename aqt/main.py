@@ -1250,9 +1250,12 @@ Please ensure a profile is open and Anki is not busy, then try again."""),
         faulthandler.enable(self._crashLog)
 
     def onAbout(self):
-        abouttext = "Version %s"%versionWithBuild()
-        abouttext += "\nQt %s PyQt %s"%(QT_VERSION_STR,PYQT_VERSION_STR)
-        print(abouttext)
+        from aqt.utils import supportText, showText
+        addmgr = self.addonManager
+        addons = "\n".join(addmgr.annotatedName(d) for d in addmgr.allAddons())
+        info = "\n".join((supportText(), "Add-ons:\n\n{}".format(addons)))
+        showText(info)
+
 
     # Handle Drag n Drop
     ##########################################################################

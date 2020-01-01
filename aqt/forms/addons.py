@@ -38,6 +38,11 @@ class Ui_Dialog(object):
         self.checkForUpdates = QtWidgets.QPushButton(Dialog)
         self.checkForUpdates.setObjectName("checkForUpdates")
         self.verticalLayout.addWidget(self.checkForUpdates)
+
+        self.exportList = QtWidgets.QPushButton(Dialog)
+        self.exportList.setObjectName("exportList")
+        self.verticalLayout.addWidget(self.exportList)
+
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
         self.viewPage = QtWidgets.QPushButton(Dialog)
@@ -72,6 +77,8 @@ class Ui_Dialog(object):
         self.viewFiles.setText(_("View Files"))
         self.toggleEnabled.setText(_("Toggle Enabled"))
         self.delete_2.setText(_("Delete"))
+
+        self.exportList.setText(_("Export List..."))
 
         self.getAddons.setVisible(False)
         self.checkForUpdates.setVisible(False)

@@ -465,6 +465,7 @@ class AddonsDialog(QDialog):
         f.setupUi(self)
         f.getAddons.clicked.connect(self.onGetAddons)
         f.installFromFile.clicked.connect(self.onInstallFiles)
+        f.exportList.clicked.connect(self.mw.onAbout)
         f.checkForUpdates.clicked.connect(self.onCheckForUpdates)
         f.toggleEnabled.clicked.connect(self.onToggleEnabled)
         f.viewPage.clicked.connect(self.onViewPage)
@@ -574,7 +575,7 @@ class AddonsDialog(QDialog):
         if not askUser(ngettext("Delete the %(num)d selected add-on?",
                                 "Delete the %(num)d selected add-ons?",
                                 len(selected)) %
-                               dict(num=len(selected))):
+                               dict(num=len(selected)), defaultno=True):
             return
         for dir in selected:
             if not self.mgr.deleteAddon(dir):
