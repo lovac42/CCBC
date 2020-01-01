@@ -330,7 +330,7 @@ Please create a new card type first."""))
         name = self._newCardName()
         t = self.mm.newTemplate(name)
         old = self.card.template()
-        t['qfmt'] = "%s<br>\n%s" % (_("Edit to customize"), old['qfmt'])
+        t['qfmt'] = old['qfmt']
         t['afmt'] = old['afmt']
         self.mm.addTemplate(self.model, t)
         self.ord = len(self.cards)
