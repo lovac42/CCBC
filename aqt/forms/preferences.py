@@ -119,7 +119,15 @@ class Ui_Preferences(object):
         self.tabAdvGLayout=QtWidgets.QGridLayout()
         self.tabAdvVLayout=QtWidgets.QVBoxLayout(self.tab_adv)
         self.tabAdvVLayout.addLayout(self.tabAdvGLayout)
-        # formatting buttons
+        # colorize review buttons
+        self.colorGradeBtns = QtWidgets.QCheckBox(self.tab_adv)
+        self.colorGradeBtns.setObjectName("colorGradeBtns")
+        self.tabAdvVLayout.addWidget(self.colorGradeBtns)
+        # large review buttons
+        self.bigGradeBtns = QtWidgets.QCheckBox(self.tab_adv)
+        self.bigGradeBtns.setObjectName("bigGradeBtns")
+        self.tabAdvVLayout.addWidget(self.bigGradeBtns)
+        # formatting buttons for editor
         self.showFormatBtns = QtWidgets.QCheckBox(self.tab_adv)
         self.showFormatBtns.setObjectName("showFormatBtns")
         self.tabAdvVLayout.addWidget(self.showFormatBtns)
@@ -326,6 +334,8 @@ class Ui_Preferences(object):
 
         # Advanced tab
         # self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_adv), _("Advanced"))
+        self.colorGradeBtns.setText(_("Colorize grading buttons for review"))
+        self.bigGradeBtns.setText(_("Enlarge grading buttons for review"))
         self.showFormatBtns.setText(_("Show extra formatting buttons in editor"))
         self.stpAudOnShwAns.setText(_("Stop media playback on show answer"))
         self.noTypeAnsCase.setText(_("Typed in answer is not case sensitive"))

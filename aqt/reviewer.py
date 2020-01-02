@@ -51,10 +51,24 @@ class Reviewer(object):
         self.mw.keyHandler = self._keyHandler
         self.web.setLinkHandler(self._linkHandler)
         # self.web.setKeyHandler(self._catchEsc)
-        if isMac:
-            self.bottom.web.setFixedHeight(46)
+
+        btn_height = 0
+        css_btn_height = ""
+        conf = self.mw.pm.profile.get
+        if conf("ccbc.revBigBtn",False):
+            btn_height = 40
+            css_btn_height = "height: 64px;"
+        if conf("ccbc.revColorBtn",False):
+            css = ccbc.css.user_rev_bottombar_color%css_btn_height
         else:
-            self.bottom.web.setFixedHeight(50+self.mw.fontHeightDelta*4)
+            css = ccbc.css.user_rev_bottombar_plain%css_btn_height
+        self._bottomCSS = ccbc.css.rev_bottombar + css
+
+        if isMac:
+            self.bottom.web.setFixedHeight(btn_height+46) #untested
+        else:
+            self.bottom.web.setFixedHeight(btn_height+50+self.mw.fontHeightDelta*4)
+
         self.bottom.web.setLinkHandler(self._linkHandler)
         self._reps = None
         self.card = None
@@ -574,7 +588,7 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
     # Bottom bar
     ##########################################################################
 
-    _bottomCSS = ccbc.css.rev_bottombar + ccbc.css.user_rev_bottombar
+    _bottomCSS = "" #init in show()
 
     def _bottomHTML(self):
         return ccbc.html.rev_bottombar % dict(

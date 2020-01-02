@@ -13,7 +13,9 @@ bottombar = readFile("toolbar-bottom.css")
 
 rev_bottombar = readFile("reviewer-bottom.css")
 
-user_rev_bottombar = readFile("user_reviewer-bottom.css")
+user_rev_bottombar_color = readFile("user_reviewer-bottom_color.css")
+
+user_rev_bottombar_plain = readFile("user_reviewer-bottom_plain.css")
 
 
 deckbrowser = readFile("deckbrowser.css")
