@@ -1264,12 +1264,19 @@ Please ensure a profile is open and Anki is not busy, then try again."""),
         mime = event.mimeData()
         if not mime.hasUrls():
             return None
-        urls = mime.urls()
-        ext = self.addonManager.ext
-        for url in urls:
-            if url.toLocalFile().endswith(ext):
+        for url in mime.urls():
+            f = url.toLocalFile()
+            _,ext = os.path.splitext(f)
+            ext = ext.lower()
+            if ext == self.addonManager.ext:
                 self.addonManager.onAddonsDialog()
+                #passes the ball to addonManager's dragEnterEvent
                 break
+
+    # def dropEvent(self, evt):
+        # Nothing drops here, no focus
+        # see aqt.webview
+        # pass
 
     # Media server
     ##########################################################################

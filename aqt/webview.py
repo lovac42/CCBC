@@ -108,8 +108,36 @@ class AnkiWebView(QWebView):
         runHook("AnkiWebView.contextMenuEvent", self, m)
         m.popup(QCursor.pos())
 
+    def dragEnterEvent(self, event):
+        mime = event.mimeData()
+        if not mime.hasUrls():
+            return
+        from aqt import mw
+
+        if mw.state == 'review':
+            #TODO: allow image drops for incremental writing
+            return
+
+        # exclude file ext
+        for url in mime.urls():
+            f = url.toLocalFile()
+            _,ext = os.path.splitext(f)
+            ext = ext.lower()
+            if ext in (
+                mw.addonManager.ext, ".ankiaddon", # filter addon packages
+                ".anki", ".anki2" #old apkg files, see aqt.importing.onImport
+            ):
+                return
+        # allows pdf, epub, mobi, etc...
+        event.acceptProposedAction()
+
     def dropEvent(self, evt):
-        pass
+        from aqt import mw
+        import aqt.importing
+        mime = evt.mimeData()
+        get = aqt.importing.importFile
+        for url in mime.urls():
+            get(mw, url.toLocalFile())
 
     def setLinkHandler(self, handler=None):
         if handler:
