@@ -20,7 +20,8 @@ import anki.find
 from anki.utils import fmtTimeSpan, ids2str, htmlToTextLine, stripHTMLMedia, isWin, intTime, isMac
 from aqt.utils import saveGeom, restoreGeom, saveSplitter, restoreSplitter, \
     saveHeader, restoreHeader, saveState, restoreState, applyStyles, getTag, \
-    showInfo, askUser, tooltip, showWarning, shortcut, getBase, mungeQA
+    showInfo, askUser, tooltip, showWarning, shortcut, getBase, mungeQA, \
+    qtMenuShortcutWorkaround
 from anki.hooks import runHook, addHook, remHook, runFilter
 from aqt.webview import AnkiWebView
 from aqt.toolbar import Toolbar
@@ -31,9 +32,6 @@ import ccbc.css
 from aqt.sidebar import TagTreeWidget
 from aqt.tagedit import TagEdit
 
-
-COLOUR_SUSPENDED = "#FFFFB2"
-COLOUR_MARKED = "#D9B2E9"
 
 # fixme: need to refresh after undo
 
@@ -65,15 +63,19 @@ class DataModel(QAbstractTableModel):
                 del self.cardObjs[c.id]
                 refresh = True
         if refresh:
-            self.emit(SIGNAL("layoutChanged()"))
+            self.layoutChanged.emit()
 
     # Model interface
     ######################################################################
 
-    def rowCount(self, index):
+    def rowCount(self, parent):
+        if parent and parent.isValid():
+            return 0
         return len(self.cards)
 
-    def columnCount(self, index):
+    def columnCount(self, parent):
+        if parent and parent.isValid():
+            return 0
         return len(self.activeCols)
 
     def data(self, index, role):
@@ -83,13 +85,16 @@ class DataModel(QAbstractTableModel):
             if self.activeCols[index.column()] not in (
                 "question", "answer", "noteFld"):
                 return
-            f = QFont()
             row = index.row()
             c = self.getCard(index)
             t = c.template()
-            f.setFamily(t.get("bfont", self.browser.mw.fontFamily))
-            f.setPixelSize(t.get("bsize", self.browser.mw.fontHeight))
+            if not t.get("bfont"):
+                return
+            f = QFont()
+            f.setFamily(t.get("bfont", "arial"))
+            f.setPixelSize(t.get("bsize", 12))
             return f
+                                   
         elif role == Qt.TextAlignmentRole:
             align = Qt.AlignVCenter
             if self.activeCols[index.column()] not in ("question", "answer",
@@ -151,8 +156,8 @@ class DataModel(QAbstractTableModel):
         self.beginReset()
         self.endReset()
 
+    # caller must have called editor.saveNow() before calling this or .reset()
     def beginReset(self):
-        self.browser.editor.saveNow()
         self.browser.editor.setNote(None, hide=False)
         self.browser.mw.progress.start()
         self.saveSelection()
@@ -166,6 +171,9 @@ class DataModel(QAbstractTableModel):
         self.browser.mw.progress.finish()
 
     def reverse(self):
+        self.browser.editor.saveNow(self._reverse)
+
+    def _reverse(self):
         self.beginReset()
         self.cards.reverse()
         self.endReset()
@@ -208,7 +216,13 @@ class DataModel(QAbstractTableModel):
         tv = self.browser.form.tableView
         if idx:
             tv.selectRow(idx.row())
-            tv.scrollTo(idx, tv.PositionAtCenter)
+            # scroll if the selection count has changed
+            if count != len(self.selectedCards):
+                # we save and then restore the horizontal scroll position because
+                # scrollTo() also scrolls horizontally which is confusing
+                h = tv.horizontalScrollBar().value()
+                tv.scrollTo(idx, tv.PositionAtCenter)
+                tv.horizontalScrollBar().setValue(h)
             if count < 500:
                 # discard large selections; they're too slow
                 sm.select(items, QItemSelectionModel.SelectCurrent |
@@ -233,7 +247,7 @@ class DataModel(QAbstractTableModel):
             return self.answer(c)
         elif type == "noteFld":
             f = c.note()
-            return self.formatQA(f.fields[self.col.models.sortIdx(f.model())])
+            return htmlToTextLine(f.fields[self.col.models.sortIdx(f.model())])
         elif type == "template":
             t = c.template()['name']
             if c.model()['type'] == MODEL_CLOZE:
@@ -282,16 +296,16 @@ class DataModel(QAbstractTableModel):
             return self.browser.mw.col.decks.name(c.did)
 
     def question(self, c):
-        return self.formatQA(c.q(browser=True))
+        return htmlToTextLine(c.q(browser=True))
 
     def answer(self, c):
         if c.template().get('bafmt'):
             # they have provided a template, use it verbatim
             c.q(browser=True)
-            return self.formatQA(c.a())
+            return htmlToTextLine(c.a())
         # need to strip question from answer
         q = self.question(c)
-        a = self.formatQA(c.a())
+        a = htmlToTextLine(c.a())
         if a.startswith(q):
             return a[len(q):].strip()
         return a
@@ -312,8 +326,30 @@ class DataModel(QAbstractTableModel):
             return ""
         return time.strftime("%Y-%m-%d", time.localtime(date))
 
+    def isRTL(self, index):
+        col = index.column()
+        type = self.columnType(col)
+        if type != "noteFld":
+            return False
+
+        row = index.row()
+        c = self.getCard(index)
+        nt = c.note().model()
+        return nt['flds'][self.col.models.sortIdx(nt)]['rtl']
+
+
 # Line painter
 ######################################################################
+
+COLOUR_SUSPENDED = "#FFFFB2"
+COLOUR_MARKED = "yellow"
+
+flagColours = {
+    1: "#ffaaaa",
+    2: "#ffb347",
+    3: "#82E0AA",
+    4: "#85C1E9",
+}
 
 class StatusDelegate(QItemDelegate):
 
@@ -332,8 +368,14 @@ class StatusDelegate(QItemDelegate):
             return
         finally:
             self.browser.mw.progress.blockUpdates = True
+
+        if self.model.isRTL(index):
+            option.direction = Qt.RightToLeft
+
         col = None
-        if c.note().hasTag("Marked"):
+        if c.userFlag() > 0:
+            col = flagColours[c.userFlag()]
+        elif c.note().hasTag("Marked"):
             col = COLOUR_MARKED
         elif c.queue == -1:
             col = COLOUR_SUSPENDED
@@ -342,6 +384,7 @@ class StatusDelegate(QItemDelegate):
             painter.save()
             painter.fillRect(option.rect, brush)
             painter.restore()
+
         return QItemDelegate.paint(self, painter, option, index)
 
 # Browser window
@@ -419,6 +462,7 @@ class Browser(QMainWindow):
         c(f.actionFind, s, self.onFind)
         c(f.actionNote, s, self.onNote)
         c(f.actionTags, s, self.onTags)
+        c(f.actionSidebar, s, self.focusSidebar)
         c(f.actionCardList, s, self.onCardList)
         # view
         c(f.actionShowEdit, s, self.onRowChanged)
@@ -433,6 +477,12 @@ class Browser(QMainWindow):
         # card info
         self.infoCut = QShortcut(QKeySequence("Ctrl+Shift+I"), self)
         c(self.infoCut, SIGNAL("activated()"), self.showCardInfo)
+        # set flags
+        c(f.actionClear_Flag, s, lambda: self.onSetFlag(0))
+        c(f.actionRed_Flag, s, lambda: self.onSetFlag(1))
+        c(f.actionOrange_Flag, s, lambda: self.onSetFlag(2))
+        c(f.actionGreen_Flag, s, lambda: self.onSetFlag(3))
+        c(f.actionBlue_Flag, s, lambda: self.onSetFlag(4))
         # set deck
         self.changeDeckCut = QShortcut(QKeySequence("Ctrl+D"), self)
         c(self.changeDeckCut, SIGNAL("activated()"), self.setDeck)
@@ -615,6 +665,7 @@ class Browser(QMainWindow):
             self.editor.setNote(self.card.note(reload=True))
             self.editor.card = self.card
             self.singleCard = True
+        self._updateFlagsMenu()
         runHook("browser.rowChanged", self)
         self._renderPreview(True)
         self.toolbar.draw()
@@ -749,6 +800,10 @@ by clicking on one on the left."""))
             self.onclick = onclick
             self.oncollapse = oncollapse
             self.type = ""
+
+    def focusSidebar(self):
+        # self.sidebarDockWidget.setVisible(True)
+        self.sidebarTree.setFocus()
 
     def setupTree(self):
         p = QPalette()
@@ -1410,8 +1465,30 @@ Red items will be deleted.""")))
             self.model.endReset()
             self.mw.requireReset()
 
-    # Suspending and marking
+    # Flags, Suspending and marking
     ######################################################################
+
+    def onSetFlag(self, n):
+        # flag needs toggling off?
+        if n == self.card.userFlag():
+            n = 0
+        self.col.setUserFlag(n, self.selectedCards())
+        self.model.reset()
+
+    def _updateFlagsMenu(self):
+        flag = self.card and self.card.userFlag()
+        flag = flag or 0
+
+        f = self.form
+        flagActions = [f.actionRed_Flag,
+                       f.actionOrange_Flag,
+                       f.actionGreen_Flag,
+                       f.actionBlue_Flag]
+
+        for c, act in enumerate(flagActions):
+            act.setChecked(flag == c+1)
+
+        qtMenuShortcutWorkaround(self.form.menuFlag)
 
     def isSuspended(self):
         return not not (self.card and self.card.queue == -1)
