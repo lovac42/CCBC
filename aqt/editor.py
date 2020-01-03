@@ -114,6 +114,7 @@ class Editor(object):
         return b
 
     def setupButtons(self):
+        self.extraFormatBtn=[]
         self._buttons = {}
         # button styles for mac
         if not isMac:
@@ -135,13 +136,15 @@ class Editor(object):
             self.iconsBox.setSpacing(14)
         self.outerLayout.addLayout(self.iconsBox)
         b = self._addButton
-        b("fields", self.onFields, "",
+        btn=b("fields", self.onFields, "",
           shortcut(_("Customize Fields")), size=False, text=_("Fields..."),
           native=True, canDisable=False)
+        btn.setMinimumWidth(50)
         self.iconsBox.addItem(QSpacerItem(2,1, QSizePolicy.Fixed))
-        b("layout", self.onCardLayout, _("Ctrl+L"),
+        btn=b("layout", self.onCardLayout, _("Ctrl+L"),
           shortcut(_("Customize Cards (Ctrl+L)")),
           size=False, text=_("Cards..."), native=True, canDisable=False)
+        btn.setMinimumWidth(50)
 
         # align to right
         self.iconsBox.addItem(QSpacerItem(20,1, QSizePolicy.Expanding))
@@ -154,18 +157,22 @@ class Editor(object):
             _("Underline text (Ctrl+U)"), check=True)
         b("text_super", self.toggleSuper, _("Ctrl+Shift+="),
             _("Superscript (Ctrl+Shift+=)"), check=True)
+        self.extraFormatBtn.append(self.iconsBox.count())
         b("text_sub", self.toggleSub, _("Ctrl+="),
             _("Subscript (Ctrl+=)"), check=True)
+        self.extraFormatBtn.append(self.iconsBox.count())
 
         if self.mw.pm.profile.get("ccbc.showFormatBtns", True):
             #adds ordered/unordered list buttons
             btn=b("text_ulist", self.insertUnorderedList, _("Ctrl+["),
                 _("Unordered List (Ctrl+[)"))
             btn.setIcon(getIcon("unordered_list.png"))
+            self.extraFormatBtn.append(self.iconsBox.count())
 
             btn=b("text_olist", self.insertOrderedList, _("Ctrl+]"),
                 _("Ordered List (Ctrl+])"))
             btn.setIcon(getIcon("ordered_list.png"))
+            self.extraFormatBtn.append(self.iconsBox.count())
 
             self.iconsBox.addItem(QSpacerItem(3,1, QSizePolicy.Fixed))
 
@@ -173,50 +180,59 @@ class Editor(object):
             btn=b("text_indent", self.indentText, _("Ctrl+Shift+]"),
                 _("Indent Text (Ctrl+Shift+])"))
             btn.setIcon(getIcon("indent.png"))
+            self.extraFormatBtn.append(self.iconsBox.count())
 
             btn=b("text_outdent", self.outdentText, _("Ctrl+Shift+["),
                 _("Outdent Text (Ctrl+Shift+[)"))
             btn.setIcon(getIcon("outdent.png"))
+            self.extraFormatBtn.append(self.iconsBox.count())
 
             #adds justify left/right/etc...
             btn=b("justify_left", self.justifyLeft, _("Ctrl+Alt+Shift+L"),
                 _("Justify Left (Ctrl+Shift+L)"))
             btn.setIcon(getIcon("text_align_flush_left.png"))
+            self.extraFormatBtn.append(self.iconsBox.count())
 
             btn=b("justify_center", self.justifyCenter, _("Ctrl+Alt+Shift+B"),
                 _("Justify Center (Ctrl+Alt+Shift+B)"))
             btn.setIcon(getIcon("text_align_centered.png"))
+            self.extraFormatBtn.append(self.iconsBox.count())
 
             btn=b("justify_right", self.justifyRight, _("Ctrl+Alt+Shift+R"),
                 _("Justify Right (Ctrl+Alt+Shift+R)"))
             btn.setIcon(getIcon("text_align_flush_right.png"))
+            self.extraFormatBtn.append(self.iconsBox.count())
 
             btn=b("justify_full", self.justifyFull, _("Ctrl+Alt+Shift+S"),
                 _("Justify Full (Ctrl+Alt+Shift+S)"))
             btn.setIcon(getIcon("text_align_justified.png"))
-
+            self.extraFormatBtn.append(self.iconsBox.count())
 
         b("text_clear", self.removeFormat, _("Ctrl+R"),
             _("Remove formatting (Ctrl+R)"))
         self.iconsBox.addItem(QSpacerItem(3,1, QSizePolicy.Fixed))
 
-        but = b("foreground", self.onForeground, _("F7"), text=" ")
-        but.setToolTip(_("Set foreground colour (F7)"))
-        self.setupForegroundButton(but)
-        but = b("change_colour", self.onChangeCol, _("F8"),
+        btn = b("foreground", self.onForeground, _("F7"), text=" ")
+        btn.setToolTip(_("Set foreground colour (F7)"))
+        self.setupForegroundButton(btn)
+        self.extraFormatBtn.insert(2,self.iconsBox.count())
+        btn = b("change_colour", self.onChangeCol, _("F8"),
           _("Change colour (F8)"), text=downArrow())
-        but.setFixedWidth(12)
-        but = b("cloze", self.onCloze, _("Ctrl+Shift+C"),
+        btn.setFixedWidth(12)
+        self.extraFormatBtn.insert(3,self.iconsBox.count())
+        btn = b("cloze", self.onCloze, _("Ctrl+Shift+C"),
                 _("Cloze deletion (Ctrl+Shift+C)"), text="[...]")
-        but.setFixedWidth(24)
+        btn.setFixedWidth(24)
         s = self.clozeShortcut2 = QShortcut(
             QKeySequence(_("Ctrl+Alt+Shift+C")), self.parentWindow)
         s.connect(s, SIGNAL("activated()"), self.onCloze)
         # fixme: better image names
-        b("mail-attachment", self.onAddMedia, _("F3"),
+        btn=b("mail-attachment", self.onAddMedia, _("F3"),
           _("Attach pictures/audio/video (F3)"))
-        b("media-record", self.onRecSound, _("F5"), _("Record audio (F5)"))
-        # self._buttons=runFilter("setupEditorButtons", self._buttons, self) #require list
+        self.extraFormatBtn.insert(0,self.iconsBox.count())
+        btn=b("media-record", self.onRecSound, _("F5"), _("Record audio (F5)"))
+        self.extraFormatBtn.insert(1,self.iconsBox.count())
+        # self._buttons=runFilter("setupEditorButtons", self._buttons, self) #require list (v2.1)
         b("adv", self.onAdvanced, text=downArrow())
         s = QShortcut(QKeySequence("Ctrl+T, T"), self.widget)
         s.connect(s, SIGNAL("activated()"), self.insertLatex)
@@ -240,6 +256,14 @@ class Editor(object):
 
     def disableButtons(self):
         self.enableButtons(False)
+
+    def toggleExtraFormatButtons(self, width):
+        total = self.iconsBox.count()-len(self.extraFormatBtn)
+        size = total*20 + 60
+        for n in self.extraFormatBtn:
+            btn=self.iconsBox.itemAt(n-1).widget()
+            btn.setVisible(size<=width)
+            size += 20
 
     def onFields(self):
         from aqt.fields import FieldDialog

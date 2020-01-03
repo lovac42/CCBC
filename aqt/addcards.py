@@ -44,6 +44,11 @@ class AddCards(QDialog):
         self.show()
         self.setupNewNote()
 
+    def resizeEvent(self, evt):
+        super().resizeEvent(evt)
+        width = evt.size().width()
+        self.editor.toggleExtraFormatButtons(width)
+
     def setupEditor(self):
         self.editor = aqt.editor.Editor(
             self.mw, self.form.fieldsArea, self, True)
