@@ -324,7 +324,8 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         if self.mw.state != "review":
             # showing resetRequired screen; ignore key
             return
-        if self.state != "answer":
+        forceGrade = self.mw.pm.profile.get("ccbc.forceGrade",False)
+        if self.state != "answer" and not forceGrade:
             return
         if self.mw.col.sched.answerButtons(self.card) < ease:
             return
@@ -350,17 +351,33 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         self.bottom.web.eval("py.link('ans');")
 
     def _keyHandler(self, evt):
+        ExAnsKeys = self.mw.pm.profile.get("ccbc.extraAnsKeys",None)
         key = evt.text()
         if key == "e":
             self.mw.onEditCurrent()
         elif (key == " " or evt.key() in (Qt.Key_Return, Qt.Key_Enter)):
             if self.state == "question":
                 if evt.modifiers()==Qt.ControlModifier:
-                    self.nextCard()
+                    self.nextCard() #drop card
                 else:
                     self._showAnswerHack()
             elif self.state == "answer":
                 self._answerCard(self._defaultEase())
+        elif key in ("1", "2", "3", "4"):
+            if evt.modifiers()==Qt.ControlModifier:
+                self.setFlag(int(key))
+            elif self.state == "question" and \
+            self.mw.pm.profile.get("ccbc.flipGrade",False):
+                self._showAnswerHack()
+            else:
+                self._answerCard(int(key))
+        elif ExAnsKeys and key in ExAnsKeys:
+            if self.state == "question" and \
+            self.mw.pm.profile.get("ccbc.flipGrade",False):
+                self._showAnswerHack()
+            else:
+                k = ExAnsKeys.index(key,0,4)
+                self._answerCard(k+1)
         elif key == "r" or evt.key() == Qt.Key_F5:
             self.replayAudio()
         elif key == "*":
@@ -377,11 +394,6 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             self.onRecordVoice()
         elif key == "o":
             self.onOptions()
-        elif key in ("1", "2", "3", "4"):
-            if evt.modifiers()==Qt.ControlModifier:
-                self.setFlag(int(key))
-            else:
-                self._answerCard(int(key))
         elif key == "v":
             self.onReplayRecorded()
 

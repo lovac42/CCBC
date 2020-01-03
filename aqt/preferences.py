@@ -229,6 +229,10 @@ Not currently enabled; click the sync button in the main window to enable."""))
 
     def setupOptions(self):
         self.form.pastePNG.setChecked(self.prof.get("pastePNG", False))
+        self.form.ansKeysLEdit.setText(self.prof.get("ccbc.extraAnsKeys", "1234"))
+        # self.form.ansKeyActNothing.setChecked() #default, not used
+        self.form.ansKeyActFlip.setChecked(self.prof.get("ccbc.flipGrade", False))
+        self.form.ansKeyActGrade.setChecked(self.prof.get("ccbc.forceGrade", False))
         self.form.colorGradeBtns.setChecked(self.prof.get("ccbc.revColorBtn", False))
         self.form.bigGradeBtns.setChecked(self.prof.get("ccbc.revBigBtn", False))
         self.form.showFormatBtns.setChecked(self.prof.get("ccbc.showFormatBtns", True))
@@ -245,6 +249,14 @@ Not currently enabled; click the sync button in the main window to enable."""))
             self.toggleFinalDrill()
 
     def updateOptions(self):
+        keys = self.form.ansKeysLEdit.text()[:4]
+        self.prof['ccbc.extraAnsKeys'] = keys if keys!='1234' else None
+        if self.form.ansKeyActNothing.isChecked():
+            self.prof['ccbc.flipGrade'] = False
+            self.prof['ccbc.forceGrade'] = False
+        else:
+            self.prof['ccbc.flipGrade'] = self.form.ansKeyActFlip.isChecked()
+            self.prof['ccbc.forceGrade'] = self.form.ansKeyActGrade.isChecked()
         self.prof['pastePNG'] = self.form.pastePNG.isChecked()
         self.prof['ccbc.revColorBtn'] = self.form.colorGradeBtns.isChecked()
         self.prof['ccbc.revBigBtn'] = self.form.bigGradeBtns.isChecked()
@@ -253,6 +265,7 @@ Not currently enabled; click the sync button in the main window to enable."""))
         self.prof['ccbc.noTypeAnsCase'] = self.form.noTypeAnsCase.isChecked()
         self.prof['tidyTags.noScript'] = self.form.noScript.isChecked()
         self.prof['tidyTags.importMedia'] = self.form.importMedia.isChecked()
+
         qc = self.mw.col.conf
         qc['skipFinalDrill'] = self.form.skipFinalDrill.checkState()
 
