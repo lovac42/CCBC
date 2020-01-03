@@ -43,7 +43,7 @@ class Ui_Dialog(object):
         self.randomize.setObjectName("randomize")
         self.verticalLayout.addWidget(self.randomize)
         self.shift = QtWidgets.QCheckBox(Dialog)
-        self.shift.setChecked(True)
+        # self.shift.setChecked(True)
         self.shift.setObjectName("shift")
         self.verticalLayout.addWidget(self.shift)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
