@@ -33,8 +33,6 @@ from aqt.sidebar import TagTreeWidget
 from aqt.tagedit import TagEdit
 
 
-# fixme: need to refresh after undo
-
 # Data model
 ##########################################################################
 
@@ -627,7 +625,7 @@ class Browser(QMainWindow):
             })
         return selected
 
-    def onReset(self):
+    def onReset(self, *args, **kwargs):
         self.editor.setNote(None)
         self.onSearch()
 
@@ -1596,6 +1594,7 @@ Red items will be deleted.""")))
     def setupHooks(self):
         addHook("undoState", self.onUndoState)
         addHook("reset", self.onReset)
+        addHook("addedNote", self.onReset)
         addHook("editTimer", self.refreshCurrentCard)
         addHook("editFocusLost", self.refreshCurrentCardFilter)
         for t in "newTag", "newModel", "newDeck":
@@ -1603,6 +1602,7 @@ Red items will be deleted.""")))
 
     def teardownHooks(self):
         remHook("reset", self.onReset)
+        remHook("addedNote", self.onReset)
         remHook("editTimer", self.refreshCurrentCard)
         remHook("editFocusLost", self.refreshCurrentCardFilter)
         remHook("undoState", self.onUndoState)

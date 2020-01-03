@@ -217,6 +217,7 @@ question on all cards."""))
             clearAudioQueue()
             self.onReset(keep=True)
             self.mw.col.autosave()
+            runHook("addedNote", note)
             if self.addOnceChkBox.isChecked():
                 self.reject()
 
