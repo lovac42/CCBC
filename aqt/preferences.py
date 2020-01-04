@@ -250,13 +250,18 @@ Not currently enabled; click the sync button in the main window to enable."""))
 
     def updateOptions(self):
         keys = self.form.ansKeysLEdit.text()[:4]
-        self.prof['ccbc.extraAnsKeys'] = keys if keys!='1234' else None
+        if not keys or keys=="1234":
+            self.prof.pop('ccbc.extraAnsKeys', None)
+        else:
+            self.prof['ccbc.extraAnsKeys'] = keys
+
         if self.form.ansKeyActNothing.isChecked():
             self.prof['ccbc.flipGrade'] = False
             self.prof['ccbc.forceGrade'] = False
         else:
             self.prof['ccbc.flipGrade'] = self.form.ansKeyActFlip.isChecked()
             self.prof['ccbc.forceGrade'] = self.form.ansKeyActGrade.isChecked()
+
         self.prof['pastePNG'] = self.form.pastePNG.isChecked()
         self.prof['ccbc.revColorBtn'] = self.form.colorGradeBtns.isChecked()
         self.prof['ccbc.revBigBtn'] = self.form.bigGradeBtns.isChecked()
