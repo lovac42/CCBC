@@ -12,7 +12,7 @@ import os
 from anki.db import DB, DBError
 from anki.utils import ids2str, intTime, platDesc, checksum, devMode
 from anki.consts import *
-from anki.utils import versionWithBuild
+# from anki.utils import versionWithBuild
 from .hooks import runHook
 import anki
 from .lang import ngettext
@@ -21,6 +21,13 @@ from .lang import ngettext
 HTTP_TIMEOUT = 90
 HTTP_PROXY = None
 HTTP_BUF_SIZE = 64*1024
+
+
+# version that the current sync file matches
+ANKI_VERSION = "2.1.15"
+ANKI_BUILDHASH = "442df9d6"
+
+
 
 # Incremental syncing
 ##########################################################################
@@ -456,8 +463,8 @@ class AnkiRequestsClient:
         return buf.getvalue()
 
     def _agentName(self):
-        from anki import version
-        return "Anki {}".format(version)
+        # from anki import version
+        return "Anki {}".format(ANKI_VERSION)
 
 # allow user to accept invalid certs in work/school settings
 if os.environ.get("ANKI_NOVERIFYSSL"):
@@ -489,7 +496,9 @@ class HttpSyncer:
         if devMode:
             url = "https://l1sync.ankiweb.net/"
         else:
-            url = SYNC_BASE % (self.hostNum or "")
+            from aqt import mw
+            url = mw.pm.profile['syncServer']
+            # url = SYNC_BASE % (self.hostNum or "")
         return url + self.prefix
 
     def assertOk(self, resp):
@@ -546,7 +555,7 @@ Content-Type: application/octet-stream\r\n\r\n""")
         buf.seek(0)
 
         if size >= 100*1024*1024 or rawSize >= 250*1024*1024:
-            raise Exception("Collection too large to upload to AnkiWeb.")
+            raise Exception("Collection too large to upload to AnkiServer.")
 
         return headers, buf
 
@@ -588,7 +597,11 @@ class RemoteServer(HttpSyncer):
         )
         ret = self.req(
             "meta", io.BytesIO(json.dumps(dict(
-                v=SYNC_VER, cv="ankidesktop,%s,%s"%(versionWithBuild(), platDesc()))).encode("utf8")),
+                v=SYNC_VER, cv="ankidesktop,%s (%s),%s"%(
+                        ANKI_VERSION,
+                        ANKI_BUILDHASH,
+                        platDesc()
+                ))).encode("utf8")),
             badAuthRaises=False)
         if not ret:
             # invalid auth
@@ -632,7 +645,7 @@ class FullSyncer(HttpSyncer):
         HttpSyncer.__init__(self, hkey, client, hostNum=hostNum)
         self.postVars = dict(
             k=self.hkey,
-            v="ankidesktop,%s,%s"%(anki.version, platDesc()),
+            v="ankidesktop,%s,%s"%(ANKI_VERSION, platDesc()),
         )
         self.col = col
 
@@ -830,7 +843,7 @@ class RemoteMediaServer(HttpSyncer):
     def begin(self):
         self.postVars = dict(
             k=self.hkey,
-            v="ankidesktop,%s,%s"%(anki.version, platDesc())
+            v="ankidesktop,%s,%s"%(ANKI_VERSION, platDesc())
         )
         ret = self._dataOnly(self.req(
             "begin", io.BytesIO(json.dumps(dict()).encode("utf8"))))
