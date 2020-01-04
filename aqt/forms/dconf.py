@@ -265,6 +265,9 @@ class Ui_Dialog(object):
         spacerItem3 = QtWidgets.QSpacerItem(20, 72, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_3.addItem(spacerItem3)
         self.tabWidget.addTab(self.tab_2, "")
+
+
+        #General Tab
         self.tab_5 = QtWidgets.QWidget()
         self.tab_5.setObjectName("tab_5")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.tab_5)
@@ -296,9 +299,16 @@ class Ui_Dialog(object):
         self.replayQuestion.setChecked(False)
         self.replayQuestion.setObjectName("replayQuestion")
         self.verticalLayout_6.addWidget(self.replayQuestion)
+        # case sensitive type in answers
+        self.ignoreInputCase = QtWidgets.QCheckBox(self.tab_5)
+        self.ignoreInputCase.setObjectName("ignoreInputCase")
+        self.verticalLayout_6.addWidget(self.ignoreInputCase)
         spacerItem4 = QtWidgets.QSpacerItem(20, 199, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_6.addItem(spacerItem4)
         self.tabWidget.addTab(self.tab_5, "")
+
+
+        # Description Tab
         self.tab_4 = QtWidgets.QWidget()
         self.tab_4.setObjectName("tab_4")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.tab_4)
@@ -348,7 +358,8 @@ class Ui_Dialog(object):
         Dialog.setTabOrder(self.maxTaken, self.showTimer)
         Dialog.setTabOrder(self.showTimer, self.autoplaySounds)
         Dialog.setTabOrder(self.autoplaySounds, self.replayQuestion)
-        Dialog.setTabOrder(self.replayQuestion, self.desc)
+        Dialog.setTabOrder(self.replayQuestion, self.ignoreInputCase)
+        Dialog.setTabOrder(self.ignoreInputCase, self.desc)
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
@@ -398,5 +409,6 @@ class Ui_Dialog(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), _("General"))
         self.label_22.setText(_("Description to show on study screen (current deck only):"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _("Description"))
+        self.ignoreInputCase.setText(_("Ignore case sensitivity on typed in answers"))
 
 from . import icons_rc

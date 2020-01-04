@@ -273,6 +273,15 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         return self.mw.col.decks.confForDid(
             card.odid or card.did)['autoplay']
 
+    def ignoreInputCase(self, card):
+        try:
+            return self.mw.col.decks.confForDid(
+                card.odid or card.did).get(
+                    "ccbc.ignoreInputCase", False)
+        except:
+            #err from clayout preview before adding card.
+            return False
+
     def _replayq(self, card, previewer=None):
         s = previewer if previewer else self
         return s.mw.col.decks.confForDid(
@@ -531,7 +540,8 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         # compare in NFC form so accents appear correct
         given = ucd.normalize("NFC", given)
         correct = ucd.normalize("NFC", correct)
-        if self.mw.pm.profile.get("ccbc.noTypeAnsCase", False):
+
+        if self.ignoreInputCase(self.card):
             s = difflib.SequenceMatcher(
                     None,
                     given.lower(),
@@ -577,7 +587,7 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
 
         if given == correct:
             res = good(given)
-        elif self.mw.pm.profile.get("ccbc.noTypeAnsCase", False) \
+        elif self.ignoreInputCase(self.card) \
         and given.lower() == correct.lower():
             res = good(given)
         else:

@@ -162,10 +162,6 @@ class Ui_Preferences(object):
         self.stpAudOnShwAns = QtWidgets.QCheckBox(self.tab_adv)
         self.stpAudOnShwAns.setObjectName("stpAudOnShwAns")
         self.tabAdvVLayout.addWidget(self.stpAudOnShwAns)
-        # case sensitive type in answers
-        self.noTypeAnsCase = QtWidgets.QCheckBox(self.tab_adv)
-        self.noTypeAnsCase.setObjectName("noTypeAnsCase")
-        self.tabAdvVLayout.addWidget(self.noTypeAnsCase)
         # For localizing media
         self.importMedia = QtWidgets.QCheckBox(self.tab_adv)
         self.importMedia.setObjectName("importMedia")
@@ -320,8 +316,7 @@ class Ui_Preferences(object):
 
         Preferences.setTabOrder(self.syncDeauth, self.showFormatBtns)
         Preferences.setTabOrder(self.showFormatBtns, self.stpAudOnShwAns)
-        Preferences.setTabOrder(self.stpAudOnShwAns, self.noTypeAnsCase)
-        Preferences.setTabOrder(self.noTypeAnsCase, self.importMedia)
+        Preferences.setTabOrder(self.stpAudOnShwAns, self.importMedia)
         Preferences.setTabOrder(self.importMedia, self.noScript)
 
 
@@ -369,9 +364,8 @@ class Ui_Preferences(object):
         self.colorGradeBtns.setText(_("Colorize grading buttons for review"))
         self.bigGradeBtns.setText(_("Enlarge grading buttons for review"))
         self.showFormatBtns.setText(_("Show extra formatting buttons in editor"))
-        self.stpAudOnShwAns.setText(_("Stop media playback on show answer"))
-        self.noTypeAnsCase.setText(_("Typed in answer is not case sensitive"))
-        self.importMedia.setText(_("Import and localize media during edits"))
+        self.stpAudOnShwAns.setText(_("Stop media playback before show answer"))
+        self.importMedia.setText(_("Import and localize media during edits (e.g. src=http...)"))
         self.noScript.setText(_("Remove <script> when editing HTML (add more conf later)"))
 
         # Muffins tab

@@ -223,6 +223,7 @@ class DeckConf(QDialog):
         f.showTimer.setChecked(c.get('timer', 0))
         f.autoplaySounds.setChecked(c['autoplay'])
         f.replayQuestion.setChecked(c.get('replayq', True))
+        f.ignoreInputCase.setChecked(c.get("ccbc.ignoreInputCase", False))
         # description
         f.desc.setPlainText(self.deck['desc'])
 
@@ -311,6 +312,7 @@ class DeckConf(QDialog):
         c['timer'] = f.showTimer.isChecked() and 1 or 0
         c['autoplay'] = f.autoplaySounds.isChecked()
         c['replayq'] = f.replayQuestion.isChecked()
+        c['ccbc.ignoreInputCase'] = f.ignoreInputCase.isChecked()
         # description
         self.deck['desc'] = f.desc.toPlainText()
         self.mw.col.decks.save(self.deck)
