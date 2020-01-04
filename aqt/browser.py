@@ -2009,23 +2009,32 @@ class BrowserToolbar(Toolbar):
         mark = self.browser.isMarked()
         pause = self.browser.isSuspended()
         def borderImg(link, icon, on, title, tooltip=None):
+            if icon:
+                icon = '<img style="padding: 1px;" valign=bottom src="qrc:/icons/%s.png">'%icon
             if on:
                 fmt = '''\
-<a class=hitem title="%s" href="%s">\
-<img valign=bottom style='border: 1px solid #aaa;' src="qrc:/icons/%s.png"> %s</a>'''
+<a class=hitem title="%s" href="%s">%s %s</a>'''
             else:
                 fmt = '''\
-<a class=hitem title="%s" href="%s"><img style="padding: 1px;" valign=bottom src="qrc:/icons/%s.png"> %s</a>'''
+<a class=hitem title="%s" href="%s">%s %s</a>'''
             return fmt % (tooltip or title, link, icon, title)
         right = "<div>"
-        right += borderImg("add", "add16", False, _("Add"),
+        right += borderImg("add", "add16", False, "",
                        shortcut(_("Add Note (Ctrl+E)")))
-        right += borderImg("info", "info", False, _("Info"),
+        right += borderImg("info", "info", False, "",
                        shortcut(_("Card Info (Ctrl+Shift+I)")))
-        right += borderImg("mark", "star16", mark, _("Mark"),
+        right += borderImg("mark", "star16", mark, "",
                        shortcut(_("Mark Note (Ctrl+K)")))
-        right += borderImg("pause", "pause16", pause, _("Suspend"),
+        right += borderImg("pause", "pause16", pause, "",
                        shortcut(_("Suspend Card (Ctrl+J)")))
+        right += borderImg("flag1", "", False, "R",
+                       shortcut(_("Flag Card Red (Ctrl+1)")))
+        right += borderImg("flag2", "", False, "O",
+                       shortcut(_("Flag Card Orange (Ctrl+2)")))
+        right += borderImg("flag3", "", False, "G",
+                       shortcut(_("Flag Card Green (Ctrl+3)")))
+        right += borderImg("flag4", "", False, "B",
+                       shortcut(_("Flag Card Blue (Ctrl+4)")))
         right += borderImg("setDeck", "deck16", False, _("Change Deck"),
                            shortcut(_("Move To Deck (Ctrl+D)")))
         right += borderImg("addtag", "addtag16", False, _("Add Tags"),
@@ -2058,6 +2067,14 @@ class BrowserToolbar(Toolbar):
             self.browser.onMark()
         elif l == "pause":
             self.browser.onSuspend()
+        elif l == "flag1":
+            self.browser.onSetFlag(1)
+        elif l == "flag2":
+            self.browser.onSetFlag(2)
+        elif l == "flag3":
+            self.browser.onSetFlag(3)
+        elif l == "flag4":
+            self.browser.onSetFlag(4)
         elif l == "addtag":
             self.browser.addTags()
         elif l == "deletetag":
