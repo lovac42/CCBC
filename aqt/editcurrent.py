@@ -21,8 +21,8 @@ class EditCurrent(QDialog):
         self.form = aqt.forms.editcurrent.Ui_Dialog()
         self.form.setupUi(self)
         self.setWindowTitle(_("Edit Current"))
-        self.setMinimumHeight(400)
-        self.setMinimumWidth(250)
+        self.setMinimumHeight(250)
+        self.setMinimumWidth(400)
         self.rejected.connect(self.onSave)
         self.form.buttonBox.button(QDialogButtonBox.Close).setShortcut(
                 QKeySequence("Ctrl+Return"))
@@ -70,3 +70,8 @@ class EditCurrent(QDialog):
 
     def canClose(self):
         return True
+
+    def resizeEvent(self, evt):
+        super().resizeEvent(evt)
+        width = evt.size().width()
+        self.editor.toggleExtraFormatButtons(width)

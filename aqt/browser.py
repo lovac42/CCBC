@@ -427,6 +427,12 @@ class Browser(QMainWindow):
         self.onSearch()
         self.show()
 
+    def resizeEvent(self, evt):
+        super().resizeEvent(evt)
+        width = evt.size().width()
+        width -= self.sidebarTree.width()
+        self.editor.toggleExtraFormatButtons(width)
+
     def setupToolbar(self):
         self.toolbarWeb = AnkiWebView()
         self.toolbarWeb.setFixedHeight(25 + self.mw.fontHeightDelta)

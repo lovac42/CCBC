@@ -16,8 +16,8 @@ import ccbc.plugins.Card_Info_Bar_for_Browser.browser
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(750, 400)
-        Dialog.setMinimumSize(QtCore.QSize(750, 400))
+        Dialog.resize(550, 400)
+        Dialog.setMinimumSize(QtCore.QSize(450, 300))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/find.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Dialog.setWindowIcon(icon)
