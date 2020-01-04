@@ -34,7 +34,7 @@ img {
     position: fixed;
     right: 10px;
     top: 0;
-    font-size: 30px;
+    font-size: 1.2em;
     display: none;
     -webkit-text-stroke-width: 1px;
     -webkit-text-stroke-color: black;
@@ -44,7 +44,7 @@ img {
     position: fixed;
     left: 10px;
     top: 5px;
-    font-size: 30px;
+    font-size: 1.2em;
     color: yellow;
     display: none;
     -webkit-text-stroke-width: 1px;
