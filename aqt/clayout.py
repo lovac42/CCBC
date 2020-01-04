@@ -76,6 +76,12 @@ class CardLayout(QDialog):
             add.setToolTip(_("Add new card"))
             c(add, SIGNAL("clicked()"), self.onAddCard)
             self.tabs.setCornerWidget(add)
+        else:
+            next = QPushButton("...")
+            next.setFixedWidth(35)
+            next.setToolTip(_("Preview other siblings"))
+            c(next, SIGNAL("clicked()"), lambda:self.onCardSelected(self.ord+1))
+            self.tabs.setCornerWidget(next)
         c(self.tabs, SIGNAL("currentChanged(int)"), self.onCardSelected)
         c(self.tabs, SIGNAL("tabCloseRequested(int)"), self.onRemoveTab)
 
@@ -193,17 +199,31 @@ Please create a new card type first."""))
     def selectCard(self, idx):
         if self.tabs.currentIndex() == idx:
             # trigger a re-read
-            self.onCardSelected(idx)
+            self.onCardSelected(self.ord)
         else:
             self.tabs.setCurrentIndex(idx)
 
     def onCardSelected(self, idx):
         if self.redrawing:
             return
-        self.card = self.cards[idx]
+        idx = max(0, idx)
         self.ord = idx
-        self.tab = self.forms[idx]
-        self.tabs.setCurrentIndex(idx)
+        if self.model['type'] == MODEL_CLOZE:
+            self.card = self.cards[0]
+            if self.col.findNotes("nid:%d"%self.note.id): #exists
+                if idx<len(self.note.cards()):
+                    self.card.ord = idx
+                else:
+                    self.card.ord = 0
+                    self.ord = idx = 0
+            else: #from addCard dialog
+                self.card.ord = idx # TODO: find way to reset idx for unknow max c1,c2,c3
+            self.tab = self.forms[0]
+            self.tabs.setCurrentIndex(0)
+        else:
+            self.card = self.cards[idx]
+            self.tab = self.forms[idx]
+            self.tabs.setCurrentIndex(idx)
         self.playedAudio = {}
         self.readCard()
         self.renderPreview()
