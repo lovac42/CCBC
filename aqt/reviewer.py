@@ -270,6 +270,8 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         runHook('showQuestion')
 
     def autoplay(self, card):
+        if self.mw.pm.profile.get("ccbc.noAutoPlay", False):
+            return False
         return self.mw.col.decks.confForDid(
             card.odid or card.did)['autoplay']
 
@@ -360,7 +362,8 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         self.bottom.web.eval("py.link('ans');")
 
     def _keyHandler(self, evt):
-        ExAnsKeys = self.mw.pm.profile.get("ccbc.extraAnsKeys",None)
+        conf = self.mw.pm.profile.get
+        ExAnsKeys = conf("ccbc.extraAnsKeys", None)
         key = evt.text()
         if key == "e":
             self.mw.onEditCurrent()
@@ -376,13 +379,13 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             if evt.modifiers()==Qt.ControlModifier:
                 self.setFlag(int(key))
             elif self.state == "question" and \
-            self.mw.pm.profile.get("ccbc.flipGrade",False):
+            conf("ccbc.flipGrade", False):
                 self._showAnswerHack()
             else:
                 self._answerCard(int(key))
         elif ExAnsKeys and key in ExAnsKeys:
             if self.state == "question" and \
-            self.mw.pm.profile.get("ccbc.flipGrade",False):
+            conf("ccbc.flipGrade", False):
                 self._showAnswerHack()
             else:
                 k = ExAnsKeys.index(key,0,4)
@@ -540,7 +543,6 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         # compare in NFC form so accents appear correct
         given = ucd.normalize("NFC", given)
         correct = ucd.normalize("NFC", correct)
-
         if self.ignoreInputCase(self.card):
             s = difflib.SequenceMatcher(
                     None,

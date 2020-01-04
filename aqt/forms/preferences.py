@@ -146,6 +146,13 @@ class Ui_Preferences(object):
         self.ansKeyActGrade.setObjectName("ansKeyActGrade")
         self.ansKeyActionLayout.addWidget(self.ansKeyActGrade)
         self.tabAdvVLayout.addLayout(self.ansKeyActionLayout)
+
+        self.tabAdvVLayout.addItem(
+            QtWidgets.QSpacerItem(10,10,
+                QtWidgets.QSizePolicy.Fixed,
+                QtWidgets.QSizePolicy.Fixed
+        ))
+
         # colorize review buttons
         self.colorGradeBtns = QtWidgets.QCheckBox(self.tab_adv)
         self.colorGradeBtns.setObjectName("colorGradeBtns")
@@ -154,14 +161,32 @@ class Ui_Preferences(object):
         self.bigGradeBtns = QtWidgets.QCheckBox(self.tab_adv)
         self.bigGradeBtns.setObjectName("bigGradeBtns")
         self.tabAdvVLayout.addWidget(self.bigGradeBtns)
+
+        self.tabAdvVLayout.addItem(
+            QtWidgets.QSpacerItem(5,5,
+                QtWidgets.QSizePolicy.Fixed,
+                QtWidgets.QSizePolicy.Fixed
+        ))
+
         # formatting buttons for editor
         self.showFormatBtns = QtWidgets.QCheckBox(self.tab_adv)
         self.showFormatBtns.setObjectName("showFormatBtns")
         self.tabAdvVLayout.addWidget(self.showFormatBtns)
+        # disable autoplay
+        self.noAutoPlay = QtWidgets.QCheckBox(self.tab_adv)
+        self.noAutoPlay.setObjectName("noAutoPlay")
+        self.tabAdvVLayout.addWidget(self.noAutoPlay)
         # stop audio on show answer
         self.stpAudOnShwAns = QtWidgets.QCheckBox(self.tab_adv)
         self.stpAudOnShwAns.setObjectName("stpAudOnShwAns")
         self.tabAdvVLayout.addWidget(self.stpAudOnShwAns)
+
+        self.tabAdvVLayout.addItem(
+            QtWidgets.QSpacerItem(5,5,
+                QtWidgets.QSizePolicy.Fixed,
+                QtWidgets.QSizePolicy.Fixed
+        ))
+
         # For localizing media
         self.importMedia = QtWidgets.QCheckBox(self.tab_adv)
         self.importMedia.setObjectName("importMedia")
@@ -315,7 +340,8 @@ class Ui_Preferences(object):
         Preferences.setTabOrder(self.syncMedia, self.syncDeauth)
 
         Preferences.setTabOrder(self.syncDeauth, self.showFormatBtns)
-        Preferences.setTabOrder(self.showFormatBtns, self.stpAudOnShwAns)
+        Preferences.setTabOrder(self.showFormatBtns, self.noAutoPlay)
+        Preferences.setTabOrder(self.noAutoPlay, self.stpAudOnShwAns)
         Preferences.setTabOrder(self.stpAudOnShwAns, self.importMedia)
         Preferences.setTabOrder(self.importMedia, self.noScript)
 
@@ -364,6 +390,7 @@ class Ui_Preferences(object):
         self.colorGradeBtns.setText(_("Colorize grading buttons for review"))
         self.bigGradeBtns.setText(_("Enlarge grading buttons for review"))
         self.showFormatBtns.setText(_("Show extra formatting buttons in editor"))
+        self.noAutoPlay.setText(_("Disable autoplay (Global)"))
         self.stpAudOnShwAns.setText(_("Stop media playback before show answer"))
         self.importMedia.setText(_("Import and localize media during edits (e.g. src=http...)"))
         self.noScript.setText(_("Remove <script> when editing HTML (add more conf later)"))
