@@ -197,16 +197,17 @@ Please create a new card type first."""))
     ##########################################################################
 
     def selectCard(self, idx):
-        if self.tabs.currentIndex() == idx:
-            # trigger a re-read
+        if self.model['type'] == MODEL_CLOZE:
             self.onCardSelected(self.ord)
+        elif self.tabs.currentIndex() == idx:
+            # trigger a re-read
+            self.onCardSelected(idx)
         else:
             self.tabs.setCurrentIndex(idx)
 
     def onCardSelected(self, idx):
         if self.redrawing:
             return
-        idx = max(0, idx)
         self.ord = idx
         if self.model['type'] == MODEL_CLOZE:
             self.card = self.cards[0]
