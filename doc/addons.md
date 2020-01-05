@@ -21,6 +21,7 @@ Frozen Fields, by tmbb: https://github.com/tmbb/FrozenFields
 Large and Colorful Buttons (css only), by hkr: https://ankiweb.net/shared/info/1829090218  
 Replay buttons on card, by ospalh: https://ankiweb.net/shared/info/498789867  
 Don't remove mark on export, by Soren Bjornstad: https://ankiweb.net/shared/info/909480379  
+Editor Autocomplete, by sartak: https://ankiweb.net/shared/info/924298715  
 
 
 ### Arthur-Milchior Must Haves:

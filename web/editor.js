@@ -230,3 +230,35 @@ document.onclick = function (evt) {
 }
 
 });
+
+function currentFieldOrdinal() {
+    return currentField.id.substring(1);
+}
+
+function startAutocomplete() {
+    document.styleSheets[0].addRule('.autocomplete',
+        'margin: 0.3em 0 1.0em 0; color: blue; text-decoration: underline; cursor: pointer;'
+    );
+    // every second send the current state over
+    setInterval(function () {
+        if (currentField) {
+            var r = {text:currentField.innerHTML};
+            py.run("autocomplete:" + JSON.stringify(r));
+        }
+    }, 1500);
+}
+
+function checkAutocomplete(txt) {
+    $('.autocomplete').remove();
+    if (currentField) {
+        $('<div class="autocomplete">' + txt + '</div>').click({field: currentField}, updateField).insertAfter(currentField)
+    }
+    function updateField(event){
+        currentField = event.data.field;
+        currentField.innerHTML = txt;
+        saveField("key");
+        focusField(currentFieldOrdinal());
+        caretToEnd();
+    }
+}
+

@@ -351,6 +351,45 @@ class Editor(object):
             self._buttons['text_sub'].setChecked(r['sub'])
         elif str.startswith("dupes"):
             self.showDupes()
+
+
+        #ADDON: Editor Autocomplete, id#924298715
+        elif str.startswith("autocomplete"):
+            (type, jsonText) = str.split(":", 1)
+            result = json.loads(jsonText)
+            text = self.mungeHTML(result['text'])
+        
+            if self.currentField is None:
+                return
+
+            # bail out if the user hasn't actually changed the field
+            previous = "%d:%s" % (self.currentField, text)
+            if self.prevAutocomplete == previous:
+                return
+            self.prevAutocomplete = previous
+
+            if text == "" or len(text) > 500 or self.note is None:
+                self.web.eval("$('.autocomplete').remove();");
+                return
+
+            field = self.note.model()['flds'][self.currentField]
+
+            # find a value from the same model and field whose
+            # prefix is what the user typed so far
+            query = "'note:%s' '%s:%s*'" % (
+                self.note.model()['name'],
+                field['name'],
+                text)
+
+            res = self.mw.col.findCards(query, order=True)
+            if len(res) == 0:
+                self.web.eval("$('.autocomplete').remove();");
+                return
+
+            # pull out the full value
+            value = self.mw.col.getCard(res[0]).note().fields[self.currentField]
+            self.web.eval("""checkAutocomplete(%s);"""%json.dumps(value))
+
         else:
             print(str)
 
@@ -389,6 +428,12 @@ class Editor(object):
             self.hideCompleters()
             if hide:
                 self.widget.hide()
+
+        #ADDON: Editor Autocomplete, id#924298715
+        self.prevAutocomplete = ""
+        if self.mw.pm.profile.get("ccbc.autoCompleter", False) \
+        and self.note and self.addMode: # addCards only
+            self.web.eval("startAutocomplete();")
 
     def loadNote(self):
         if not self.note:

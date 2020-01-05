@@ -172,6 +172,17 @@ class Ui_Preferences(object):
         self.showFormatBtns = QtWidgets.QCheckBox(self.tab_adv)
         self.showFormatBtns.setObjectName("showFormatBtns")
         self.tabAdvVLayout.addWidget(self.showFormatBtns)
+        # autoCompleter feature for addCard
+        self.autoCompleter = QtWidgets.QCheckBox(self.tab_adv)
+        self.autoCompleter.setObjectName("autoCompleter")
+        self.tabAdvVLayout.addWidget(self.autoCompleter)
+
+        self.tabAdvVLayout.addItem(
+            QtWidgets.QSpacerItem(5,5,
+                QtWidgets.QSizePolicy.Fixed,
+                QtWidgets.QSizePolicy.Fixed
+        ))
+
         # disable autoplay
         self.noAutoPlay = QtWidgets.QCheckBox(self.tab_adv)
         self.noAutoPlay.setObjectName("noAutoPlay")
@@ -340,7 +351,8 @@ class Ui_Preferences(object):
         Preferences.setTabOrder(self.syncMedia, self.syncDeauth)
 
         Preferences.setTabOrder(self.syncDeauth, self.showFormatBtns)
-        Preferences.setTabOrder(self.showFormatBtns, self.noAutoPlay)
+        Preferences.setTabOrder(self.showFormatBtns, self.autoCompleter)
+        Preferences.setTabOrder(self.autoCompleter, self.noAutoPlay)
         Preferences.setTabOrder(self.noAutoPlay, self.stpAudOnShwAns)
         Preferences.setTabOrder(self.stpAudOnShwAns, self.importMedia)
         Preferences.setTabOrder(self.importMedia, self.noScript)
@@ -390,6 +402,7 @@ class Ui_Preferences(object):
         self.colorGradeBtns.setText(_("Colorize grading buttons for review"))
         self.bigGradeBtns.setText(_("Enlarge grading buttons for review"))
         self.showFormatBtns.setText(_("Show extra formatting buttons in editor"))
+        self.autoCompleter.setText(_("Use auto complete when adding card?"))
         self.noAutoPlay.setText(_("Disable autoplay (Global)"))
         self.stpAudOnShwAns.setText(_("Stop media playback before show answer"))
         self.importMedia.setText(_("Import and localize media during edits (e.g. src=http...)"))
