@@ -45,7 +45,7 @@ class Preferences(QDialog):
         self.mw.pm.save()
         self.mw.reset()
         self.done(0)
-        # aqt.dialogs.markClosed("Preferences")
+        aqt.dialogs.markClosed("Preferences")
         runHook('profileChanged')
 
     def reject(self):
