@@ -211,7 +211,7 @@ Please create a new card type first."""))
         self.ord = idx
         if self.model['type'] == MODEL_CLOZE:
             self.card = self.cards[0]
-            if self.col.findNotes("nid:%d"%self.note.id): #exists
+            if not self.addMode:
                 if idx<len(self.note.cards()):
                     self.card.ord = idx
                 else:
