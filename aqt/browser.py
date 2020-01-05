@@ -1488,10 +1488,14 @@ Red items will be deleted.""")))
     ######################################################################
 
     def onSetFlag(self, n):
+        cids = self.selectedCards()
+        if not cids:
+            showInfo("No card selected")
+            return
         # flag needs toggling off?
         if n == self.card.userFlag():
             n = 0
-        self.col.setUserFlag(n, self.selectedCards())
+        self.col.setUserFlag(n, cids)
         self.model.reset()
 
     def _updateFlagsMenu(self):
@@ -2011,6 +2015,8 @@ class BrowserToolbar(Toolbar):
         def borderImg(link, icon, on, title, tooltip=None):
             if icon:
                 icon = '<img style="padding: 1px;" valign=bottom src="qrc:/icons/%s.png">'%icon
+            else:
+                icon = '<span id="%s">%s</span>'%(link, ccbc.html.flag)
             if on:
                 fmt = '''\
 <a class=hitem title="%s" href="%s">%s %s</a>'''
@@ -2027,13 +2033,13 @@ class BrowserToolbar(Toolbar):
                        shortcut(_("Mark Note (Ctrl+K)")))
         right += borderImg("pause", "pause16", pause, "",
                        shortcut(_("Suspend Card (Ctrl+J)")))
-        right += borderImg("flag1", "", False, "R",
+        right += borderImg("flag1", "", False, "",
                        shortcut(_("Flag Card Red (Ctrl+1)")))
-        right += borderImg("flag2", "", False, "O",
+        right += borderImg("flag2", "", False, "",
                        shortcut(_("Flag Card Orange (Ctrl+2)")))
-        right += borderImg("flag3", "", False, "G",
+        right += borderImg("flag3", "", False, "",
                        shortcut(_("Flag Card Green (Ctrl+3)")))
-        right += borderImg("flag4", "", False, "B",
+        right += borderImg("flag4", "", False, "",
                        shortcut(_("Flag Card Blue (Ctrl+4)")))
         right += borderImg("setDeck", "deck16", False, _("Change Deck"),
                            shortcut(_("Move To Deck (Ctrl+D)")))

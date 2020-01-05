@@ -42,3 +42,23 @@ a {
 
 .hitem:focus { outline: 0; }
 
+#flag1 {
+    fill: #ff6666;
+}
+
+#flag2 {
+    fill: #ff9900;
+}
+
+#flag3 {
+    fill: #77ff77;
+}
+
+#flag4 {
+    fill: #77aaff;
+}
+
+#flag1 svg, #flag2 svg, #flag3 svg, #flag4 svg {
+    width: 1.5em;
+    height: 1.5em;
+}

@@ -9,4 +9,10 @@ editor = readFile("editor.html")
 
 deckbrowser = readFile("deckbrowser.html")
 
+flag = readFile("flag.svg")
+
+rev_js = readFile("reviewer.js")
+
+rev_html = readFile("reviewer.html")
+
 rev_bottombar = readFile("reviewer-bottom.html")
