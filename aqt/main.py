@@ -769,7 +769,10 @@ title="%s">%s</button>''' % (
 
     def onAddCard(self):
         from aqt import addcards
-        aqt.dialogs.open("AddCards", self)
+        name = "AddCards_%d"%addcards.AddCards.unique_id
+        aqt.dialogs._dialogs[name] = [addcards.AddCards, None]
+        instance = aqt.dialogs.open(name, self)
+        addcards.AddCards.unique_id += 1
 
     def onBrowse(self):
         from aqt import browser

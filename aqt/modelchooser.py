@@ -80,8 +80,13 @@ class ModelChooser(QHBoxLayout):
         cdeck = self.deck.decks.current()
         cdeck['mid'] = m['id']
         self.deck.decks.save(cdeck)
+        self.parent.onModelChange()
         runHook("currentModelChanged")
-        self.mw.reset()
+        self.mw.reset() #calls updateModels
 
     def updateModels(self):
-        self.models.setText(self.deck.models.current()['name'])
+        try:
+            m = self.parent.editor.note._model
+        except AttributeError:
+            m = self.deck.models.current()
+        self.models.setText(m["name"])

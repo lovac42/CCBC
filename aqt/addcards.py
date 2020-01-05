@@ -14,16 +14,20 @@ from anki.sound import clearAudioQueue
 from anki.hooks import addHook, remHook, runHook
 from anki.utils import htmlToTextLine, isMac
 import aqt.editor, aqt.modelchooser, aqt.deckchooser
+import anki
 import ccbc
 
 
 
 class AddCards(QDialog):
+    unique_id=0 #for multi instance
     history=[]
 
     def __init__(self, mw):
         QDialog.__init__(self, None, Qt.Window)
         self.mw = mw
+        self._UID = "AddCards_%d"%self.unique_id
+        self.forceClose = False
         self.form = aqt.forms.addcards.Ui_Dialog()
         self.form.setupUi(self)
 
@@ -36,10 +40,8 @@ class AddCards(QDialog):
         self.setupHistory()
         self.onReset()
 
-        self.forceClose = False
         restoreGeom(self, "add")
         addHook('reset', self.onReset)
-        addHook('currentModelChanged', self.onModelChange)
         addCloseShortcut(self)
         self.show()
         self.setupNewNote()
@@ -56,6 +58,7 @@ class AddCards(QDialog):
     def setupChoosers(self):
         self.modelChooser = aqt.modelchooser.ModelChooser(
             self.mw, self.form.modelArea)
+        self.modelChooser.parent = self
         self.deckChooser = aqt.deckchooser.DeckChooser(
             self.mw, self.form.deckArea)
 
@@ -135,10 +138,10 @@ class AddCards(QDialog):
 
     def onReset(self, model=None, keep=False):
         oldNote = self.editor.note
-        note = self.setupNewNote(set=False)
-        flds = note.model()['flds']
         # copy fields from old note
         if oldNote:
+            note = anki.notes.Note(self.mw.col, oldNote.model())
+            flds = note.model()['flds']
             if not keep:
                 self.removeTempNote(oldNote)
             for n in range(len(note.fields)):
@@ -149,11 +152,13 @@ class AddCards(QDialog):
                         note.fields[n] = ""
                 except IndexError:
                     break
+        else:
+            note = self.setupNewNote(set=False)
         self.editor.currentField = 0
         self.editor.setNote(note, focus=True)
 
     def removeTempNote(self, note):
-        if not note or not note.id:
+        if not note or not note.id or not self.mw.col:
             return
         # we don't have to worry about cards; just the note
         self.mw.col._remNotes([note.id])
@@ -221,7 +226,6 @@ question on all cards."""))
             if self.addOnceChkBox.isChecked():
                 self.reject()
 
-
     def keyPressEvent(self, evt):
         "Show answer on RET or register answer."
         if (evt.key() in (Qt.Key_Enter, Qt.Key_Return)
@@ -234,7 +238,6 @@ question on all cards."""))
         if not self.canClose():
             return
         remHook('reset', self.onReset)
-        remHook('currentModelChanged', self.onModelChange)
         clearAudioQueue()
         self.removeTempNote(self.editor.note)
         self.editor.setNote(None)
@@ -242,7 +245,9 @@ question on all cards."""))
         self.deckChooser.cleanup()
         self.mw.maybeReset()
         saveGeom(self, "add")
-        aqt.dialogs.close("AddCards")
+        aqt.dialogs.close(self._UID)
+        if not self.forceClose: #not shutdown
+            del aqt.dialogs._dialogs[self._UID]
         QDialog.reject(self)
 
     def canClose(self):

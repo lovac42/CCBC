@@ -52,7 +52,7 @@ class DialogManager(object):
 
     _dialogs = {
         "Preferences": [preferences.Preferences, None],
-        "AddCards": [addcards.AddCards, None],
+        # "AddCards": [addcards.AddCards, None],
         "EditCurrent": [editcurrent.EditCurrent, None],
         "Browser": [browser.Browser, None],
         "DeckStats": [stats.DeckStats, None]
@@ -72,24 +72,24 @@ class DialogManager(object):
             self._dialogs[name][1] = instance
         return instance
 
-    def markClosed(self, name):
+    def markClosed(self, name): #2.1
         self._dialogs[name] = [self._dialogs[name][0], None]
 
-    def close(self, name):
+    def close(self, name): #2.0
         self._dialogs[name] = [self._dialogs[name][0], None]
 
-    def allClosed(self):
+    def allClosed(self): #2.1
         return not any(x[1] for x in self._dialogs.values())
 
     def closeAll(self): #v2.1 uses callbacks
         "True if all closed successfully."
-        for (n, (creator, instance)) in self._dialogs.items():
+        for (name, (creator, instance)) in self._dialogs.items():
             if instance:
                 if not instance.canClose():
                     return False
                 instance.forceClose = True
                 instance.close()
-                self.close(n)
+                self.close(name)
         return True
 
 dialogs = DialogManager()

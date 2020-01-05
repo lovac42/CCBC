@@ -292,7 +292,7 @@ class Editor(object):
     ######################################################################
 
     def bridge(self, str):
-        if not self.note or not runHook:
+        if not self.note or not runHook or not self.mw.col:
             # shutdown
             return
 
