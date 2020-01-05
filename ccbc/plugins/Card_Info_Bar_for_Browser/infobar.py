@@ -120,7 +120,7 @@ def toggle_infobox(form):
 def onSetupMenus(browser):
     m=browser.form.menuView
     bf=browser.form
-    bf.cb_infowidget = m.addAction('show infobox')
+    bf.cb_infowidget = m.addAction('Show Infobox')
     bf.cb_infowidget.setShortcut(shortcut(_("Ctrl+o")))
     bf.cb_infowidget.toggled.connect(lambda:toggle_infobox(browser.form))
     bf.cb_infowidget.setCheckable(True)

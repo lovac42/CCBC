@@ -391,6 +391,7 @@ class StatusDelegate(QItemDelegate):
 # fixme: respond to reset+edit hooks
 
 class Browser(QMainWindow):
+    cb_shown = {"editor": True}
 
     def __init__(self, mw):
         QMainWindow.__init__(self, None, Qt.Window) #Use None to prevent addCard being pushed to the bg
@@ -427,11 +428,12 @@ class Browser(QMainWindow):
         self.onSearch()
         self.show()
 
-    def resizeEvent(self, evt):
-        super().resizeEvent(evt)
-        width = evt.size().width()
-        width -= self.sidebarTree.width()
-        self.editor.toggleExtraFormatButtons(width)
+    def toggleEditor(self):
+        self.cb_shown["editor"] = not self.cb_shown["editor"]
+
+    def toggleSplitOrientation(self):
+        b = self.form.toRSideEditor.isChecked()
+        self.mw.pm.profile["browser.splitterOrientation"] = b
 
     def setupToolbar(self):
         self.toolbarWeb = AnkiWebView()
@@ -449,6 +451,7 @@ class Browser(QMainWindow):
         c(f.actionReschedule, s, self.reschedule)
         c(f.actionCram, s, self.cram)
         c(f.actionChangeModel, s, self.onChangeModel)
+
         # edit
         c(f.actionUndo, s, self.mw.onUndo)
         c(f.previewButton, SIGNAL("clicked()"), self.onTogglePreview)
@@ -458,7 +461,8 @@ class Browser(QMainWindow):
         c(f.actionSelectNotes, s, self.selectNotes)
         c(f.actionFindReplace, s, self.onFindReplace)
         c(f.actionFindDuplicates, s, self.onFindDupes)
-        # jumps
+
+        # Go
         c(f.actionPreviousCard, s, self.onPreviousCard)
         c(f.actionNextCard, s, self.onNextCard)
         c(f.actionFirstCard, s, self.onFirstCard)
@@ -468,8 +472,18 @@ class Browser(QMainWindow):
         c(f.actionTags, s, self.onTags)
         c(f.actionSidebar, s, self.focusSidebar)
         c(f.actionCardList, s, self.onCardList)
+
         # view
         c(f.actionShowEdit, s, self.onRowChanged)
+        f.actionShowEdit.setChecked(self.cb_shown["editor"])
+        f.actionShowEdit.toggled.connect(self.toggleEditor)
+
+        c(f.toRSideEditor, s, self.onRowChanged)
+        f.toRSideEditor.toggled.connect(self.toggleSplitOrientation)
+        vert = self.mw.pm.profile.get("browser.splitterOrientation", False)
+        if vert:
+            f.splitter.setOrientation(Qt.Vertical)
+            f.toRSideEditor.setChecked(True)
         # keyboard shortcut for shift+home/end
         self.pgUpCut = QShortcut(QKeySequence("Shift+Home"), self)
         c(self.pgUpCut, SIGNAL("activated()"), self.onFirstCard)
@@ -668,17 +682,23 @@ class Browser(QMainWindow):
         self.editor = aqt.editor.Editor(
             self.mw, self.form.fieldsArea, self)
         self.editor.stealFocus = False
+        self.form.fieldsArea.setEditor(self.editor) #for resizeEvent
 
     def onRowChanged(self, current=None, previous=None):
         "Update current note and hide/show editor."
         update = self.updateTitle()
         chk = self.form.actionShowEdit.isChecked()
         show = chk and self.model.cards and update == 1
-        self.form.splitter.widget(1).setVisible(not not show) #weird typecast
+        self.form.splitter.widget(1).setVisible(not not show) #bool
         if not show:
             self.editor.setNote(None)
             self.singleCard = False
         else:
+            if self.form.toRSideEditor.isChecked():
+                ori = Qt.Horizontal
+            else:
+                ori = Qt.Vertical
+            self.form.splitter.setOrientation(ori)
             self.card = self.model.getCard(
                 self.form.tableView.selectionModel().currentIndex())
             self.editor.setNote(self.card.note(reload=True))

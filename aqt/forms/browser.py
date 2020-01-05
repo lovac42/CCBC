@@ -13,6 +13,18 @@ from aqt.sidebar import SidebarTreeWidget
 import ccbc.plugins.Card_Info_Bar_for_Browser.browser
 
 
+class EditorAreaWidget(QtGui.QWidget):
+    ed = None
+    def setEditor(self, ed):
+        self.ed = ed
+    def resizeEvent(self, evt):
+        super().resizeEvent(evt)
+        if self.ed:
+            w = self.width()
+            self.ed.toggleExtraFormatButtons(w)
+
+
+
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
@@ -113,7 +125,8 @@ class Ui_Dialog(object):
         self.horizontalLayout2.setSpacing(0)
         self.horizontalLayout2.setMargin(0)
         self.horizontalLayout2.setObjectName("horizontalLayout2")
-        self.fieldsArea = QtGui.QWidget(self.verticalLayoutWidget)
+        # self.fieldsArea = QtGui.QWidget(self.verticalLayoutWidget)
+        self.fieldsArea = EditorAreaWidget(self.verticalLayoutWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(1)
@@ -265,11 +278,15 @@ class Ui_Dialog(object):
         self.actionShowEdit = QtGui.QAction(Dialog)
         self.actionShowEdit.setObjectName("actionShowEdit")
         self.actionShowEdit.setCheckable(True)
-        self.actionShowEdit.setChecked(True)
         self.menuView.addAction(self.actionShowEdit)
 
         #Addon: Card Info Bar for Browser, https://ankiweb.net/shared/info/2140680811
         ccbc.plugins.Card_Info_Bar_for_Browser.browser.menu(self)
+
+        self.toRSideEditor = QtGui.QAction(Dialog)
+        self.toRSideEditor.setObjectName("toRSideEditor")
+        self.toRSideEditor.setCheckable(True)
+        self.menuView.addAction(self.toRSideEditor)
 
         # Notes menu
         self.menu_Notes.addAction(self.actionChangeModel)
@@ -348,6 +365,7 @@ class Ui_Dialog(object):
 
         self.actionShowEdit.setText(_("Show Editor"))
         self.actionShowEdit.setShortcut(_("Ctrl+Shift+E"))
+        self.toRSideEditor.setText(_("View editor on the right side"))
 
         self.menuFlag.setTitle(_("Flag"))
         self.actionClear_Flag.setText(_("Clear Flags"))
