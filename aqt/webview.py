@@ -111,9 +111,10 @@ class AnkiWebView(QWebView):
     def dragEnterEvent(self, event):
         mime = event.mimeData()
         if not mime.hasUrls():
+            event.acceptProposedAction() #needed by addCard
             return
-        from aqt import mw
 
+        from aqt import mw
         if mw.state == 'review':
             #TODO: allow image drops for incremental writing
             return
