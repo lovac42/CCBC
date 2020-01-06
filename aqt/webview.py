@@ -4,13 +4,15 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 # Support: https://github.com/lovac42/CCBC
 
+
 import sys
-from anki.hooks import runHook
 from aqt.qt import *
 from aqt.utils import openLink
+from anki.hooks import runHook
 from anki.utils import isMac, isWin
-import ccbc.js
 from anki.lang import _
+
+import ccbc.js
 
 
 # Bridge for Qt<->JS
@@ -111,14 +113,11 @@ class AnkiWebView(QWebView):
     def dragEnterEvent(self, event):
         mime = event.mimeData()
         if not mime.hasUrls():
-            event.acceptProposedAction() #needed by addCard
+            # dragged text
+            event.acceptProposedAction()
             return
 
         from aqt import mw
-        if mw.state == 'review':
-            #TODO: allow image drops for incremental writing
-            return
-
         # exclude file ext
         for url in mime.urls():
             f = url.toLocalFile()
@@ -134,6 +133,9 @@ class AnkiWebView(QWebView):
 
     def dropEvent(self, evt):
         from aqt import mw
+        if mw.state == 'review':
+            #TODO: allow image drops for incremental writing
+            return
         import aqt.importing
         mime = evt.mimeData()
         get = aqt.importing.importFile
