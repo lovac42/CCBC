@@ -209,7 +209,8 @@ The input you have provided would make an empty \
 question on all cards."""))
             return
         self.addHistory(note)
-        self.mw.requireReset()
+        if self.mw.state != 'review':
+            self.mw.requireReset()
         return note
 
     def addCards(self):

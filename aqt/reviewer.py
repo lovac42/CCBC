@@ -14,7 +14,7 @@ import html.parser
 
 from anki.lang import _, ngettext
 from aqt.qt import *
-from anki.utils import  stripHTML, isMac, json
+from anki.utils import ids2str, stripHTML, isMac, json
 from anki.hooks import addHook, runHook, runFilter
 from anki.sound import playFromText, clearAudioQueue, play
 from aqt.utils import mungeQA, getBase, openLink, tooltip, askUserDialog, \
@@ -44,6 +44,7 @@ class Reviewer(object):
         self.delShortcut = QShortcut(QKeySequence("Delete"), self.mw)
         self.delShortcut.setAutoRepeat(False)
         self.mw.connect(self.delShortcut, SIGNAL("activated()"), self.onDelete)
+        addHook("addedNote", self.onAddedNote)
         addHook("leech", self.onLeech)
 
     def show(self):
@@ -642,6 +643,25 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             return "<div class=spacer></div>"
         txt = self.mw.col.sched.nextIvlStr(self.card, i, True) or "&nbsp;"
         return '<span class=nobold>%s</span><br>' % txt
+
+    def onAddedNote(self, note):
+        if self.mw.state != 'review':
+            return
+        if not self.mw.pm.profile.get("ccbc.powerUserMode", False):
+            return
+        cnt = self.mw.col.db.first("""
+select count() from cards
+where nid = ? and did in %s
+"""%ids2str(self.mw.col.decks.active()), note.id)[0]
+        if not cnt: #not in current active decks
+            return
+        self.mw.col.sched.newCount += cnt
+        if self.state == 'question':
+            self.bottom.web.show()
+            self.bottom.web.stdHtml(
+                self._bottomHTML(),
+                self.bottom._css + self._bottomCSS,
+            loadCB=lambda x: self._showAnswerButton())
 
     # Leeches
     ##########################################################################

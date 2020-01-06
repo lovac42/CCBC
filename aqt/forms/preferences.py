@@ -177,6 +177,11 @@ class Ui_Preferences(object):
         self.autoCompleter.setObjectName("autoCompleter")
         self.tabAdvVLayout.addWidget(self.autoCompleter)
 
+        # powerUser Mode
+        self.powerUserMode = QtWidgets.QCheckBox(self.tab_adv)
+        self.powerUserMode.setObjectName("powerUserMode")
+        self.tabAdvVLayout.addWidget(self.powerUserMode)
+
         self.tabAdvVLayout.addItem(
             QtWidgets.QSpacerItem(5,5,
                 QtWidgets.QSizePolicy.Fixed,
@@ -352,7 +357,8 @@ class Ui_Preferences(object):
 
         Preferences.setTabOrder(self.syncDeauth, self.showFormatBtns)
         Preferences.setTabOrder(self.showFormatBtns, self.autoCompleter)
-        Preferences.setTabOrder(self.autoCompleter, self.noAutoPlay)
+        Preferences.setTabOrder(self.autoCompleter, self.powerUserMode)
+        Preferences.setTabOrder(self.powerUserMode, self.noAutoPlay)
         Preferences.setTabOrder(self.noAutoPlay, self.stpAudOnShwAns)
         Preferences.setTabOrder(self.stpAudOnShwAns, self.importMedia)
         Preferences.setTabOrder(self.importMedia, self.noScript)
@@ -403,6 +409,7 @@ class Ui_Preferences(object):
         self.bigGradeBtns.setText(_("Enlarge grading buttons for review"))
         self.showFormatBtns.setText(_("Show extra formatting buttons in editor"))
         self.autoCompleter.setText(_("Use auto complete when adding card?"))
+        self.powerUserMode.setText(_("Power User Mode (req. lots of ram)"))
         self.noAutoPlay.setText(_("Disable autoplay (Global)"))
         self.stpAudOnShwAns.setText(_("Stop media playback before show answer"))
         self.importMedia.setText(_("Import and localize media during edits (e.g. src=http...)"))
