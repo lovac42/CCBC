@@ -12,7 +12,7 @@ from PyQt4 import QtCore, QtGui as QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(335, 282)
+        # Form.resize(335, 282)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(Form)
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
@@ -34,7 +34,7 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_("Form"))
+        # Form.setWindowTitle(_("Form"))
         self.groupBox.setTitle(_("Front Preview"))
         self.groupBox_2.setTitle(_("Back Preview"))
 

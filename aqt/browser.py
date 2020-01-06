@@ -454,9 +454,9 @@ class Browser(QMainWindow):
 
         # edit
         c(f.actionUndo, s, self.mw.onUndo)
-        c(f.previewButton, SIGNAL("clicked()"), self.onTogglePreview)
-        f.previewButton.setToolTip(_("Preview Selected Card (%s)") %
-            shortcut(_("Ctrl+Shift+P")))
+        # c(f.previewButton, SIGNAL("clicked()"), self.onTogglePreview)
+        # f.previewButton.setToolTip(_("Preview Selected Card (%s)") %
+            # shortcut(_("Ctrl+Shift+P")))
         c(f.actionInvertSelection, s, self.invertSelection)
         c(f.actionSelectNotes, s, self.selectNotes)
         c(f.actionFindReplace, s, self.onFindReplace)
@@ -691,6 +691,7 @@ class Browser(QMainWindow):
         show = chk and self.model.cards and update == 1
         self.form.splitter.widget(1).setVisible(not not show) #bool
         if not show:
+            self.card = None
             self.editor.setNote(None)
             self.singleCard = False
         else:
@@ -1230,11 +1231,11 @@ where id in %s""" % ids2str(sf))
     # Preview
     ######################################################################
 
-    def onTogglePreview(self):
-        if self._previewWindow:
-            self._closePreview()
-        else:
-            self._openPreview()
+    # def onTogglePreview(self):
+        # if self._previewWindow:
+            # self._closePreview()
+        # else:
+            # self._openPreview()
 
     def _openPreview(self):
         c = self.connect
@@ -1274,7 +1275,11 @@ where id in %s""" % ids2str(sf))
 
         vbox.addWidget(bbox)
         self._previewWindow.setLayout(vbox)
-        restoreGeom(self._previewWindow, "preview")
+        self._previewWindow.setMinimumSize(QSize(250, 200))
+        if self.mw.pm.profile.get("previewGeom"):
+            restoreGeom(self._previewWindow, "preview")
+        else:
+            self._previewWindow.resize(400, 300)
         self._previewWindow.show()
         self._renderPreview(True)
         self._previewWeb.setLinkHandler(self._linkHandler)
@@ -1286,9 +1291,11 @@ where id in %s""" % ids2str(sf))
             play(arg)
 
     def _onPreviewFinished(self, ok):
-        saveGeom(self._previewWindow, "preview")
-        self.mw.progress.timer(100, self._onClosePreview, False)
-        self.form.previewButton.setChecked(False)
+        try:
+            saveGeom(self._previewWindow, "preview")
+            self.mw.progress.timer(100, self._onClosePreview, False)
+            # self.form.previewButton.setChecked(False)
+        except TypeError: pass
 
     def _onPreviewPrev(self):
         if self._previewState == "question":
@@ -1329,7 +1336,8 @@ where id in %s""" % ids2str(sf))
     def _renderPreview(self, cardChanged=False):
         if not self._previewWindow:
             return
-        c = self.card
+        c = self.model.getCard(
+            self.form.tableView.selectionModel().currentIndex())
         if not c:
             txt = _("(please select 1 card)")
             self._previewWeb.stdHtml(txt)
