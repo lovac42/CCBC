@@ -384,10 +384,12 @@ the manual for information on how to restore from an automatic backup."))
         if (intTime() - self.pm.profile['lastOptimize']) < 86400*14:
             return
         self.progress.start(label=_("Optimizing..."), immediate=True)
-        self.col.optimize()
-        self.pm.profile['lastOptimize'] = intTime()
-        self.pm.save()
-        self.progress.finish()
+        try:
+            self.col.optimize()
+            self.pm.profile['lastOptimize'] = intTime()
+            self.pm.save()
+        finally:
+            self.progress.finish()
 
     # State machine
     ##########################################################################
@@ -961,8 +963,10 @@ will be lost. Continue?"""))
     def onCheckDB(self):
         "True if no problems"
         self.progress.start(immediate=True)
-        ret, ok = self.col.fixIntegrity()
-        self.progress.finish()
+        try:
+            ret, ok = self.col.fixIntegrity()
+        finally:
+            self.progress.finish()
         if not ok:
             showText(ret)
         else:
@@ -972,8 +976,10 @@ will be lost. Continue?"""))
 
     def onCheckMediaDB(self):
         self.progress.start(immediate=True)
-        (nohave, unused, invalid) = self.col.media.check()
-        self.progress.finish()
+        try:
+            (nohave, unused, invalid) = self.col.media.check()
+        finally:
+            self.progress.finish()
         # generate report
         report = ""
         if invalid:
@@ -1050,13 +1056,15 @@ will be lost. Continue?"""))
 
     def onEmptyCards(self):
         self.progress.start(immediate=True)
-        cids = self.col.emptyCids()
-        if not cids:
+        try:
+            cids = self.col.emptyCids()
+            if not cids:
+                self.progress.finish()
+                tooltip(_("No empty cards."))
+                return
+            report = self.col.emptyCardReport(cids)
+        finally:
             self.progress.finish()
-            tooltip(_("No empty cards."))
-            return
-        report = self.col.emptyCardReport(cids)
-        self.progress.finish()
         part1 = ngettext("%d card", "%d cards", len(cids)) % len(cids)
         part1 = _("%s to delete:") % part1
         diag, box = showText(part1 + "\n\n" + report, run=False,
