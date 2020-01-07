@@ -86,8 +86,7 @@ class AddCards(QDialog):
         # close
         self.closeButton = QPushButton(_("Close"))
         self.closeButton.setAutoDefault(False)
-        bb.addButton(self.closeButton,
-                                        QDialogButtonBox.RejectRole)
+        bb.addButton(self.closeButton, QDialogButtonBox.RejectRole)
 
         # history
         b = bb.addButton(
@@ -102,7 +101,16 @@ class AddCards(QDialog):
         self.historyButton = b
 
     def setupHistory(self):
-        self.historyButton.setEnabled(len(self.history))
+        boo = len(self.history)
+        self.historyButton.setEnabled(boo)
+        if not boo and self.mw.pm.profile.get("ccbc.powerUserMode", False):
+            addHook('addedNote', self._enableHistoryButton)
+
+    def _enableHistoryButton(self, note):
+        "Used to enable history for multi addCard dialogs"
+        self.historyButton.setEnabled(True)
+        self.mw.progress.timer(10,
+            lambda:remHook('addedNote', self._enableHistoryButton), False)
 
     def setupNewNote(self, set=True):
         f = self.mw.col.newNote()
