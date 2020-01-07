@@ -501,7 +501,7 @@ class Editor(object):
 
     def showDupes(self):
         contents = stripHTMLMedia(self.note.fields[0])
-        browser = aqt.dialogs.open("Browser", self.mw)
+        browser = aqt.dialogs.open("Browser", self.mw, False)
         browser.form.searchEdit.lineEdit().setText(
             '"dupe:%s,%s"' % (self.note.model()['id'],
                               contents))

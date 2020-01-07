@@ -327,7 +327,7 @@ class ExtMediaManager(MediaManager):
 
         if nohave:
             from aqt import mw, dialogs
-            browser = dialogs.open("Browser", mw)
+            browser = dialogs.open("Browser", mw, False)
             browser.form.searchEdit.lineEdit().setText("tag:MissingMedia")
             browser.onSearchActivated()
 

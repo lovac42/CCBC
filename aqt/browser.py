@@ -391,9 +391,12 @@ class StatusDelegate(QItemDelegate):
 # fixme: respond to reset+edit hooks
 
 class Browser(QMainWindow):
-    cb_shown = {"editor": True}
+    cb_shown = {
+        "editor": True,
+        "sidebar": True
+    }
 
-    def __init__(self, mw):
+    def __init__(self, mw, sidebar=True):
         QMainWindow.__init__(self, None, Qt.Window) #Use None to prevent addCard being pushed to the bg
         # mw.setupDialogGC(self) #AttributeError: 'Browser' object has no attribute 'finished'
         self.setAttribute(Qt.WA_DeleteOnClose, True) #gc stuff, replaces above line
@@ -412,6 +415,8 @@ class Browser(QMainWindow):
         self.form.splitter.setChildrenCollapsible(False)
         self.card = None
         self.dropItem = None
+        self.showSidebar = sidebar and self.cb_shown['sidebar']
+
         self.mw.col.tags.registerNotes() #clean up tags
         self.setupToolbar()
         self.setupColumns()
@@ -430,12 +435,21 @@ class Browser(QMainWindow):
         self.onSearch()
         self.show()
 
+    def toggleSidebar(self):
+        b = not self.showSidebar
+        self.showSidebar = self.cb_shown["sidebar"] = b
+        self.form.tree.setVisible(b)
+        self.buildTree()
+
     def toggleEditor(self):
         self.cb_shown["editor"] = not self.cb_shown["editor"]
+        self.onRowChanged()
 
     def toggleSplitOrientation(self):
         b = self.form.toRSideEditor.isChecked()
         self.mw.pm.profile["browser.splitterOrientation"] = b
+        ori = Qt.Horizontal if b else Qt.Vertical
+        self.form.splitter.setOrientation(ori)
 
     def setupToolbar(self):
         self.toolbarWeb = AnkiWebView()
@@ -479,16 +493,16 @@ class Browser(QMainWindow):
         c(f.actionCardList, s, self.onCardList)
 
         # view
-        c(f.actionShowEdit, s, self.onRowChanged)
+        f.actionShowSidebar.setChecked(self.showSidebar)
+        f.actionShowSidebar.toggled.connect(self.toggleSidebar)
         f.actionShowEdit.setChecked(self.cb_shown["editor"])
         f.actionShowEdit.toggled.connect(self.toggleEditor)
-
-        c(f.toRSideEditor, s, self.onRowChanged)
         f.toRSideEditor.toggled.connect(self.toggleSplitOrientation)
         vert = self.mw.pm.profile.get("browser.splitterOrientation", False)
         if vert:
             f.splitter.setOrientation(Qt.Vertical)
             f.toRSideEditor.setChecked(True)
+
         # keyboard shortcut for shift+home/end
         self.pgUpCut = QShortcut(QKeySequence("Shift+Home"), self)
         c(self.pgUpCut, SIGNAL("activated()"), self.onFirstCard)
@@ -703,11 +717,7 @@ class Browser(QMainWindow):
             self.editor.setNote(None)
             self.singleCard = False
         else:
-            if self.form.toRSideEditor.isChecked():
-                ori = Qt.Horizontal
-            else:
-                ori = Qt.Vertical
-            self.form.splitter.setOrientation(ori)
+            self.toggleSplitOrientation()
             self.card = self.model.getCard(
                 self.form.tableView.selectionModel().currentIndex())
             self.editor.setNote(self.card.note(reload=True))
@@ -863,6 +873,9 @@ by clicking on one on the left."""))
         self.buildTree()
 
     def buildTree(self):
+        if not self.showSidebar:
+            self.form.tree.setVisible(False)
+            return
         self.sidebarTree=self.form.tree
         self.sidebarTree.clear()
         root = self.form.tree

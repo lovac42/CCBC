@@ -288,6 +288,11 @@ class Ui_Dialog(object):
         self.toRSideEditor.setCheckable(True)
         self.menuView.addAction(self.toRSideEditor)
 
+        self.actionShowSidebar = QtGui.QAction(Dialog)
+        self.actionShowSidebar.setObjectName("actionShowSidebar")
+        self.actionShowSidebar.setCheckable(True)
+        self.menuView.addAction(self.actionShowSidebar)
+
         # Notes menu
         self.menu_Notes.addAction(self.actionChangeModel)
         self.menu_Notes.addAction(self.actionFindDuplicates)
@@ -364,6 +369,7 @@ class Ui_Dialog(object):
         self.actionClose.setText(_("Close"))
         self.actionClose.setShortcut(_("Ctrl+W"))
 
+        self.actionShowSidebar.setText(_("Show Sidebar"))
         self.actionShowEdit.setText(_("Show Editor"))
         self.actionShowEdit.setShortcut(_("Ctrl+Shift+E"))
         self.toRSideEditor.setText(_("View editor on the right side"))

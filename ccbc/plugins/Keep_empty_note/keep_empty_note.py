@@ -73,7 +73,7 @@ def onDelete(mw, diag, cids):
 
     if emptyNids:
         showWarning(f"""{len(emptyNids)} note(s) should have been deleted because they had no more cards. They now have the tag "NoteWithNoCard". Please go check them. Then either edit them to save their content, or delete them from the browser.""")
-        browser = dialogs.open("Browser", mw)
+        browser = dialogs.open("Browser", mw, False)
         browser.form.searchEdit.lineEdit().setText("tag:NoteWithNoCard")
         browser.onSearchActivated()
 
