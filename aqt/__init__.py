@@ -24,11 +24,11 @@ from aqt import pinnedmodules
 
 
 appVersion=_version
-appWebsite="http://google.com/appWebsite"
-appChanges="http://google.com/appChanges"
-appDonate="http://google.com/appDonate"
+# appWebsite="http://google.com/appWebsite"
+# appChanges="http://google.com/appChanges"
+# appDonate="http://google.com/appDonate"
 appShared="https://ankiweb.net/shared/"
-appUpdate="http://google.com/appUpdate"
+# appUpdate="http://google.com/appUpdate"
 mw = None # set on init
 
 moduleDir = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]

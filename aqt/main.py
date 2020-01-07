@@ -552,8 +552,6 @@ title="%s">%s</button>''' % (
     def closeAllCollectionWindows(self):
         return aqt.dialogs.closeAll()
 
-
-
     # Managers setup
     ##########################################################################
 
@@ -714,17 +712,25 @@ title="%s">%s</button>''' % (
 
     def closeEvent(self, event):
         "User hit the X button, etc."
-        event.accept()
-        self.onClose(force=True)
+        if self.state == "profileManager":
+            # if profile manager active, this event may fire via OS X menu bar's
+            # quit option
+            self.profileDiag.close()
+            event.accept()
+        elif self.onClose(force=True):
+            event.accept()
+        else:
+            event.ignore()
 
     def onClose(self, force=False):
         "Called from a shortcut key. Close current active window."
         aw = self.app.activeWindow()
         if not aw or aw == self or force:
-            self.unloadProfile(browser=False)
-            self.app.closeAllWindows()
-        else:
-            aw.close()
+            if self.closeAllCollectionWindows():
+                self.unloadProfile(browser=False)
+                self.app.closeAllWindows()
+                return True
+        aw.close()
 
     # Undo & autosave
     ##########################################################################

@@ -25,6 +25,7 @@ class AddCards(QDialog):
 
     def __init__(self, mw):
         QDialog.__init__(self, None, Qt.Window)
+        mw.setupDialogGC(self)
         self.mw = mw
         self._UID = "AddCards_%d"%self.unique_id
         self.forceClose = False
@@ -236,8 +237,13 @@ question on all cards."""))
         return QDialog.keyPressEvent(self, evt)
 
     def reject(self):
-        if not self.canClose():
-            return
+        # This order is used to avoid a regression in Qt4.8
+        # TypeError: invalid result from AddCards.reject()
+        # reject() must not return any value
+        if self.canClose():
+            self._reject()
+
+    def _reject(self):
         remHook('reset', self.onReset)
         clearAudioQueue()
         self.removeTempNote(self.editor.note)
@@ -252,10 +258,9 @@ question on all cards."""))
         QDialog.reject(self)
 
     def canClose(self):
+        self.editor.saveNow()
         blankField = self.editor.fieldsAreBlank()
-        if blankField and self.addOnceChkBox.isChecked():
+        if blankField or self.forceClose or \
+        (self.addOnceChkBox.isChecked() and blankField) or \
+        askUser(_("Close and lose current input?")):
             return True
-        if (self.forceClose or blankField or
-            askUser(_("Close and lose current input?"))):
-            return True
-        return False
