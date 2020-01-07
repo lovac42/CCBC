@@ -598,7 +598,7 @@ class AddonsDialog(QDialog):
 
         if log:
             log_html = "<br>".join(log)
-            if len(log) == 1:
+            if len(log) < 3:
                 tooltip(log_html, parent=self)
             else:
                 showInfo(log_html, parent=self, textFormat="rich")
@@ -606,6 +606,7 @@ class AddonsDialog(QDialog):
             msg = _("Please report this to the respective add-on author(s).")
             showWarning("<br><br>".join(errs + [msg]), parent=self, textFormat="rich")
 
+        self.form.label.setText("<h1>Addon installed, CCBC must be restarted!</h1>")
         self.redrawAddons()
 
     def onCheckForUpdates(self):
