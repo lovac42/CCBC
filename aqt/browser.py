@@ -396,6 +396,7 @@ class Browser(QMainWindow):
     def __init__(self, mw):
         QMainWindow.__init__(self, None, Qt.Window) #Use None to prevent addCard being pushed to the bg
         # mw.setupDialogGC(self) #AttributeError: 'Browser' object has no attribute 'finished'
+        self.setAttribute(Qt.WA_DeleteOnClose, True) #gc stuff, replaces above line
         applyStyles(self)
         self.mw = mw
         self.col = self.mw.col
