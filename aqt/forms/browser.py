@@ -327,6 +327,7 @@ class Ui_Dialog(object):
         self.menu_Cards.setTitle(_("&Cards"))
         self.menu_Notes.setTitle(_("&Notes"))
         self.actionReschedule.setText(_("&Reschedule..."))
+        self.actionReschedule.setShortcut(_("Ctrl+Alt+S"))
         self.actionSelectAll.setText(_("Select &All"))
         self.actionSelectAll.setShortcut(_("Ctrl+A"))
         self.actionUndo.setText(_("&Undo"))

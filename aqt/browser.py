@@ -444,7 +444,10 @@ class Browser(QMainWindow):
 
     def setupMenus(self):
         # actions
-        c = self.connect; f = self.form; s = SIGNAL("triggered()")
+        c = self.connect
+        f = self.form
+        s = SIGNAL("triggered()")
+
         if not isMac:
             f.actionClose.setVisible(False)
         c(f.actionReposition, s, self.reposition)
@@ -528,6 +531,9 @@ class Browser(QMainWindow):
 
     def onContextMenu(self, _point):
         m = QMenu()
+        for act in self.form.menuEdit.actions()[2:5]:
+            m.addAction(act)
+        m.addSeparator()
         for act in self.form.menu_Cards.actions():
             m.addAction(act)
         # m.addSeparator()
