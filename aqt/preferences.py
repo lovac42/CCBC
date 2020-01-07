@@ -21,6 +21,7 @@ class Preferences(QDialog):
             showInfo(_("Please open a profile first."))
             return
         QDialog.__init__(self, mw, Qt.Window)
+        mw.setupDialogGC(self)
         self.mw = mw
         self.prof = self.mw.pm.profile
         self.form = aqt.forms.preferences.Ui_Preferences()
