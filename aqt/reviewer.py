@@ -207,8 +207,11 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
     def autoplay(self, card):
         if self.mw.pm.profile.get("ccbc.noAutoPlay", False):
             return False
+        key = "autoplay"
+        if self.state == "answer":
+            key = "autoplayA"
         return self.mw.col.decks.confForDid(
-            card.odid or card.did)['autoplay']
+            card.odid or card.did).get(key, False)
 
     def ignoreInputCase(self, card):
         try:

@@ -220,7 +220,8 @@ class DeckConf(QDialog):
         c = self.conf
         f.maxTaken.setValue(c['maxTaken'])
         f.showTimer.setChecked(c.get('timer', 0))
-        f.autoplaySounds.setChecked(c['autoplay'])
+        f.autoplaySounds.setChecked(c.get('autoplay', True))  #Q
+        f.autoplaySoundsA.setChecked(c.get('autoplayA', True)) #A
         f.replayQuestion.setChecked(c.get('replayq', True))
         f.ignoreInputCase.setChecked(c.get("ccbc.ignoreInputCase", False))
         # description
@@ -309,7 +310,8 @@ class DeckConf(QDialog):
         c = self.conf
         c['maxTaken'] = f.maxTaken.value()
         c['timer'] = f.showTimer.isChecked() and 1 or 0
-        c['autoplay'] = f.autoplaySounds.isChecked()
+        c['autoplay'] = f.autoplaySounds.isChecked()   #Q
+        c['autoplayA'] = f.autoplaySoundsA.isChecked() #A
         c['replayq'] = f.replayQuestion.isChecked()
         c['ccbc.ignoreInputCase'] = f.ignoreInputCase.isChecked()
         # description
