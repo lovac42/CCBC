@@ -713,7 +713,6 @@ class Browser(QMainWindow):
         show = chk and self.model.cards and update == 1
         self.form.splitter.widget(1).setVisible(not not show) #bool
         if not show:
-            self.card = None
             self.editor.setNote(None)
             self.singleCard = False
         else:
