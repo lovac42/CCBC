@@ -16,7 +16,7 @@ import gettext
 from aqt.qt import *
 import anki.lang
 from anki.lang import langDir
-from anki.utils import isMac
+from anki.utils import isMac, isWin
 from anki import version as _version
 from anki.lang import _
 from builtins import str
@@ -147,7 +147,7 @@ class AnkiApp(QApplication):
 
     appMsg = pyqtSignal(str)
 
-    KEY = "anki"+checksum(getpass.getuser())
+    KEY = None #set later
     TMOUT = 30000
 
     def __init__(self, argv):
@@ -158,6 +158,8 @@ class AnkiApp(QApplication):
         # we accept only one command line argument. if it's missing, send
         # a blank screen to just raise the existing window
         opts, args = parseArgs(self._argv)
+        self.KEY = "anki"+checksum(opts.base+opts.profile+getpass.getuser())
+
         buf = "raise"
         if args and args[0]:
             buf = os.path.abspath(args[0])
@@ -182,9 +184,9 @@ class AnkiApp(QApplication):
         sock.write(txt.encode("utf8"))
         if not sock.waitForBytesWritten(self.TMOUT):
             # existing instance running but hung
-            QMessageBox.warning(None, "Anki Already Running",
-                                 "If the existing instance of Anki is not responding, please close it using your task manager, or restart your computer.")
-
+            QMessageBox.warning(
+                None, "Anki Already Running",
+                "If the existing instance of Anki is not responding, please close it using your task manager, or restart your computer.")
             sys.exit(1)
         sock.disconnectFromServer()
         return True
@@ -215,13 +217,19 @@ def parseArgs(argv):
     # as there's no such profile
     if isMac and len(argv) > 1 and argv[1].startswith("-psn"):
         argv = [argv[0]]
-    parser = argparse.ArgumentParser(description="CCBD " + appVersion)
+    parser = argparse.ArgumentParser(description="CCBC " + appVersion)
     parser.usage = "%(prog)s [OPTIONS] [file to import]"
     parser.add_argument("-b", "--base", help="path to base folder", default="")
     parser.add_argument("-p", "--profile", help="profile name to load", default="")
     parser.add_argument("-l", "--lang", help="interface language (en, de, etc)")
     parser.add_argument("-d", "--dev", help="run in dev mode", action='store_true')
-    return parser.parse_known_args(argv[1:])
+    opts,args = parser.parse_known_args(argv[1:])
+    if isWin and not opts.base:
+        portable = os.path.dirname(os.path.dirname(__file__))
+        portFile = os.path.join(portable, "portable.dat")
+        if os.path.exists(os.path.join(portable, "portable.dat")):
+            opts.base = os.path.join(portable,"Data")
+    return opts,args
 
 
 def run():
@@ -256,15 +264,12 @@ def _run(argv=None, exec=True):
         os.environ["ANKIDEV"] = "1"
         print("running in dev mode")
 
-
-    # on osx we'll need to add the qt plugins to the search path
-    if isMac and getattr(sys, 'frozen', None):
-        rd = os.path.abspath(moduleDir + "/../../..")
-        QCoreApplication.setLibraryPaths([rd])
-
     if isMac:
+        if getattr(sys, 'frozen', None):
+            # on osx we'll need to add the qt plugins to the search path
+            rd = os.path.abspath(moduleDir + "/../../..")
+            QCoreApplication.setLibraryPaths([rd])
         QFont.insertSubstitution(".Lucida Grande UI", "Lucida Grande")
-
 
     # create the app
     QCoreApplication.setApplicationName("Anki")
