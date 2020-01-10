@@ -275,6 +275,12 @@ class Ui_Dialog(object):
         self.menuJump.addAction(self.actionLastCard)
 
         # View menu
+        self.actionLockSearch = QtGui.QAction(Dialog)
+        self.actionLockSearch.setObjectName("actionLockSearch")
+        self.actionLockSearch.setCheckable(True)
+        self.menuView.addAction(self.actionLockSearch)
+        self.menuView.addSeparator()
+
         self.actionShowEdit = QtGui.QAction(Dialog)
         self.actionShowEdit.setObjectName("actionShowEdit")
         self.actionShowEdit.setCheckable(True)
@@ -370,6 +376,7 @@ class Ui_Dialog(object):
         self.actionClose.setShortcut(_("Ctrl+W"))
 
         self.actionShowSidebar.setText(_("Show Sidebar"))
+        self.actionLockSearch.setText(_("Lock Search"))
         self.actionShowEdit.setText(_("Show Editor"))
         self.actionShowEdit.setShortcut(_("Ctrl+Shift+E"))
         self.toRSideEditor.setText(_("View editor on the right side"))

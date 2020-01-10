@@ -21,7 +21,7 @@ from anki.utils import fmtTimeSpan, ids2str, htmlToTextLine, stripHTMLMedia, isW
 from aqt.utils import saveGeom, restoreGeom, saveSplitter, restoreSplitter, \
     saveHeader, restoreHeader, saveState, restoreState, applyStyles, getTag, \
     showInfo, askUser, tooltip, showWarning, shortcut, getBase, mungeQA, \
-    qtMenuShortcutWorkaround
+    qtMenuShortcutWorkaround, getText
 from anki.hooks import runHook, addHook, remHook, runFilter
 from aqt.webview import AnkiWebView
 from aqt.toolbar import Toolbar
@@ -416,6 +416,7 @@ class Browser(QMainWindow):
         self.card = None
         self.dropItem = None
         self.showSidebar = sidebar and self.cb_shown['sidebar']
+        self.lockedSearch = ""
 
         self.mw.col.tags.registerNotes() #clean up tags
         self.setupToolbar()
@@ -495,6 +496,8 @@ class Browser(QMainWindow):
         # view
         f.actionShowSidebar.setChecked(self.showSidebar)
         f.actionShowSidebar.toggled.connect(self.toggleSidebar)
+        f.actionLockSearch.setChecked(not not self.lockedSearch)
+        f.actionLockSearch.toggled.connect(self.setSearchLock)
         f.actionShowEdit.setChecked(self.cb_shown["editor"])
         f.actionShowEdit.toggled.connect(self.toggleEditor)
         f.toRSideEditor.toggled.connect(self.toggleSplitOrientation)
@@ -639,16 +642,14 @@ class Browser(QMainWindow):
         prompt = _("<type here to search; hit enter to show current deck>")
         sh = self.mw.pm.profile['searchHistory']
         # update search history
-        if txt in sh:
-            sh.remove(txt)
-        sh.insert(0, txt)
-        sh = sh[:30]
+        if txt not in sh:
+            sh.insert(0, txt)
+            del sh[50:]
         self.form.searchEdit.clear()
         self.form.searchEdit.addItems(sh)
         self.mw.pm.profile['searchHistory'] = sh
         if self.mw.state == "review" and "is:current" in txt:
-            # search for current card, but set search to easily display whole
-            # deck
+            # search for current card, but set search to easily display whole deck
             if reset:
                 self.model.beginReset()
                 self.model.focusedCard = self.mw.reviewer.card.id
@@ -662,14 +663,26 @@ class Browser(QMainWindow):
             self.form.searchEdit.lineEdit().setText(prompt)
             self.form.searchEdit.lineEdit().selectAll()
         elif txt == prompt:
-            self.form.searchEdit.lineEdit().setText("deck:current ")
             txt = "deck:current "
+            txt = "%s %s"%(self.lockedSearch, txt)
+            self.form.searchEdit.lineEdit().setText(txt)
+        else:
+            txt = "%s %s"%(self.lockedSearch, txt)
+            self.form.searchEdit.lineEdit().setText(txt)
         self.model.search(txt, reset)
         if not self.model.cards:
             # no row change will fire
             self.onRowChanged(None, None)
         elif self.mw.state == "review":
             self.focusCid(self.mw.reviewer.card.id)
+
+    def setSearchLock(self): #v2.1
+        txt,ok = getText(
+            _("""Auto include search (e.g. is:new)"""),
+            default=self.lockedSearch
+        )
+        if ok:
+            self.lockedSearch = txt
 
     def updateTitle(self):
         selected = len(self.form.tableView.selectionModel().selectedRows())
