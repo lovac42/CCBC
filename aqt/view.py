@@ -269,6 +269,8 @@ class FullScreenManager:
         menu.addMenu(subMenu)
 
         a = QAction("Full Screen", subMenu)
+        a.setCheckable(True)
+        a.setChecked(self.mw.windowState()==Qt.WindowFullScreen)
         a.triggered.connect(self.onFullScreen)
         a.setShortcut("F11")
         subMenu.addAction(a)
@@ -332,6 +334,9 @@ class FullScreenManager:
         if bool:
             self.savedState = self.mw.windowState()
             self.mw.setWindowState(Qt.WindowFullScreen)
+            # prevent FS lockup from addons using restoreGeom
+            if self.savedState == Qt.WindowFullScreen:
+                self.savedState = Qt.WindowNoState
         else:
             self.mw.setWindowState(self.savedState)
         self.stateChanged(self.mw.state)
