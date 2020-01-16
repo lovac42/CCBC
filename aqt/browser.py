@@ -411,6 +411,8 @@ class Browser(QMainWindow):
         restoreState(self, "editor")
         restoreSplitter(self.form.splitter_2, "editor2")
         restoreSplitter(self.form.splitter, "editor3")
+        self.setWindowState(
+            self.mw.windowState() if sidebar else Qt.WindowNoState)
         self.form.splitter_2.setChildrenCollapsible(False)
         self.form.splitter.setChildrenCollapsible(False)
         self.card = None
@@ -435,6 +437,13 @@ class Browser(QMainWindow):
         self.form.searchEdit.lineEdit().selectAll()
         self.onSearch()
         self.show()
+
+    def toggleFullScreen(self):
+        b = self.windowState() ^ Qt.WindowFullScreen
+        if b:
+            self.setWindowState(Qt.WindowFullScreen)
+        else:
+            self.setWindowState(Qt.WindowNoState)
 
     def toggleSidebar(self):
         b = not self.showSidebar
@@ -494,6 +503,8 @@ class Browser(QMainWindow):
         c(f.actionCardList, s, self.onCardList)
 
         # view
+        f.actionFullScreen.triggered.connect(self.toggleFullScreen)
+        f.actionFullScreen.setChecked(self.windowState()==Qt.WindowFullScreen)
         f.actionShowSidebar.setChecked(self.showSidebar)
         f.actionShowSidebar.toggled.connect(self.toggleSidebar)
         f.actionLockSearch.setChecked(not not self.lockedSearch)

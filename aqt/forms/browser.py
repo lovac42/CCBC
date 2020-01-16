@@ -279,6 +279,10 @@ class Ui_Dialog(object):
         self.actionLockSearch.setObjectName("actionLockSearch")
         self.actionLockSearch.setCheckable(True)
         self.menuView.addAction(self.actionLockSearch)
+        self.actionFullScreen = QtGui.QAction(Dialog)
+        self.actionFullScreen.setObjectName("actionFullScreen")
+        self.actionFullScreen.setCheckable(True)
+        self.menuView.addAction(self.actionFullScreen)
         self.menuView.addSeparator()
 
         self.actionShowEdit = QtGui.QAction(Dialog)
@@ -375,6 +379,8 @@ class Ui_Dialog(object):
         self.actionClose.setText(_("Close"))
         self.actionClose.setShortcut(_("Ctrl+W"))
 
+        self.actionFullScreen.setText(_("Full Screen"))
+        self.actionFullScreen.setShortcut(_("F11"))
         self.actionShowSidebar.setText(_("Show Sidebar"))
         self.actionLockSearch.setText(_("Lock Search"))
         self.actionShowEdit.setText(_("Show Editor"))
