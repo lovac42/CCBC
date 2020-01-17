@@ -1076,10 +1076,13 @@ due = (case when odue>0 then odue else due end), odue = 0, odid = 0, usn = ? whe
         if not deck['resched']:
             queue = ",queue=2"
 
+        #TODO: rewrite sql, https://anki.tenderapp.com/discussions/ankidesktop/35978
         query = """
 update cards set
 odid = did, odue = due,
-did = ?, due = ?, usn = ?
+did = ?,
+due = (case when due <= 0 then due else ? end),
+usn = ?
 %s
 where id = ?
 """ % queue
