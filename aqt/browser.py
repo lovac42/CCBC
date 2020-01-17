@@ -784,6 +784,7 @@ class Browser(QMainWindow):
         hh.sectionMoved.connect(self.onColumnMoved)
 
     def onSortChanged(self, idx, ord):
+        ord = not not ord #enforce boolean value for ankidroid, https://github.com/ankitects/anki/pull/347
         type = self.model.activeCols[idx]
         noSort = ("question", "answer", "template", "deck", "note", "noteTags")
         if type in noSort:
