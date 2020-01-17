@@ -24,7 +24,7 @@ import aqt.webview
 import aqt.toolbar
 from aqt.utils import saveGeom, restoreGeom, showInfo, showWarning, \
     restoreState, getOnlyText, askUser, showText, tooltip, \
-    openLink, checkInvalidFilename
+    openLink, checkInvalidFilename, openFolder
 import anki.db
 from anki.lang import ngettext, _
 
@@ -992,10 +992,12 @@ will be lost. Continue?"""))
             report += _("Invalid encoding; please rename:")
             report += "\n" + "\n".join(invalid)
         if unused:
+            numberOfUnusedFilesLabel = len(unused)
             if report:
                 report += "\n\n\n"
-            report += _(
-                "In media folder but not used by any cards:")
+            report += ngettext("%d file found in media folder not used by any cards:",
+                "%d files found in media folder not used by any cards:",
+                numberOfUnusedFilesLabel) % numberOfUnusedFilesLabel
             report += "\n" + "\n".join(unused)
         if nohave:
             if report:
@@ -1017,17 +1019,34 @@ will be lost. Continue?"""))
         layout.addWidget(text)
         box = QDialogButtonBox(QDialogButtonBox.Close)
         layout.addWidget(box)
-        b = QPushButton(_("Delete Unused"))
-        b.setAutoDefault(False)
-        box.addButton(b, QDialogButtonBox.ActionRole)
-        b.connect(
-            b, SIGNAL("clicked()"), lambda u=unused, d=diag: self.deleteUnused(u, d))
+        if unused:
+            b = QPushButton(_("Delete Unused"))
+            b.setAutoDefault(False)
+            b.clicked.connect(lambda:self.deleteUnused(unused,diag))
+            box.addButton(b, QDialogButtonBox.ActionRole)
+            b = QPushButton(_("Explore Unused"))
+            b.setAutoDefault(False)
+            b.clicked.connect(lambda:openFolder(self.pm.mediaFolder()))
+            box.addButton(b, QDialogButtonBox.ActionRole)
+        if nohave:
+            b = QPushButton(_("Browse Missing"))
+            b.setAutoDefault(False)
+            b.clicked.connect(lambda:self.browseMissingMedia(nohave,diag))
+            box.addButton(b, QDialogButtonBox.ActionRole)
         diag.connect(box, SIGNAL("rejected()"), diag, SLOT("reject()"))
         diag.setMinimumHeight(400)
         diag.setMinimumWidth(500)
         restoreGeom(diag, "checkmediadb")
         diag.exec_()
         saveGeom(diag, "checkmediadb")
+
+    def browseMissingMedia(self, nohave, diag):
+        #dialog blocks browser from being usable
+        diag.close()
+        from aqt import mw, dialogs
+        browser = dialogs.open("Browser", mw, False)
+        browser.form.searchEdit.lineEdit().setText("tag:MissingMedia")
+        browser.onSearchActivated()
 
     def deleteUnused(self, unused, diag):
         if not askUser(
@@ -1036,20 +1055,30 @@ will be lost. Continue?"""))
         mdir = self.col.media.dir()
         self.progress.start(immediate=True)
         try:
+            numberOfFilesDeleted = 0
             lastProgress = 0
             for c, f in enumerate(unused):
                 path = os.path.join(mdir, f)
                 if os.path.exists(path):
                     send2trash(path)
-
+                    numberOfFilesDeleted += 1
                 now = time.time()
                 if now - lastProgress >= 0.3:
+                    numberOfRemainingFilesToBeDeleted = len(unused) - c
                     lastProgress = now
-                    label = _("Deleted %s files...") % (c+1)
+                    label = ngettext(
+                        "%d file remaining...",
+                        "%d files remaining...",
+                        numberOfRemainingFilesToBeDeleted
+                    ) % numberOfRemainingFilesToBeDeleted
                     self.progress.update(label)
         finally:
             self.progress.finish()
-        tooltip(_("Deleted."))
+        tooltip(ngettext(
+            "Deleted %d file.",
+            "Deleted %d files.",
+            numberOfFilesDeleted
+        ) % numberOfFilesDeleted )
         diag.close()
 
     def onStudyDeck(self):

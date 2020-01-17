@@ -258,6 +258,10 @@ and no other programs are accessing your profile folders, then try again."""))
         return self._ensureExists(
             os.path.join(self.profileFolder(), "backups"))
 
+    def mediaFolder(self):
+        return self._ensureExists(
+            os.path.join(self.profileFolder(), "collection.media"))
+
     def collectionPath(self):
         return os.path.join(self.profileFolder(), "collection.anki2")
 

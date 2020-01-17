@@ -325,10 +325,4 @@ class ExtMediaManager(MediaManager):
             warnings.append(
                 _("Anki does not support files in subfolders of the collection.media folder."))
 
-        if nohave:
-            from aqt import mw, dialogs
-            browser = dialogs.open("Browser", mw, False)
-            browser.form.searchEdit.lineEdit().setText("tag:MissingMedia")
-            browser.onSearchActivated()
-
         return (nohave, unused, warnings)
