@@ -275,13 +275,9 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """+preds
 
     def _findFlag(self, args):
         (val, args) = args
-        if not val or val not in "01234":
+        if val not in ("0","1","2","3","4"):
             return
-        val = int(val)
-        mask = 2**3 - 1
-        return "(c.flags & %d) == %d" % (mask, val)
-
-
+        return "(c.flags & 7) == %s" % val #bitmask is 7
 
     def _findRated(self, args):
         # days(:optional_ease)
