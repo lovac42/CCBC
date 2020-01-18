@@ -15,7 +15,7 @@ import json
 
 from anki.lang import _, ngettext
 from anki.utils import ids2str, fieldChecksum, \
-    intTime, splitFields, joinFields, maxID, devMode, stripHTMLMedia
+    intTime, splitFields, joinFields, maxID, stripHTMLMedia
 from anki.hooks import  runFilter, runHook
 from anki.models import ModelManager
 from anki.media import MediaManager
@@ -913,7 +913,7 @@ and type=0""", [intTime(), self.usn()])
         buf = "[%s] %s:%s(): %s" % (intTime(), os.path.basename(path), fn,
                                      ", ".join([customRepr(x) for x in args]))
         self._logHnd.write(buf + "\n")
-        if devMode:
+        if os.getenv("ANKIDEV",""):
             print(buf)
 
     def _openLog(self):

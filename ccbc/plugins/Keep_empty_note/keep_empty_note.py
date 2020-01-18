@@ -14,7 +14,7 @@ from aqt.qt import *
 #TODO: Remove fstrings, they don't work on Pi
 
 def p(msg):
-    if os.getenv("ANKIDEV",0):
+    if os.getenv("ANKIDEV",""):
         print(msg)
 
 

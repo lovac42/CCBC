@@ -493,7 +493,7 @@ class HttpSyncer:
         self.prefix = "sync/"
 
     def syncURL(self):
-        if devMode:
+        if os.getenv("ANKIDEV",""):
             url = "https://l1sync.ankiweb.net/"
         else:
             from aqt import mw

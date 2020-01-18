@@ -361,7 +361,7 @@ def call(argv, wait=True, **kwargs):
 isMac = sys.platform.startswith("darwin")
 isWin = sys.platform.startswith("win32")
 isLin = not isMac and not isWin
-devMode = os.getenv("ANKIDEV", "")
+devMode = "" # Use os.getenv("ANKIDEV", "") instead
 
 invalidFilenameChars = ":*?\"<>|"
 
