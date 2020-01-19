@@ -23,6 +23,7 @@ from ccbc.plugins.fix_redue import redue as fix_redue
 class _ExtCollection(anki.collection._Collection):
 
     def __init__(self, db, server=False, log=False):
+        self.devMode = os.getenv("ANKIDEV","")
         self._debugLog = log
         self.db = db
         self.path = db._path

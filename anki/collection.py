@@ -53,6 +53,7 @@ defaultConf = {
 class _Collection:
 
     def __init__(self, db, server=False, log=False):
+        self.devMode = os.getenv("ANKIDEV","")
         self._debugLog = log
         self.db = db
         self.path = db._path
@@ -913,7 +914,7 @@ and type=0""", [intTime(), self.usn()])
         buf = "[%s] %s:%s(): %s" % (intTime(), os.path.basename(path), fn,
                                      ", ".join([customRepr(x) for x in args]))
         self._logHnd.write(buf + "\n")
-        if os.getenv("ANKIDEV",""):
+        if self.devMode:
             print(buf)
 
     def _openLog(self):

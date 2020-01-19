@@ -13,8 +13,10 @@ from aqt.qt import *
 
 #TODO: Remove fstrings, they don't work on Pi
 
+devMode = os.getenv("ANKIDEV","")
+
 def p(msg):
-    if os.getenv("ANKIDEV",""):
+    if devMode:
         print(msg)
 
 
