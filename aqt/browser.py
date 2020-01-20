@@ -1565,6 +1565,8 @@ Red items will be deleted.""")))
         if not cids:
             showInfo("No card selected")
             return
+        self.card = self.model.getCard(
+            self.form.tableView.selectionModel().currentIndex())
         # flag needs toggling off?
         if n == self.card.userFlag():
             n = 0
@@ -1607,6 +1609,8 @@ Red items will be deleted.""")))
 
     def onMark(self, mark=None):
         if mark is None:
+            self.card = self.model.getCard(
+                self.form.tableView.selectionModel().currentIndex())
             mark = not self.isMarked()
         if mark:
             self.addTags(tags="marked", label=False)
