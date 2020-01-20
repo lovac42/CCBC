@@ -1090,6 +1090,12 @@ will be lost. Continue?"""))
             self.moveToState("overview")
 
     def onEmptyCards(self):
+        def browseCards(cids):
+            from aqt import dialogs
+            browser = dialogs.open("Browser", self, False)
+            browser.form.searchEdit.lineEdit().setText("cid:%s"%ids2str(cids))
+            browser.onSearchActivated()
+
         self.progress.start(immediate=True)
         try:
             cids = self.col.emptyCids()
@@ -1104,6 +1110,10 @@ will be lost. Continue?"""))
         part1 = _("%s to delete:") % part1
         diag, box = showText(part1 + "\n\n" + report, run=False,
                 geomKey="emptyCards")
+        b = QPushButton(_("Browse Cards"))
+        b.setAutoDefault(False)
+        b.clicked.connect(lambda:browseCards(cids))
+        box.addButton(b, QDialogButtonBox.ActionRole)
         box.addButton(_("Delete Cards"), QDialogButtonBox.AcceptRole)
         box.button(QDialogButtonBox.Close).setDefault(True)
         from ccbc.plugins.Keep_empty_note.keep_empty_note import onDelete
