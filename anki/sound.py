@@ -5,6 +5,7 @@
 # This file has been modified by lovac42
 # added addon: Cacher in the rye for windows users
 
+import aqt
 import html
 import re, sys, threading, time, subprocess, os, atexit
 import  random
@@ -275,7 +276,9 @@ def queueMplayer(path):
         # mplayer on windows doesn't like the encoding, so we create a
         # temporary file instead. oddly, foreign characters in the dirname
         # don't seem to matter.
-        if path in audio_cached:
+        if aqt.mw.pm.profile.get("mpv.directAccess",True): #TODO: testNoCache
+            path=path.replace("\\", "/")
+        elif path in audio_cached:
             path=audio_cached[path]
         else:
             key=path
@@ -307,7 +310,8 @@ def ensureMplayerThreads():
         mplayerManager.start()
         # ensure the tmpdir() exit handler is registered first so it runs
         # after the mplayer exit
-        tmpdir()
+        if not aqt.mw.pm.profile.get("mpv.directAccess",True):
+            tmpdir() #TODO: rm if testNoCache passes
         # clean up mplayer on exit
         atexit.register(stopMplayer)
 

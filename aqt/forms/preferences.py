@@ -192,6 +192,10 @@ class Ui_Preferences(object):
         self.noAutoPlay = QtWidgets.QCheckBox(self.tab_adv)
         self.noAutoPlay.setObjectName("noAutoPlay")
         self.tabAdvVLayout.addWidget(self.noAutoPlay)
+        # mpv direct access to audio files
+        self.mpvDA = QtWidgets.QCheckBox(self.tab_adv)
+        self.mpvDA.setObjectName("mpvDA")
+        self.tabAdvVLayout.addWidget(self.mpvDA)
         # stop audio on show answer
         self.stpAudOnShwAns = QtWidgets.QCheckBox(self.tab_adv)
         self.stpAudOnShwAns.setObjectName("stpAudOnShwAns")
@@ -359,7 +363,8 @@ class Ui_Preferences(object):
         Preferences.setTabOrder(self.showFormatBtns, self.autoCompleter)
         Preferences.setTabOrder(self.autoCompleter, self.powerUserMode)
         Preferences.setTabOrder(self.powerUserMode, self.noAutoPlay)
-        Preferences.setTabOrder(self.noAutoPlay, self.stpAudOnShwAns)
+        Preferences.setTabOrder(self.noAutoPlay, self.mpvDA)
+        Preferences.setTabOrder(self.mpvDA, self.stpAudOnShwAns)
         Preferences.setTabOrder(self.stpAudOnShwAns, self.importMedia)
         Preferences.setTabOrder(self.importMedia, self.noScript)
 
@@ -411,6 +416,7 @@ class Ui_Preferences(object):
         self.autoCompleter.setText(_("Use auto complete when adding card?"))
         self.powerUserMode.setText(_("Power User Mode (req. lots of ram)"))
         self.noAutoPlay.setText(_("Disable autoplay (Global)"))
+        self.mpvDA.setText(_("MPlayer direct access (no cache)(posible unicode err)"))
         self.stpAudOnShwAns.setText(_("Stop media playback before show answer"))
         self.importMedia.setText(_("Import and localize media during edits (e.g. src=http...)"))
         self.noScript.setText(_("Remove <script> when editing HTML (add more conf later)"))
