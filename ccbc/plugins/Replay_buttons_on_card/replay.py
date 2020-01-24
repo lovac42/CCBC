@@ -7,16 +7,20 @@
 
 """Add-on for Anki 2 to add AnkiDroid-style replay buttons."""
 
-# part of the code has been integrated into the reviewer/clayout/browser
+# part of the code has been integrated into the reviewer/clayout/browser,
+# other parts may have been modified as needed.
 
 import re
 from anki.hooks import addHook
+from aqt import mw
 
 
 RE=re.compile(r"\[sound:(.*?)\]")
 
 
 def play_button_filter(qa_html, qa_type, *args, **kwargs):
+    if not mw.pm.profile.get("ccbc.showAudPlayBtn", True):
+        return qa_html
 
     def add_button(sound):
         if 'q' == qa_type:
