@@ -19,7 +19,7 @@ class Ui_Preferences(object):
         self.tabWidget.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.tabWidget.setObjectName("tabWidget")
 
-
+        #####################################################
         # Basic tab
         self.tab_1 = QtWidgets.QWidget()
         self.tab_1.setObjectName("tab_1")
@@ -113,12 +113,14 @@ class Ui_Preferences(object):
         self.tabWidget.addTab(self.tab_1, _("Basic"))
 
 
+
+
+        #####################################################
         # Create Advanced Tab
         self.tab_adv=QtWidgets.QWidget()
         self.tab_adv.setObjectName("tab_adv")
-        self.tabAdvGLayout=QtWidgets.QGridLayout()
-        self.tabAdvVLayout=QtWidgets.QVBoxLayout(self.tab_adv)
-        self.tabAdvVLayout.addLayout(self.tabAdvGLayout)
+        self.advancedVLayout=QtWidgets.QVBoxLayout(self.tab_adv)
+        self.advancedVLayout.addLayout(QtWidgets.QGridLayout())
         # Extra grading buttons
         self.ansKeysLayout = QtWidgets.QHBoxLayout()
         self.ansKeysLayout.setObjectName("ansKeysLayout")
@@ -128,7 +130,7 @@ class Ui_Preferences(object):
         self.ansKeysLEdit = QtWidgets.QLineEdit(self.tab_adv)
         self.ansKeysLEdit.setObjectName("ansKeysLEdit")
         self.ansKeysLayout.addWidget(self.ansKeysLEdit)
-        self.tabAdvVLayout.addLayout(self.ansKeysLayout)
+        self.advancedVLayout.addLayout(self.ansKeysLayout)
         # Grading button action
         self.ansKeyActionLayout = QtWidgets.QHBoxLayout()
         self.ansKeyActionLayout.setObjectName("ansKeyActionLayout")
@@ -145,9 +147,9 @@ class Ui_Preferences(object):
         self.ansKeyActGrade = QtWidgets.QRadioButton(self.tab_adv)
         self.ansKeyActGrade.setObjectName("ansKeyActGrade")
         self.ansKeyActionLayout.addWidget(self.ansKeyActGrade)
-        self.tabAdvVLayout.addLayout(self.ansKeyActionLayout)
+        self.advancedVLayout.addLayout(self.ansKeyActionLayout)
 
-        self.tabAdvVLayout.addItem(
+        self.advancedVLayout.addItem(
             QtWidgets.QSpacerItem(10,10,
                 QtWidgets.QSizePolicy.Fixed,
                 QtWidgets.QSizePolicy.Fixed
@@ -156,13 +158,13 @@ class Ui_Preferences(object):
         # colorize review buttons
         self.colorGradeBtns = QtWidgets.QCheckBox(self.tab_adv)
         self.colorGradeBtns.setObjectName("colorGradeBtns")
-        self.tabAdvVLayout.addWidget(self.colorGradeBtns)
+        self.advancedVLayout.addWidget(self.colorGradeBtns)
         # large review buttons
         self.bigGradeBtns = QtWidgets.QCheckBox(self.tab_adv)
         self.bigGradeBtns.setObjectName("bigGradeBtns")
-        self.tabAdvVLayout.addWidget(self.bigGradeBtns)
+        self.advancedVLayout.addWidget(self.bigGradeBtns)
 
-        self.tabAdvVLayout.addItem(
+        self.advancedVLayout.addItem(
             QtWidgets.QSpacerItem(5,5,
                 QtWidgets.QSizePolicy.Fixed,
                 QtWidgets.QSizePolicy.Fixed
@@ -171,41 +173,18 @@ class Ui_Preferences(object):
         # formatting buttons for editor
         self.showFormatBtns = QtWidgets.QCheckBox(self.tab_adv)
         self.showFormatBtns.setObjectName("showFormatBtns")
-        self.tabAdvVLayout.addWidget(self.showFormatBtns)
+        self.advancedVLayout.addWidget(self.showFormatBtns)
         # autoCompleter feature for addCard
         self.autoCompleter = QtWidgets.QCheckBox(self.tab_adv)
         self.autoCompleter.setObjectName("autoCompleter")
-        self.tabAdvVLayout.addWidget(self.autoCompleter)
+        self.advancedVLayout.addWidget(self.autoCompleter)
 
         # powerUser Mode
         self.powerUserMode = QtWidgets.QCheckBox(self.tab_adv)
         self.powerUserMode.setObjectName("powerUserMode")
-        self.tabAdvVLayout.addWidget(self.powerUserMode)
+        self.advancedVLayout.addWidget(self.powerUserMode)
 
-        self.tabAdvVLayout.addItem(
-            QtWidgets.QSpacerItem(5,5,
-                QtWidgets.QSizePolicy.Fixed,
-                QtWidgets.QSizePolicy.Fixed
-        ))
-
-        # disable autoplay
-        self.noAutoPlay = QtWidgets.QCheckBox(self.tab_adv)
-        self.noAutoPlay.setObjectName("noAutoPlay")
-        self.tabAdvVLayout.addWidget(self.noAutoPlay)
-        # mpv direct access to audio files
-        self.mpvDA = QtWidgets.QCheckBox(self.tab_adv)
-        self.mpvDA.setObjectName("mpvDA")
-        self.tabAdvVLayout.addWidget(self.mpvDA)
-        # show play btn on card
-        self.showAudPlayBtn = QtWidgets.QCheckBox(self.tab_adv)
-        self.showAudPlayBtn.setObjectName("showAudPlayBtn")
-        self.tabAdvVLayout.addWidget(self.showAudPlayBtn)
-        # stop audio on show answer
-        self.stpAudOnShwAns = QtWidgets.QCheckBox(self.tab_adv)
-        self.stpAudOnShwAns.setObjectName("stpAudOnShwAns")
-        self.tabAdvVLayout.addWidget(self.stpAudOnShwAns)
-
-        self.tabAdvVLayout.addItem(
+        self.advancedVLayout.addItem(
             QtWidgets.QSpacerItem(5,5,
                 QtWidgets.QSizePolicy.Fixed,
                 QtWidgets.QSizePolicy.Fixed
@@ -214,17 +193,47 @@ class Ui_Preferences(object):
         # For localizing media
         self.importMedia = QtWidgets.QCheckBox(self.tab_adv)
         self.importMedia.setObjectName("importMedia")
-        self.tabAdvVLayout.addWidget(self.importMedia)
+        self.advancedVLayout.addWidget(self.importMedia)
         # For TidyTags to clean up when editing HTML
         self.noScript = QtWidgets.QCheckBox(self.tab_adv)
         self.noScript.setObjectName("noScript")
-        self.tabAdvVLayout.addWidget(self.noScript)
-        # push everything up
+        self.advancedVLayout.addWidget(self.noScript)
+        # spacer to push everything up
         spacerItem=QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.tabAdvVLayout.addItem(spacerItem)
+        self.advancedVLayout.addItem(spacerItem)
         self.tabWidget.addTab(self.tab_adv, _("Advanced"))
 
 
+        #####################################################
+        # Create Audio Tab
+        self.tab_audio=QtWidgets.QWidget()
+        self.tab_audio.setObjectName("tab_audio")
+        # self.audioGLayout=QtWidgets.QGridLayout()
+        self.audioVLayout=QtWidgets.QVBoxLayout(self.tab_audio)
+        self.audioVLayout.addLayout(QtWidgets.QGridLayout())
+        # disable autoplay
+        self.noAutoPlay = QtWidgets.QCheckBox(self.tab_audio)
+        self.noAutoPlay.setObjectName("noAutoPlay")
+        self.audioVLayout.addWidget(self.noAutoPlay)
+        # mpv direct access to audio files
+        self.mpvDA = QtWidgets.QCheckBox(self.tab_audio)
+        self.mpvDA.setObjectName("mpvDA")
+        self.audioVLayout.addWidget(self.mpvDA)
+        # show play btn on card
+        self.showAudPlayBtn = QtWidgets.QCheckBox(self.tab_audio)
+        self.showAudPlayBtn.setObjectName("showAudPlayBtn")
+        self.audioVLayout.addWidget(self.showAudPlayBtn)
+        # stop audio on show answer
+        self.stpAudOnShwAns = QtWidgets.QCheckBox(self.tab_audio)
+        self.stpAudOnShwAns.setObjectName("stpAudOnShwAns")
+        self.audioVLayout.addWidget(self.stpAudOnShwAns)
+        # spacer to push everything up
+        spacerItem=QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.audioVLayout.addItem(spacerItem)
+        self.tabWidget.addTab(self.tab_audio, _("Audio"))
+
+
+        #####################################################
         # Network tab
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
@@ -270,7 +279,7 @@ class Ui_Preferences(object):
         self.verticalLayout_4.addItem(spacerItem2)
         self.tabWidget.addTab(self.tab_2, _("Network"))
 
-
+        #####################################################
         # Backup tab
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
@@ -313,7 +322,7 @@ class Ui_Preferences(object):
         self.verticalLayout_3.addWidget(self.label_21)
         self.tabWidget.addTab(self.tab, _("Backups"))
 
-
+        #####################################################
         # Muffins tab
         self.lrnStage=QtWidgets.QWidget()
         self.tabWidget.addTab(self.lrnStage, "Muffins")
@@ -328,7 +337,7 @@ class Ui_Preferences(object):
         self.lrnStageGLayout.addWidget(self.skipFinalDrill, 1, 0, 1, 3)
         self.skipFinalDrill.setTristate(True)
 
-
+        #####################################################
         # Close button
         self.verticalLayout_2.addWidget(self.tabWidget)
         self.buttonBox = QtWidgets.QDialogButtonBox(Preferences)
