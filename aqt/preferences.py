@@ -12,6 +12,7 @@ from aqt.qt import *
 from aqt.utils import openFolder, showInfo, askUser
 from anki.lang import _
 from anki.hooks import runHook
+from anki.utils import isWin
 
 
 class Preferences(QDialog):
@@ -245,6 +246,9 @@ Not currently enabled; click the sync button in the main window to enable."""))
         self.form.mpvDA.setChecked(self.prof.get("mpv.directAccess", True))
         self.form.noScript.setChecked(self.prof.get("tidyTags.noScript", True))
         self.form.importMedia.setChecked(self.prof.get("tidyTags.importMedia", True))
+
+        if not isWin:
+            self.form.mpvDA.setVisible(False)
         if self.mw.col.sched.type == "anki":
             self.form.skipFinalDrill.setVisible(False)
         else: #custom experimental module
@@ -252,6 +256,7 @@ Not currently enabled; click the sync button in the main window to enable."""))
             self.form.skipFinalDrill.setCheckState(qc.get("skipFinalDrill", 0))
             self.form.skipFinalDrill.clicked.connect(self.toggleFinalDrill)
             self.toggleFinalDrill()
+
 
     def updateOptions(self):
         keys = self.form.ansKeysLEdit.text()[:4]
