@@ -4,7 +4,6 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 # Support: https://github.com/lovac42/CCBC
 
-from anki.lang import _
 
 from aqt.qt import *
 import aqt.forms
@@ -12,16 +11,17 @@ from aqt.utils import saveGeom, restoreGeom, showWarning, askUser, shortcut, \
     tooltip, addCloseShortcut, downArrow
 from anki.sound import clearAudioQueue
 from anki.hooks import addHook, remHook, runHook
-from anki.utils import htmlToTextLine, isMac
+from anki.utils import htmlToTextLine, ids2str, isMac
+from anki.lang import _
+
 import aqt.editor, aqt.modelchooser, aqt.deckchooser
+
 import anki
 import ccbc
 
 
-
 class AddCards(QDialog):
     unique_id=0 #for multi instance
-    history=[]
 
     def __init__(self, mw):
         QDialog.__init__(self, None, Qt.Window)
@@ -101,16 +101,9 @@ class AddCards(QDialog):
         self.historyButton = b
 
     def setupHistory(self):
-        boo = len(self.history)
-        self.historyButton.setEnabled(boo)
-        if not boo and self.mw.pm.profile.get("ccbc.powerUserMode", False):
-            addHook('addedNote', self._enableHistoryButton)
-
-    def _enableHistoryButton(self, note):
-        "Used to enable history for multi addCard dialogs"
+        # ah = self.mw.pm.profile.get("addHistory",[])
+        # self.historyButton.setEnabled(len(ah))
         self.historyButton.setEnabled(True)
-        self.mw.progress.timer(10,
-            lambda:remHook('addedNote', self._enableHistoryButton), False)
 
     def setupNewNote(self, set=True):
         f = self.mw.col.newNote()
@@ -173,13 +166,15 @@ class AddCards(QDialog):
         self.mw.col._remNotes([note.id])
 
     def addHistory(self, note):
-        self.history.insert(0, note.id)
-        del self.history[30:]
-        self.historyButton.setEnabled(True)
+        ah = self.mw.pm.profile.get("addHistory",[])
+        ah.insert(0, note.id)
+        self.mw.pm.profile["addHistory"] = ah[:50]
+        # self.historyButton.setEnabled(True)
 
     def onHistory(self):
         m = QMenu(self)
-        for nid in self.history:
+        ah = self.mw.pm.profile.get("addHistory",[])
+        for nid in ah:
             if self.mw.col.findNotes("nid:%d" % nid):
                 fields = self.mw.col.getNote(nid).fields
                 txt = htmlToTextLine(", ".join(fields))
@@ -190,12 +185,15 @@ class AddCards(QDialog):
             else:
                 a = m.addAction(_("(Note deleted)"))
                 a.setEnabled(False)
-        runHook("AddCards.onHistory", self, m)
+        a = m.addAction(_("<<Browse All>>"))
+        a.triggered.connect(lambda b, nid=0: self.editHistory(nid))
         m.exec_(self.historyButton.mapToGlobal(QPoint(0,0)))
 
     def editHistory(self, nid):
+        ah = self.mw.pm.profile.get("addHistory",[])
+        sch = "nid:%s" % (str(nid) if nid else ids2str(ah))
         browser = aqt.dialogs.open("Browser", self.mw, False)
-        browser.form.searchEdit.lineEdit().setText("nid:%d" % nid)
+        browser.form.searchEdit.lineEdit().setText(sch)
         browser.onSearch()
 
     def addNote(self, note):

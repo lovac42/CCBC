@@ -648,17 +648,19 @@ class Browser(QMainWindow):
         return self.onSearch()
 
     def onSearch(self, reset=True):
-        "Careful: if reset is true, the current note is saved."
+        """Careful: if reset is true, the current note is saved."""
         txt = self.form.searchEdit.lineEdit().text().strip()
         prompt = _("<type here to search; hit enter to show current deck>")
-        sh = self.mw.pm.profile['searchHistory']
+
         # update search history
+        sh = self.mw.pm.profile['searchHistory']
         if txt not in sh:
             sh.insert(0, txt)
-            del sh[50:]
+            sh = sh[:50]
         self.form.searchEdit.clear()
         self.form.searchEdit.addItems(sh)
         self.mw.pm.profile['searchHistory'] = sh
+
         if self.mw.state == "review" and "is:current" in txt:
             # search for current card, but set search to easily display whole deck
             if reset:
