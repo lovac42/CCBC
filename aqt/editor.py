@@ -767,7 +767,8 @@ to a cloze type first, via Edit>Change Note Type."""))
             name = urllib.parse.quote(fname)
             return '<img src="%s">' % name
         else:
-            anki.sound.play(fname)
+            if not self.mw.pm.profile.get("ccbc.noAutoPlay", False):
+                anki.sound.play(fname)
             return '[sound:%s]' % fname
 
     def urlToFile(self, url):
