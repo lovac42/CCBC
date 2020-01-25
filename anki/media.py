@@ -368,12 +368,12 @@ create table meta (dirMod int, lastUsn int); insert into meta values (0, 0);
         return False
 
     def cleanFilename(self, fname):
+        fname = fname.replace(" ", "_")
         fname = self.stripIllegal(fname)
         fname = self._cleanWin32Filename(fname)
         fname = self._cleanLongFilename(fname)
         if not fname:
             fname = "renamed"
-
         return fname
 
     def _cleanWin32Filename(self, fname):
