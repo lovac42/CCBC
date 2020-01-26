@@ -101,8 +101,6 @@ class AddCards(QDialog):
         self.historyButton = b
 
     def setupHistory(self):
-        # ah = self.mw.pm.profile.get("addHistory",[])
-        # self.historyButton.setEnabled(len(ah))
         self.historyButton.setEnabled(True)
 
     def setupNewNote(self, set=True):
@@ -169,7 +167,6 @@ class AddCards(QDialog):
         ah = self.mw.pm.profile.get("addHistory",[])
         ah.insert(0, note.id)
         self.mw.pm.profile["addHistory"] = ah[:50]
-        # self.historyButton.setEnabled(True)
 
     def onHistory(self):
         m = QMenu(self)
@@ -182,10 +179,11 @@ class AddCards(QDialog):
                     txt = txt[:30] + "..."
                 a = m.addAction(_("Edit \"%s\"") % txt)
                 a.triggered.connect(lambda b, nid=nid: self.editHistory(nid))
-            else:
-                a = m.addAction(_("(Note deleted)"))
-                a.setEnabled(False)
-        a = m.addAction(_("<<Browse All>>"))
+        cnt = len(m.actions())
+        if cnt < len(ah):
+            a = m.addAction(_("[ Note(s) deleted ]"))
+            a.setEnabled(False)
+        a = m.addAction(_("[ Browse All ]"))
         a.triggered.connect(lambda b, nid=0: self.editHistory(nid))
         m.exec_(self.historyButton.mapToGlobal(QPoint(0,0)))
 
