@@ -6,7 +6,7 @@
 
 from aqt.qt import *
 
-import time
+import time, sys, pyaudio
 from anki.sound import Recorder
 from aqt.utils import saveGeom, restoreGeom, showWarning
 from anki.lang import _
@@ -53,3 +53,18 @@ def getAudio(parent, encode=True):
     # process
     r.postprocess(encode)
     return r.file()
+
+
+def getMics(last=""):
+    p = pyaudio.PyAudio()
+    mics=['Auto']
+    cnt=1
+    for idx in range(p.get_device_count()):
+        dev=p.get_device_info_by_index(idx)
+        if dev['maxInputChannels']:
+            nameAndSamp="%s, %d"%(dev['name'],dev['defaultSampleRate'])
+            if nameAndSamp==last:
+                return cnt
+            mics.append("%d:%s, %d"%(idx,dev['name'],dev['defaultSampleRate']))
+            cnt += 1
+    return mics

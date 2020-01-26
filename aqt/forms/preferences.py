@@ -8,6 +8,7 @@ from anki.lang import _
 # WARNING! All changes made in this file will be lost!
 
 from PyQt4 import QtCore, QtGui as QtWidgets
+from aqt.sound import getMics
 
 class Ui_Preferences(object):
     def setupUi(self, Preferences):
@@ -208,7 +209,6 @@ class Ui_Preferences(object):
         # Create Audio Tab
         self.tab_audio=QtWidgets.QWidget()
         self.tab_audio.setObjectName("tab_audio")
-        # self.audioGLayout=QtWidgets.QGridLayout()
         self.audioVLayout=QtWidgets.QVBoxLayout(self.tab_audio)
         self.audioVLayout.addLayout(QtWidgets.QGridLayout())
         # disable autoplay
@@ -230,8 +230,30 @@ class Ui_Preferences(object):
         # spacer to push everything up
         spacerItem=QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.audioVLayout.addItem(spacerItem)
-        self.tabWidget.addTab(self.tab_audio, _("Audio"))
 
+
+        # microphone group box
+        micLayout=QtWidgets.QGridLayout()
+        micLayout.addWidget(QtWidgets.QLabel('Device:'), 0, 0, 1, 1)
+        self.micDevice = QtWidgets.QComboBox(self.tab_audio)
+        self.micDevice.setObjectName("micDevice")
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.micDevice.sizePolicy().hasHeightForWidth())
+        self.micDevice.setSizePolicy(sizePolicy)
+        self.micDevice.addItems(getMics())
+        micLayout.addWidget(self.micDevice, 0, 1, 1, 1)
+        micLayout.addWidget(QtWidgets.QLabel('Channel:'), 1, 0, 1, 1)
+        self.micChannel = QtWidgets.QComboBox(self.tab_audio)
+        self.micChannel.setObjectName("micChannel")
+        self.micChannel.addItems(["Mono Input","Stereo Input"])
+        micLayout.addWidget(self.micChannel, 1, 1, 1, 1)
+
+        groupBox = QtWidgets.QGroupBox('Microphone')
+        groupBox.setLayout(micLayout)
+        self.audioVLayout.addWidget(groupBox)
+        self.tabWidget.addTab(self.tab_audio, _("Audio"))
 
         #####################################################
         # Network tab

@@ -332,8 +332,8 @@ try:
     import wave
 
     PYAU_FORMAT = pyaudio.paInt16
-    PYAU_CHANNELS = 1
-    PYAU_INPUT_INDEX = None
+    PYAU_CHANNELS = 1 #aqt.mw.pm.profile.get("PYAU_CHANNELS", 1)
+    PYAU_INPUT_INDEX = None #aqt.mw.pm.profile.get("PYAU_INPUT_INDEX", None)
 except:
     pyaudio = None
 
@@ -370,18 +370,19 @@ class PyAudioThreadedRecorder(threading.Thread):
 
     def run(self):
         chunk = 1024
-        p = pyaudio.PyAudio()
-
-        rate = int(p.get_default_input_device_info()['defaultSampleRate'])
+        format=pyaudio.paInt16 #TODO: set gui for 16,24,32 bits, refresh related gui items.
+        channels=aqt.mw.pm.profile.get("PYAU_CHANNELS", 1)
+        input_device_index=aqt.mw.pm.profile.get("PYAU_INPUT_INDEX", None)
+        rate=aqt.mw.pm.profile.get("PYAU_INPUT_RATE", 44100)
         wait = int(rate * self.startupDelay)
 
-        stream = p.open(format=PYAU_FORMAT,
-                        channels=PYAU_CHANNELS,
+        p = pyaudio.PyAudio()
+        stream = p.open(format=format,
+                        channels=channels,
                         rate=rate,
                         input=True,
-                        input_device_index=PYAU_INPUT_INDEX,
+                        input_device_index=input_device_index,
                         frames_per_buffer=chunk)
-
         stream.read(wait)
 
         data = b""
@@ -390,8 +391,8 @@ class PyAudioThreadedRecorder(threading.Thread):
         stream.close()
         p.terminate()
         wf = wave.open(processingSrc, 'wb')
-        wf.setnchannels(PYAU_CHANNELS)
-        wf.setsampwidth(p.get_sample_size(PYAU_FORMAT))
+        wf.setnchannels(channels)
+        wf.setsampwidth(p.get_sample_size(format))
         wf.setframerate(rate)
         wf.writeframes(data)
         wf.close()

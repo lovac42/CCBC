@@ -10,6 +10,7 @@ import anki.lang
 import aqt
 from aqt.qt import *
 from aqt.utils import openFolder, showInfo, askUser
+from aqt.sound import getMics
 from anki.lang import _
 from anki.hooks import runHook
 from anki.utils import isWin
@@ -247,6 +248,12 @@ Not currently enabled; click the sync button in the main window to enable."""))
         self.form.noScript.setChecked(self.prof.get("tidyTags.noScript", True))
         self.form.importMedia.setChecked(self.prof.get("tidyTags.importMedia", True))
 
+        self.form.micChannel.setCurrentIndex(self.prof.get("PYAU_CHANNELS", 1)-1)
+        idx = getMics(self.prof.get("PYAU_INPUT_DEVICE", ""))
+        try:
+            self.form.micDevice.setCurrentIndex(idx)
+        except TypeError: pass
+
         if not isWin:
             self.form.mpvDA.setVisible(False)
         if self.mw.col.sched.type == "anki":
@@ -284,6 +291,20 @@ Not currently enabled; click the sync button in the main window to enable."""))
         self.prof['mpv.directAccess'] = self.form.mpvDA.isChecked()
         self.prof['tidyTags.noScript'] = self.form.noScript.isChecked()
         self.prof['tidyTags.importMedia'] = self.form.importMedia.isChecked()
+
+        self.prof['PYAU_CHANNELS'] = self.form.micChannel.currentIndex()+1
+
+        if self.form.micDevice.currentIndex():
+            t = self.form.micDevice.currentText()
+            idx,name = t.split(":",1)
+            self.prof['PYAU_INPUT_DEVICE'] = name
+            self.prof['PYAU_INPUT_INDEX'] = int(idx)
+            _,rate = name.rsplit(" ",1)
+            self.prof['PYAU_INPUT_RATE'] = int(rate)
+        else:
+            self.prof['PYAU_INPUT_DEVICE'] = ""
+            self.prof['PYAU_INPUT_INDEX'] = None
+            self.prof['PYAU_INPUT_RATE'] = 44100
 
         qc = self.mw.col.conf
         qc['skipFinalDrill'] = self.form.skipFinalDrill.checkState()
