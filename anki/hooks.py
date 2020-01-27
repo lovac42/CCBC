@@ -20,40 +20,84 @@ import decorator
 
 _hooks = {}
 
+# Note:
+#   This class prevents resize only, it does not prevent the list
+#   from being mutilated by calls to remHook in the loop.
+class Hooker:
+    def __init__(self):
+        self.level=0
+        self.nulCnt=0
+        self.tasks=[]
+
+    def length(self):
+        return len(self.tasks)
+
+    def append(self, func):
+        self.tasks.append(func)
+
+    def remove(self, func):
+        if not func:
+            return
+        try:
+            i = self.tasks.index(func)
+            self.tasks[i] = None
+            self.nulCnt += 1
+        except ValueError:
+            pass
+
+    def purge(self):
+        if self.level<=0 and self.nulCnt>2:
+            self.tasks=list(filter(None,self.tasks))
+            self.level = self.nulCnt = 0
+
 def runHook(hook, *args):
     "Run all functions on hook."
-    hook = _hooks.get(hook, None)
-    if hook:
-        for func in hook:
+    hookers = _hooks.get(hook, None)
+    if hookers:
+        hookers.level += 1
+        tsk=hookers.tasks
+        for i in range(hookers.length()):
+            func=tsk[i]
             try:
-                func(*args)
+                if func:
+                    func(*args)
             except:
-                hook.remove(func)
+                hookers.remove(func)
+                hookers.level -= 1
                 raise
+        hookers.level -= 1
+        hookers.purge()
 
 def runFilter(hook, arg, *args):
-    hook = _hooks.get(hook, None)
-    if hook:
-        for func in hook:
+    hookers = _hooks.get(hook, None)
+    if hookers:
+        hookers.level += 1
+        tsk=hookers.tasks
+        for i in range(hookers.length()):
+            func=tsk[i]
             try:
-                arg = func(arg, *args)
+                if func:
+                    arg = func(arg, *args)
             except:
-                hook.remove(func)
+                hookers.remove(func)
+                hookers.level -= 1
                 raise
+        hookers.level -= 1
+        hookers.purge()
     return arg
 
 def addHook(hook, func):
     "Add a function to hook. Ignore if already on hook."
     if not _hooks.get(hook, None):
-        _hooks[hook] = []
-    if func not in _hooks[hook]:
+        _hooks[hook] = Hooker()
+    if func not in _hooks[hook].tasks:
         _hooks[hook].append(func)
 
 def remHook(hook, func):
     "Remove a function if is on hook."
-    hook = _hooks.get(hook, [])
-    if func in hook:
-        hook.remove(func)
+    hookers = _hooks.get(hook, None)
+    if hookers:
+        hookers.remove(func)
 
 # Instrumenting
 ##############################################################################
