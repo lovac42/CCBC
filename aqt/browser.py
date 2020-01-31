@@ -29,8 +29,9 @@ from anki.consts import *
 from anki.sound import playFromText, clearAudioQueue
 import ccbc.css
 
-from aqt.sidebar import TagTreeWidget
+from aqt.sidebar import TagTreeWidget, SidebarTreeView, SidebarItem, SidebarModel
 from aqt.tagedit import TagEdit
+# from ccbc.utils import getIcon
 
 
 # Data model
@@ -391,6 +392,9 @@ class StatusDelegate(QItemDelegate):
 # fixme: respond to reset+edit hooks
 
 class Browser(QMainWindow):
+
+    _searchPrompt = _("<type here to search; hit enter to show current deck>")
+
     cb_shown = {
         "editor": True,
         "sidebar": True
@@ -426,7 +430,7 @@ class Browser(QMainWindow):
         self.setupTable()
         self.setupMenus()
         self.setupSearch()
-        self.setupTree()
+        self.setupSidebar()
         self.setupHeaders()
         self.setupHooks()
         self.setupEditor()
@@ -448,8 +452,9 @@ class Browser(QMainWindow):
     def toggleSidebar(self):
         b = not self.showSidebar
         self.showSidebar = self.cb_shown["sidebar"] = b
-        self.form.tree.setVisible(b)
-        self.buildTree()
+        self.form.sidebarDockWidget.setVisible(b)
+        if b:
+            self.maybeRefreshSidebar()
 
     def toggleEditor(self):
         self.cb_shown["editor"] = not self.cb_shown["editor"]
@@ -608,9 +613,9 @@ class Browser(QMainWindow):
         "Show answer on RET or register answer."
         if evt.key() == Qt.Key_Escape:
             self.close()
-        elif self.mw.app.focusWidget() == self.form.tree:
+        elif self.mw.app.focusWidget() == self.sidebarTree:
             if evt.key() in (Qt.Key_Return, Qt.Key_Enter):
-                item = self.form.tree.currentItem()
+                item = self.sidebarTree.currentItem()
                 self.onTreeClick(item, 0)
 
     def setupColumns(self):
@@ -650,8 +655,6 @@ class Browser(QMainWindow):
     def onSearch(self, reset=True):
         """Careful: if reset is true, the current note is saved."""
         txt = self.form.searchEdit.lineEdit().text().strip()
-        prompt = _("<type here to search; hit enter to show current deck>")
-
         # update search history
         sh = self.mw.pm.profile['searchHistory']
         if txt not in sh:
@@ -669,13 +672,13 @@ class Browser(QMainWindow):
             self.model.search("nid:%d"%self.mw.reviewer.card.nid, False)
             if reset:
                 self.model.endReset()
-            self.form.searchEdit.lineEdit().setText(prompt)
+            self.form.searchEdit.lineEdit().setText(self._searchPrompt)
             self.form.searchEdit.lineEdit().selectAll()
             return
         elif "is:current" in txt:
-            self.form.searchEdit.lineEdit().setText(prompt)
+            self.form.searchEdit.lineEdit().setText(self._searchPrompt)
             self.form.searchEdit.lineEdit().selectAll()
-        elif txt == prompt:
+        elif txt == self._searchPrompt:
             txt = "deck:current "
             txt = "%s %s"%(self.lockedSearch, txt)
             self.form.searchEdit.lineEdit().setText(txt)
@@ -877,40 +880,49 @@ by clicking on one on the left."""))
     # Filter tree
     ######################################################################
 
-    class CallbackItem(QTreeWidgetItem):
-        def __init__(self, root, name, onclick, oncollapse=None, expanded=False):
-            QTreeWidgetItem.__init__(self, root, [name])
-            self.setExpanded(expanded)
-            self.onclick = onclick
-            self.oncollapse = oncollapse
-            self.type = ""
-
     def focusSidebar(self):
-        # self.sidebarDockWidget.setVisible(True)
         self.sidebarTree.setFocus()
 
-    def setupTree(self):
+    def setupSidebar(self):
+        # def onSidebarItemExpanded(idx):
+            # item = idx.internalPointer()
         p = QPalette()
-        p.setColor(QPalette.Base, QColor("#d6dde0"))
-        self.form.tree.setPalette(p)
-        self.form.tree.mw = self.mw
-        self.form.tree.col = self.mw.col
-        self.form.tree.browser = self
-        self.buildTree()
+        p.setColor(QPalette.Base, p.window().color() or QColor("#d6dde0"))
+        self.sidebarTree = SidebarTreeView(self.mw, self)
+        self.sidebarTree.setPalette(p)
+        self.sidebarTree.setUniformRowHeights(True)
+        self.sidebarTree.setHeaderHidden(True)
+        self.sidebarTree.setIndentation(15)
+        # self.sidebarTree.expanded.connect(onSidebarItemExpanded) # type: ignore
+        dw = self.form.sidebarDockWidget
+        dw.setWidget(self.sidebarTree)
+        dw.setFloating(False)
+        dw.visibilityChanged.connect(self.onSidebarVisChanged) # type: ignore
+        dw.setTitleBarWidget(QWidget())
 
-    def buildTree(self):
+    def onSidebarVisChanged(self, _visible):
+        self.maybeRefreshSidebar()
+
+    def maybeRefreshSidebar(self):
         if not self.showSidebar:
-            self.form.tree.setVisible(False)
-            return
-        self.sidebarTree=self.form.tree
-        self.sidebarTree.clear()
-        root = self.form.tree
-        self._systemTagTree(root)
+            self.form.sidebarDockWidget.setVisible(False)
+        elif self.form.sidebarDockWidget.isVisible():
+            # add slight delay to allow browser window to appear first
+            def deferredDisplay():
+                root = self.buildTree()
+                model = SidebarModel(root)
+                self.sidebarTree.setModel(model)
+                model.expandWhereNeccessary(self.sidebarTree)
+            self.mw.progress.timer(10, deferredDisplay, False)
+
+    def buildTree(self) -> SidebarItem:
+        root = SidebarItem("", "")
+        self._stdTree(root)
         self._favTree(root)
         self._decksTree(root)
         self._modelTree(root)
         self._userTagTree(root)
-        root.setIndentation(15)
+        return root
 
     def setFilter(self, *args):
         if len(args) == 1:
@@ -931,9 +943,8 @@ by clicking on one on the left."""))
         if self.mw.app.keyboardModifiers() & Qt.AltModifier:
             txt = "-"+txt
         if self.mw.app.keyboardModifiers() & Qt.ControlModifier:
-            cur = self.form.searchEdit.lineEdit().text()
-            if cur and cur != \
-                    _("<type here to search; hit enter to show current deck>"):
+            cur = str(self.form.searchEdit.lineEdit().text())
+            if cur and cur != self._searchPrompt:
                         txt = cur + " " + txt
         elif self.mw.app.keyboardModifiers() & Qt.ShiftModifier:
             cur = self.form.searchEdit.lineEdit().text()
@@ -942,7 +953,10 @@ by clicking on one on the left."""))
         self.form.searchEdit.lineEdit().setText(txt)
         self.onSearch()
 
-    def _systemTagTree(self, root):
+    def _filterFunc(self, *args):
+        return lambda *, f=args: self.setFilter(*f)
+
+    def _stdTree(self, root) -> None:
         tags = (
             (_("Whole Collection"), "ankibw", ""),
             (_("Current Deck"), "deck16", "deck:current"),
@@ -956,31 +970,33 @@ by clicking on one on the left."""))
             (_("Marked"), "star16.png", "tag:marked"),
             (_("Suspended"), "media-playback-pause.png", "is:suspended"),
             (_("Leech"), "emblem-important.png", "tag:leech"))
-        for name, icon, cmd in tags:
-            item = self.CallbackItem(
-                root, name, lambda c=cmd: self.setFilter(c))
+        for name, icon, filt in tags:
+            item = SidebarItem(
+                name, ":/icons/{}".format(icon), self._filterFunc(filt))
             item.type="sys"
             item.fullname = name
-            item.setIcon(0, QIcon(":/icons/" + icon))
-        return root
+            root.addChild(item)
 
     def _favTree(self, root):
+        assert self.col
+        tree=self.sidebarTree
+        ico = ":/icons/anki-tag.png"
+        icoOpt = self.col.conf.get('Blitzkrieg.icon_fav',True)
+
         saved = self.col.conf.get('savedFilters', {})
         if not saved:
-            # Don't add favourites to tree if none saved
             return
         favs_tree = {}
         for fav, filt in sorted(saved.items()):
             node = fav.split('::')
+            lstIdx = len(node)-1
             ico = "emblem-favorite-dark.png"
             type = "fav"
             fname = color = None
             for idx, name in enumerate(node):
                 if node[0]=='Pinned':
-                    # color=QColor(5,150,5,255) #can't find a good color
                     if idx==0:
                         type = "pin"
-                        ico = "emblem-favorite.png"
                     elif filt.startswith('"tag:'):
                         type = "pinTag"
                         ico = "anki-tag.png"
@@ -999,155 +1015,156 @@ by clicking on one on the left."""))
                 leaf_tag = '::'.join(node[0:idx + 1])
                 if not favs_tree.get(leaf_tag):
                     parent = favs_tree['::'.join(node[0:idx])] if idx else root
-                    item = self.CallbackItem(
-                        parent, name,
-                        lambda s=filt: self.setFilter(s),
-                        expanded=root.node_state.get(type).get(leaf_tag,True)
+                    exp = tree.node_state.get(type).get(leaf_tag,False)
+                    item = SidebarItem(
+                        name,
+                        (":/icons/"+ico) if icoOpt or not idx or idx==lstIdx else None,
+                        self._filterFunc(filt),
+                        expanded=exp
                     )
+                    parent.addChild(item)
+
                     item.type = type
                     item.fullname = fname or leaf_tag
                     item.favname = leaf_tag
-                    if not idx or self.col.conf.get('Blitzkrieg.icon_fav',True):
-                        item.setIcon(0, QIcon(":/icons/"+ico))
-                    # if color and idx:
-                        # item.setForeground(0, QBrush(color))
-                    if root.marked[type].get(leaf_tag, False):
-                        item.setBackground(0, QBrush(Qt.yellow))
+                    if tree.marked[type].get(leaf_tag, False):
+                        item.background=QBrush(Qt.yellow)
                     favs_tree[leaf_tag] = item
-            try:
-                item.setIcon(0, QIcon(":/icons/"+ico))
-            except AttributeError: pass
 
-    # Addon: Hierarchical Tags, https://ankiweb.net/shared/download/1089921461
-    def _userTagTree(self, root):
+    def _userTagTree(self, root) -> None:
+        assert self.col
+        tree=self.sidebarTree
+        ico = ":/icons/anki-tag.png"
+        # ico = getIcon("tag.svg")
         icoOpt = self.col.conf.get('Blitzkrieg.icon_tag',True)
-        rootNode = self.CallbackItem(root, _("Tags"), None)
+        rootNode = SidebarItem(
+            "Tags", ico,
+            expanded=tree.node_state.get("group").get('tag',True)
+        )
         rootNode.type = "group"
         rootNode.fullname = "tag"
-        rootNode.setExpanded(root.node_state.get("group").get('tag',True))
-        rootNode.setIcon(0, QIcon(":/icons/anki-tag.png"))
-        tags_tree = {}
+        root.addChild(rootNode)
 
+        tags_tree = {}
         SORT = self.col.conf.get('Blitzkrieg.sort_tag',False)
         TAGS = sorted(self.col.tags.all(),
                 key=lambda t: t.lower() if SORT else t)
-
         for t in TAGS:
-            if t.lower() in ("marked","leech"):
+            if t.lower() == "marked" or t.lower() == "leech":
                 continue
-            item = None
             node = t.split('::')
+            lstIdx = len(node)-1
             for idx, name in enumerate(node):
                 leaf_tag = '::'.join(node[0:idx + 1])
                 if not tags_tree.get(leaf_tag):
                     parent = tags_tree['::'.join(node[0:idx])] if idx else rootNode
-                    exp = root.node_state.get('tag').get(leaf_tag,False)
-                    item = self.CallbackItem(
-                        parent, name,
-                        lambda p=leaf_tag: self.setFilter("tag",p),
+                    exp = tree.node_state.get('tag').get(leaf_tag,False)
+                    item = SidebarItem(
+                        name, ico if icoOpt or idx==lstIdx else None,
+                        self._filterFunc("tag",leaf_tag),
                         expanded=exp
                     )
+                    parent.addChild(item)
+
                     item.type = "tag"
                     item.fullname = leaf_tag
-                    if icoOpt:
-                        item.setIcon(0, QIcon(":/icons/anki-tag.png"))
-                    if root.found.get(item.type,{}).get(leaf_tag, False):
-                        item.setBackground(0, QBrush(Qt.cyan))
-                    elif root.marked[item.type].get(leaf_tag, False):
-                        item.setBackground(0, QBrush(Qt.yellow))
+                    if tree.found.get(item.type,{}).get(leaf_tag, False):
+                        item.background=QBrush(Qt.cyan)
+                    elif tree.marked['tag'].get(leaf_tag, False):
+                        item.background=QBrush(Qt.yellow)
                     elif exp and '::' not in leaf_tag:
-                        item.setBackground(0, QBrush(QColor(0,0,10,10)))
+                        item.background=QBrush(QColor(0,0,10,10))
                     tags_tree[leaf_tag] = item
-            try:
-                item.setIcon(0, QIcon(":/icons/anki-tag.png"))
-            except AttributeError: pass
 
-        totTags=len(TAGS)
-        if totTags>1000:
-            rootNode.setText(0, _("Tags ( ! )"))
-        rootNode.setToolTip(0, _("Total: %d tags"%totTags))
+        rootNode.tooltip="Total: %d tags"%len(TAGS)
 
-
-    def _decksTree(self, root):
-        rootNode = self.CallbackItem(root, _("Decks"), None)
+    def _decksTree(self, root) -> None:
+        assert self.col
+        tree=self.sidebarTree
+        ico = ":/icons/deck16.png"
+        # ico = getIcon("deck.svg")
+        rootNode = SidebarItem(
+            _("Decks"), ico,
+            expanded=tree.node_state.get("group").get('deck',True)
+        )
         rootNode.type = "group"
         rootNode.fullname = "deck"
-        rootNode.setExpanded(root.node_state.get("group").get('deck',True))
-        rootNode.setIcon(0, QIcon(":/icons/deck16.png"))
+        root.addChild(rootNode)
+
         SORT = self.col.conf.get('Blitzkrieg.sort_deck',False)
         grps = sorted(self.col.sched.deckDueTree(),
                 key=lambda g: g[0].lower() if SORT else g[0])
         def fillGroups(rootNode, grps, head=""):
             for g in grps:
-                item = self.CallbackItem(
-                    rootNode, g[0],
+                item = SidebarItem(
+                    g[0], ico,
                     lambda g=g: self.setFilter("deck", head+g[0]),
-                    lambda g=g: self.mw.col.decks.collapseBrowser(g[1]),
+                    lambda expanded, g=g: self.mw.col.decks.collapseBrowser(g[1]),
                     not self.mw.col.decks.get(g[1]).get('browserCollapsed', False))
-                item.fullname = head + g[0]
-                item.setIcon(0, QIcon(":/icons/deck16.png"))
-                if self.col.decks.byName(item.fullname)['dyn']:
-                    item.setForeground(0, QBrush(Qt.blue))
+                rootNode.addChild(item)
+                item.fullname = head + g[0] #name
+                if self.mw.col.decks.isDyn(g[1]): #id
+                    item.foreground = QBrush(Qt.blue)
                     item.type = "dyn"
                 else:
                     if g[1]==1: #default deck
-                        item.setForeground(0, QBrush(Qt.darkRed))
+                        item.foreground = QBrush(Qt.darkRed)
                     item.type = "deck"
-                if root.found.get(item.type,{}).get(item.fullname, False):
-                    item.setBackground(0, QBrush(Qt.cyan))
-                elif root.marked[item.type].get(item.fullname, False):
-                    item.setBackground(0, QBrush(Qt.yellow))
-                newhead = head + g[0] + "::"
+                if tree.found.get(item.type,{}).get(item.fullname, False):
+                    item.background=QBrush(Qt.cyan)
+                elif tree.marked[item.type].get(item.fullname, False):
+                    item.background=QBrush(Qt.yellow)
+                newhead = head + g[0]+"::"
                 fillGroups(item, g[5], newhead)
         fillGroups(rootNode, grps)
-
-        tot=self.col.decks.count()
-        if tot>1000:
-            rootNode.setText(0, _("Decks ( ! )"))
-        rootNode.setToolTip(0, _("Total: %d decks"%tot))
-
+        rootNode.tooltip="Total: %d decks"%self.col.decks.count()
 
     def _modelTree(self, root):
-        ico = QIcon(":/icons/product_design.png")
+        assert self.col
+        tree=self.sidebarTree
+        ico = ":/icons/product_design.png"
+        # ico = getIcon("notetype.svg")
         icoOpt = self.col.conf.get('Blitzkrieg.icon_model',True)
-        rootNode = self.CallbackItem(root, _("Models"), None)
+        rootNode = SidebarItem(
+            _("Models"), ico,
+            expanded=tree.node_state.get("group").get('model',False)
+        )
         rootNode.type = "group"
         rootNode.fullname = "model"
-        rootNode.setExpanded(root.node_state.get("group").get('model',False))
-        rootNode.setIcon(0, QIcon(":/icons/product_design.png"))
+        root.addChild(rootNode)
+
         models_tree = {}
         SORT = self.col.conf.get('Blitzkrieg.sort_model',False)
         MODELS = sorted(self.col.models.all(),
                 key=lambda m: m["name"].lower() if SORT else m["name"])
         for m in MODELS:
             item = None
+            mid=str(m['id'])
             node = m['name'].split('::')
+            lstIdx = len(node)-1
             for idx, name in enumerate(node):
                 leaf_model = '::'.join(node[0:idx + 1])
-                if not models_tree.get(leaf_model):
+                if not models_tree.get(leaf_model) or idx==lstIdx: #last element, model names are not unique
                     parent = models_tree['::'.join(node[0:idx])] if idx else rootNode
-                    item = self.CallbackItem(
-                        parent, name,
-                        lambda m=m: self.setFilter("mid", str(m['id'])),
-                        expanded=root.node_state.get('model').get(leaf_model,False)
+                    exp = tree.node_state.get('model').get(leaf_model,False)
+
+                    item = SidebarItem(
+                        name, ico if icoOpt or idx==lstIdx else None,
+                        self._filterFunc("mid", str(m['id'])),
+                        expanded=exp
                     )
+                    parent.addChild(item)
                     item.type = "model"
                     item.fullname = leaf_model
-                    if icoOpt:
-                        item.setIcon(0, ico)
-                    if root.found.get(item.type,{}).get(leaf_model, False):
-                        item.setBackground(0, QBrush(Qt.cyan))
-                    elif root.marked[item.type].get(leaf_model, False):
-                        item.setBackground(0, QBrush(Qt.yellow))
-                    models_tree[leaf_model] = item
-            try:
-                item.setIcon(0, ico)
-            except AttributeError: pass
+                    item.mid = mid
 
-        tot=len(MODELS)
-        if tot>1000:
-            rootNode.setText(0, _("Models ( ! )"))
-        rootNode.setToolTip(0, _("Total: %d models"%tot))
+                    if tree.found.get(item.type,{}).get(leaf_model, False):
+                        item.background=QBrush(Qt.cyan)
+                    elif tree.marked['model'].get(leaf_model, False):
+                        item.background=QBrush(Qt.yellow)
+                    models_tree[leaf_model] = item
+
+        rootNode.tooltip="Total: %d models"%len(MODELS)
 
     # Info
     ######################################################################
@@ -1702,7 +1719,7 @@ Red items will be deleted.""")))
         addHook("editTimer", self.refreshCurrentCard)
         addHook("editFocusLost", self.refreshCurrentCardFilter)
         for t in "newTag", "newModel", "newDeck":
-            addHook(t, self.buildTree)
+            addHook(t, self.maybeRefreshSidebar)
 
     def teardownHooks(self):
         remHook("reset", self.onReset)
@@ -1711,13 +1728,13 @@ Red items will be deleted.""")))
         remHook("editFocusLost", self.refreshCurrentCardFilter)
         remHook("undoState", self.onUndoState)
         for t in "newTag", "newModel", "newDeck":
-            remHook(t, self.buildTree)
+            remHook(t, self.maybeRefreshSidebar)
 
     def onUndoState(self, on):
         self.form.actionUndo.setEnabled(on)
         if on:
             self.form.actionUndo.setText(self.mw.form.actionUndo.text())
-        self.buildTree()
+        self.maybeRefreshSidebar()
 
 
 
@@ -1899,7 +1916,7 @@ Red items will be deleted.""")))
         self.editor.web.eval("focusField(0);")
 
     def onTags(self):
-        self.form.tree.setFocus()
+        self.sidebarTree.setFocus()
 
     def onCardList(self):
         self.form.tableView.setFocus()
@@ -2242,7 +2259,7 @@ class FavouritesLineEdit(QLineEdit):
             self.mw.col.setMod()
 
         self.updateButton()
-        self.browser.buildTree()
+        self.browser.maybeRefreshSidebar()
     
     def deleteClicked(self):
         msg = _('Remove "%s" from your saved searches?') % self.name
@@ -2253,4 +2270,4 @@ class FavouritesLineEdit(QLineEdit):
             self.mw.col.conf['savedFilters'].pop(self.name, None)
             self.mw.col.setMod()
             self.updateButton()
-            self.browser.buildTree()
+            self.browser.maybeRefreshSidebar()

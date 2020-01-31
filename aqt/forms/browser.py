@@ -9,7 +9,7 @@
 
 from PyQt4 import QtCore, QtGui as QtWidgets, QtGui
 from anki.lang import _
-from aqt.sidebar import SidebarTreeWidget
+from aqt.sidebar import SidebarTreeView
 import ccbc.plugins.Card_Info_Bar_for_Browser.browser
 
 
@@ -42,16 +42,13 @@ class Ui_Dialog(object):
         self.splitter_2 = QtGui.QSplitter(self.centralwidget)
         self.splitter_2.setOrientation(QtCore.Qt.Horizontal)
         self.splitter_2.setObjectName("splitter_2")
-        self.tree = SidebarTreeWidget(self.splitter_2)
+        self.sidebarDockWidget = QtGui.QDockWidget(self.splitter_2)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.tree.sizePolicy().hasHeightForWidth())
-        self.tree.setSizePolicy(sizePolicy)
-        self.tree.setFrameShape(QtGui.QFrame.NoFrame)
-        self.tree.setObjectName("tree")
-        self.tree.headerItem().setText(0, "1")
-        self.tree.header().setVisible(False)
+        sizePolicy.setHeightForWidth(self.sidebarDockWidget.sizePolicy().hasHeightForWidth())
+        self.sidebarDockWidget.setSizePolicy(sizePolicy)
+        self.sidebarDockWidget.setObjectName("Sidebar")
         self.splitter = QtGui.QSplitter(self.splitter_2)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(4)
@@ -382,6 +379,7 @@ class Ui_Dialog(object):
         self.actionFullScreen.setText(_("Full Screen"))
         self.actionFullScreen.setShortcut(_("F11"))
         self.actionShowSidebar.setText(_("Show Sidebar"))
+        self.actionShowSidebar.setShortcut(_("Ctrl+S"))
         self.actionLockSearch.setText(_("Lock Search"))
         self.actionShowEdit.setText(_("Show Editor"))
         self.actionShowEdit.setShortcut(_("Ctrl+Shift+E"))
