@@ -438,11 +438,14 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         hadHR = len(buf) != origSize
         # munge correct value
         parser = HTMLParser()
-        cor = stripHTML(self.mw.col.media.strip(self.typeCorrect))
+        cor = self.mw.col.media.strip(self.typeCorrect)
+        cor = re.sub("(\n|<br ?/?>|</?div>)+", " ", cor)
+        cor = stripHTML(cor)
         # ensure we don't chomp multiple whitespace
         cor = cor.replace(" ", "&nbsp;")
         cor = parser.unescape(cor)
-        cor = cor.replace(u"\xa0", " ")
+        cor = cor.replace("\xa0", " ")
+        cor = cor.strip()
         given = self.typedAnswer
         # compare with typed answer
         res = self.correct(given, cor, showBad=False)
@@ -461,13 +464,15 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         return re.sub(self.typeAnsPat, repl, buf)
 
     def _contentForCloze(self, txt, idx):
-        matches = re.findall("\{\{c%s::(.+?)\}\}"%idx, txt)
+        matches = re.findall("\{\{c%s::(.+?)\}\}"%idx, txt, re.DOTALL)
         if not matches:
             return None
+
         def noHint(txt):
             if "::" in txt:
                 return txt.split("::")[0]
             return txt
+
         matches = [noHint(txt) for txt in matches]
         uniqMatches = set(matches)
         if len(uniqMatches) == 1:
@@ -494,12 +499,15 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         givenPoint = 0
         correctPoint = 0
         offby = 0
+
         def logBad(old, new, str, array):
             if old != new:
                 array.append((False, str[old:new]))
+
         def logGood(start, cnt, str, array):
             if cnt:
                 array.append((True, str[start:start+cnt]))
+
         for x, y, cnt in s.get_matching_blocks():
             # if anything was missed in correct, pad given
             if cnt and y-offby > x:
@@ -517,10 +525,13 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
 
     def correct(self, given, correct, showBad=True):
         "Diff-corrects the typed-in answer."
+
         def good(s):
             return "<span class=typeGood>"+cgi.escape(s)+"</span>"
+
         def bad(s):
             return "<span class=typeBad>"+cgi.escape(s)+"</span>"
+
         def missed(s):
             return "<span class=typeMissed>"+cgi.escape(s)+"</span>"
 
@@ -533,18 +544,27 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             res = ""
             givenElems, correctElems = self.tokenizeComparison(given, correct)
             for ok, txt in givenElems:
+                txt = self._noLoneMarks(txt)
                 if ok:
                     res += good(txt)
                 else:
                     res += bad(txt)
             res += "<br>&darr;<br>"
             for ok, txt in correctElems:
+                txt = self._noLoneMarks(txt)
                 if ok:
                     res += good(txt)
                 else:
                     res += missed(txt)
         res = "<div><code id=typeans>" + res + "</code></div>"
         return res
+
+    def _noLoneMarks(self, s):
+        # ensure a combining character at the start does not join to
+        # previous text
+        if s and ucd.category(s[0]).startswith("M"):
+            return "\xa0" + s
+        return s
 
     # Bottom bar
     ##########################################################################
