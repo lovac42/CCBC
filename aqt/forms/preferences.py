@@ -415,7 +415,7 @@ class Ui_Preferences(object):
         self.pastePNG.setText(_("Paste clipboard images as PNG"))
         # self.nightMode.setText(_("Show cards as white on black (night mode)"))
         self.dayLearnFirst.setText(_("Show learning cards with larger steps before reviews"))
-        self.newSched.setText(_("Anki 2.1 scheduler (beta)"))
+        self.newSched.setText(_("Anki 2.1 V2 scheduler (beta)"))
         self.useCurrent.setItemText(0, _("When adding, default to current deck"))
         self.useCurrent.setItemText(1, _("Change deck depending on note type"))
         self.label_23.setText(_("Next day starts at"))
