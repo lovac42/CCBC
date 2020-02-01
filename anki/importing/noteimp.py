@@ -57,7 +57,8 @@ class NoteImporter(Importer):
         Importer.__init__(self, col, file)
         self.model = col.models.current()
         self.mapping = None
-        self._deckMap = {}
+        self.tagModified  = None
+        self._tagsMapped = {}
 
     def run(self):
         "Import."
@@ -244,11 +245,16 @@ content in the text file to the correct fields."""))
         if self._tagsMapped:
             self.col.tags.register(n.tags)
             tags = self.col.tags.join(n.tags)
-            return [intTime(), self.col.usn(), n.fieldsStr, tags,
-                    id, n.fieldsStr, tags]
+            return [intTime(), self.col.usn(), n.fieldsStr, tags, id, n.fieldsStr, tags]
+        elif self.tagModified:
+            tags = self.col.db.scalar("select tags from notes where id = ?", id)
+            tagList = self.col.tags.split(tags) + self.tagModified.split()
+            tagList = self.col.tags.canonify(tagList)
+            self.col.tags.register(tagList)
+            tags = self.col.tags.join(tagList)
+            return [intTime(), self.col.usn(), n.fieldsStr, tags, id, n.fieldsStr]
         else:
-            return [intTime(), self.col.usn(), n.fieldsStr,
-                    id, n.fieldsStr]
+            return [intTime(), self.col.usn(), n.fieldsStr, id, n.fieldsStr]
 
     def addUpdates(self, rows):
         old = self.col.db.totalChanges()
@@ -256,6 +262,10 @@ content in the text file to the correct fields."""))
             self.col.db.executemany("""
 update notes set mod = ?, usn = ?, flds = ?, tags = ?
 where id = ? and (flds != ? or tags != ?)""", rows)
+        elif self.tagModified:
+            self.col.db.executemany("""
+update notes set mod = ?, usn = ?, flds = ?, tags = ?
+where id = ? and flds != ?""", rows)
         else:
             self.col.db.executemany("""
 update notes set mod = ?, usn = ?, flds = ?

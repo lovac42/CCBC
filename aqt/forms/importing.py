@@ -8,6 +8,7 @@ from anki.lang import _
 # WARNING! All changes made in this file will be lost!
 
 from PyQt4 import QtCore, QtGui as QtWidgets
+from aqt.tagedit import TagEdit
 
 class Ui_ImportDialog(object):
     def setupUi(self, ImportDialog):
@@ -43,11 +44,22 @@ class Ui_ImportDialog(object):
         self.importMode.addItem("")
         self.importMode.addItem("")
         self.importMode.addItem("")
+
         self.toplayout.addWidget(self.importMode)
         self.allowHTML = QtWidgets.QCheckBox(self.groupBox)
         self.allowHTML.setObjectName("allowHTML")
         self.toplayout.addWidget(self.allowHTML)
+
+        self.tagModifiedLayout = QtWidgets.QHBoxLayout(self.groupBox)
+        self.tagModifiedLabel = QtWidgets.QLabel(self.groupBox)
+        self.tagModifiedLabel.setObjectName("tagModifiedLabel")
+        self.tagModifiedLayout.addWidget(self.tagModifiedLabel)
+        self.tagModified = TagEdit(self.groupBox)
+        self.tagModified.setObjectName("tagModified")
+        self.tagModifiedLayout.addWidget(self.tagModified)
+        self.toplayout.addLayout(self.tagModifiedLayout)
         self.vboxlayout.addWidget(self.groupBox)
+
         self.mappingGroup = QtWidgets.QGroupBox(ImportDialog)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -97,5 +109,6 @@ class Ui_ImportDialog(object):
         self.importMode.setItemText(1, _("Ignore lines where first field matches existing note"))
         self.importMode.setItemText(2, _("Import even if existing note has same first field"))
         self.allowHTML.setText(_("Allow HTML in fields"))
+        self.tagModifiedLabel.setText(_("Tag modified notes:"))
         self.mappingGroup.setTitle(_("Field mapping"))
 

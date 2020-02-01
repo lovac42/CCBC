@@ -82,7 +82,10 @@ class ImportDialog(QDialog):
 
         self.updateDelimiterButtonText()
         self.frm.allowHTML.setChecked(self.mw.pm.profile.get('allowHTML', True))
+        self.frm.importMode.currentIndexChanged.connect(self.importModeChanged)
         self.frm.importMode.setCurrentIndex(self.mw.pm.profile.get('importMode', 1))
+        self.frm.tagModified.setText(self.mw.pm.profile.get("tagModified", ""))
+        self.frm.tagModified.setCol(self.mw.col)
         # import button
         b = QPushButton(_("Import"))
         self.frm.buttonBox.addButton(b, QDialogButtonBox.AcceptRole)
@@ -159,6 +162,8 @@ you can enter it here. Use \\t to represent tab."""),
         self.mw.pm.profile['importMode'] = self.importer.importMode
         self.importer.allowHTML = self.frm.allowHTML.isChecked()
         self.mw.pm.profile['allowHTML'] = self.importer.allowHTML
+        self.importer.tagModified = self.frm.tagModified.text()
+        self.mw.pm.profile["tagModified"] = self.importer.tagModified
         did = self.deck.selectedId()
         if did != self.importer.model['did']:
             self.importer.model['did'] = did
@@ -258,6 +263,9 @@ you can enter it here. Use \\t to represent tab."""),
         self.deck.cleanup()
         remHook("currentModelChanged", self.modelChanged)
         QDialog.reject(self)
+
+    def importModeChanged(self, newImportMode):
+        self.frm.tagModified.setEnabled(newImportMode==0)
 
 
 def showUnicodeWarning():
