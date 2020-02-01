@@ -62,31 +62,38 @@ def addInfoBar(self):
         [self.il_avTime,   'AvgTime: ',     0, 8, 1, 1, self.i_avTime,   "", 0, 9, 1, 1],
     ]
 
+    f=self.form
     for l in g:
         t = "<b>" + l[1] + "</b>"  # increaes height noticeable
         l[0].setText(t) 
         #l[0].setStyleSheet('background-color: rgb(100, 10, 1);')
         l[6].setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        self.form.infogrid.addWidget(l[0], l[2], l[3], l[4], l[5])
-        self.form.infogrid.addWidget(l[6], l[8], l[9], l[10], l[11])
+        f.infogrid.addWidget(l[0], l[2], l[3], l[4], l[5])
+        f.infogrid.addWidget(l[6], l[8], l[9], l[10], l[11])
     
-    self.form.infogrid.setColumnStretch(0,1)
-    self.form.infogrid.setColumnStretch(1,2)
-    self.form.infogrid.setColumnStretch(2,1)
-    self.form.infogrid.setColumnStretch(3,2)
-    self.form.infogrid.setColumnStretch(4,1)
-    self.form.infogrid.setColumnStretch(5,2)
-    self.form.infogrid.setColumnStretch(6,1)
-    self.form.infogrid.setColumnStretch(7,4)
-    self.form.infogrid.setColumnStretch(8,1)
-    self.form.infogrid.setColumnStretch(9,2)
+    f.infogrid.setColumnStretch(0,1)
+    f.infogrid.setColumnStretch(1,2)
+    f.infogrid.setColumnStretch(2,1)
+    f.infogrid.setColumnStretch(3,2)
+    f.infogrid.setColumnStretch(4,1)
+    f.infogrid.setColumnStretch(5,2)
+    f.infogrid.setColumnStretch(6,1)
+    f.infogrid.setColumnStretch(7,4)
+    f.infogrid.setColumnStretch(8,1)
+    f.infogrid.setColumnStretch(9,2)
 
 
 def update(self):
-    state=self.form.cb_infowidget.isChecked()
-    if state and self.card:
+    if not self.form.cb_infowidget.isChecked():
+        return
+    try:
+        card=self.model.getCard(
+            self.form.tableView.selectionModel().currentIndex())
+    except IndexError:
+        return
+    if card:
         # print("update card")
-        p = cardstats(self.card)
+        p = cardstats(card)
         self.i_added.setText(p.Added) 
         self.i_fr.setText(p.FirstReview) 
         self.i_lr.setText(p.LatestReview)

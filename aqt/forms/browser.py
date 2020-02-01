@@ -10,7 +10,6 @@
 from PyQt4 import QtCore, QtGui as QtWidgets, QtGui
 from anki.lang import _
 from aqt.sidebar import SidebarTreeView
-import ccbc.plugins.Card_Info_Bar_for_Browser.browser
 
 
 class EditorAreaWidget(QtGui.QWidget):
@@ -91,6 +90,13 @@ class Ui_Dialog(object):
         # self.previewButton.setObjectName("previewButton")
         # self.gridLayout.addWidget(self.previewButton, 0, 2, 1, 1)
         self.verticalLayout_2.addLayout(self.gridLayout)
+
+        #Addon: Card Info Bar for Browser, https://ankiweb.net/shared/info/2140680811
+        self.infogrid = QtGui.QGridLayout()
+        self.infowidget = QtGui.QWidget()
+        self.infowidget.setLayout(self.infogrid)
+        self.verticalLayout_2.addWidget(self.infowidget)    
+
         self.tableView = QtGui.QTableView(self.widget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(9)
@@ -286,9 +292,6 @@ class Ui_Dialog(object):
         self.actionShowEdit.setObjectName("actionShowEdit")
         self.actionShowEdit.setCheckable(True)
         self.menuView.addAction(self.actionShowEdit)
-
-        #Addon: Card Info Bar for Browser, https://ankiweb.net/shared/info/2140680811
-        ccbc.plugins.Card_Info_Bar_for_Browser.browser.menu(self)
 
         self.toRSideEditor = QtGui.QAction(Dialog)
         self.toRSideEditor.setObjectName("toRSideEditor")
