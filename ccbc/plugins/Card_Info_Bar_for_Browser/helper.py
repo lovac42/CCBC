@@ -7,21 +7,14 @@ from anki.utils import fmtTimeSpan
 
 
 def due_day(card):
-    if card.queue <= 0:
-        return ""
-    else:
-        if card.queue in (2,3):
-            if card.odue:
-                myvalue = card.odue
-            else:
-                myvalue = card.due
-            mydue = time.time()+((myvalue - mw.col.sched.today)*86400)
-        else:
-            if card.odue:
-                mydue = card.odue
-            else:
-                mydue = card.due
-    return time.strftime("%Y-%m-%d", time.localtime(mydue)) 
+    if card.type in (0,1):
+        return "(New)"
+    mydue = card.odue if card.odid else card.due
+    if card.type in (2,3) and mydue<100000: #lrn burried cards
+        mydue = time.time()+((mydue-mw.col.sched.today)*86400)
+    if mydue<0:
+        return "Error"
+    return time.strftime("%Y-%m-%d", time.localtime(mydue))
 
 
 #function time from anki/stats.py
