@@ -1584,13 +1584,17 @@ Red items will be deleted.""")))
         if not cids:
             showInfo("No card selected")
             return
-        self.card = self.model.getCard(
-            self.form.tableView.selectionModel().currentIndex())
+        try:
+            card = self.model.getCard(
+                self.form.tableView.selectionModel().currentIndex())
+        except IndexError:
+            return
         # flag needs toggling off?
-        if n == self.card.userFlag():
+        if n == card.userFlag():
             n = 0
         self.col.setUserFlag(n, cids)
         self.model.reset()
+        self.form.tableView.clearSelection()
 
     def _updateFlagsMenu(self):
         flag = self.card and self.card.userFlag()
