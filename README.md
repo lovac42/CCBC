@@ -28,11 +28,13 @@ An adze is a tool used in woodworking that is extremely cheap to make and could 
 ## Sync:
 Sync has been disabled, but can be enabled for custom servers using modules.
 
-
 ## Zooming:
 Fullscreen (F11) and zooming is builtin. Use Ctrl++/Ctrl+- to zoom-in/out or add Shift for finer control.  
 
 Zoom adjustments are saved per card model based on front or back view. IR cards are saved per card.
+
+## Multi AddCard Dialog:
+Allows opening of multiple addcard dialogs for entering cards to different decks or with different tags.
 
 ## Portable mode, windows only:
 Portable mode is enabled if a file named `portable.dat` is in the ccbc.exe folder at the time it launches. All user data are stored in a folder called Data.
@@ -40,11 +42,13 @@ Portable mode is enabled if a file named `portable.dat` is in the ccbc.exe folde
 ## Multiple instances:
 CCBC allows multiple instances on different profiles to be run on the same system.
 
+## Drag and drop:
+Drag and drop for imports and addons.
+
 ## Shuffle or Show Next Card Button:
 Added a small button to drop current card from the reviewer. The card will re-appear again in a few moments, this helps to alleviate tip-of-the-tongue phenomenons without failing the card in the event of a temporary mental lapse. The shuffling will be performed by the Hoochie addons if available.
 
-Hotkey: CTRL+Enter (on question side)
-
+Hotkey: CTRL+Enter (on question side only)
 
 ## Addons:
 Some reasonable addons are integrated into CCBC.
