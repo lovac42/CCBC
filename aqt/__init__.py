@@ -282,6 +282,11 @@ def _run(argv=None, exec=True):
     if isMac:
         app.setAttribute(Qt.AA_DontShowIconsInMenus)
 
+    # disable help button in title bar on qt versions that support it
+    if isWin and qtminor >= 10:
+        QApplication.setAttribute(Qt.AA_DisableWindowContextHelpButton)
+
+
     # we must have a usable temp dir
     try:
         tempfile.gettempdir()
