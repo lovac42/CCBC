@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright: petr.michalec@gmail.com
 # License: GNU GPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
+# pytype: disable=attribute-error
 
 import sys
 
@@ -78,10 +79,10 @@ class SupermemoXmlImporter(NoteImporter):
     Code should be upgrade to support importing of SM2006 exports.
     """
 
-    def __init__(self, *args):
+    def __init__(self, col, file):
         """Initialize internal varables.
         Pameters to be exposed to GUI are stored in self.META"""
-        NoteImporter.__init__(self, *args)
+        NoteImporter.__init__(self, col, file)
         m = addBasicModel(self.col)
         m['name'] = "Supermemo"
         self.col.models.save(m)

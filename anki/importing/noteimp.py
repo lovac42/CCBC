@@ -52,13 +52,15 @@ class NoteImporter(Importer):
     needDelimiter = False
     allowHTML = False
     importMode = 0
+    mapping = []
+    tagModified = ""
 
     def __init__(self, col, file):
         Importer.__init__(self, col, file)
         self.model = col.models.current()
         self.mapping = None
-        self.tagModified  = None
-        self._tagsMapped = {}
+        self.tagModified = None
+        self._tagsMapped = False
 
     def run(self):
         "Import."
