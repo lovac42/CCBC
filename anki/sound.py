@@ -191,6 +191,8 @@ mplayerEvt = threading.Event()
 mplayerClear = False
 
 class MplayerMonitor(threading.Thread):
+    mplayer = None
+    deadPlayers = []
 
     def run(self):
         global mplayerClear
@@ -212,7 +214,7 @@ class MplayerMonitor(threading.Thread):
             while mplayerQueue:
                 # ensure started
                 if not self.mplayer:
-                    self.startProcess()
+                    self.mplayer = self.startProcess()
                 # pop a file
                 try:
                     item = mplayerQueue.pop(0)
@@ -232,7 +234,7 @@ class MplayerMonitor(threading.Thread):
                     # mplayer has quit and needs restarting
                     self.deadPlayers.append(self.mplayer)
                     self.mplayer = None
-                    self.startProcess()
+                    self.mplayer = self.startProcess()
                     self.mplayer.stdin.write(cmd)
                     self.mplayer.stdin.flush()
                 # if we feed mplayer too fast it loses files
@@ -262,7 +264,7 @@ class MplayerMonitor(threading.Thread):
         try:
             cmd = mplayerCmd + ["-slave", "-idle"]
             cmd, env = _packagedCmd(cmd)
-            self.mplayer = subprocess.Popen(
+            return subprocess.Popen(
                 cmd, startupinfo=si, stdin=subprocess.PIPE,
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                 env=env)
