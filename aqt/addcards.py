@@ -213,6 +213,7 @@ class AddCards(QDialog):
 The input you have provided would make an empty \
 question on all cards."""))
             return
+        self.mw.col.clearUndo() #in case of addons
         self.addHistory(note)
         if self.mw.state != 'review':
             self.mw.requireReset()
