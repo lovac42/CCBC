@@ -49,6 +49,12 @@ defaultConf = {
     'dayLearnFirst': False,
 }
 
+def timezoneOffset():
+    if time.localtime().tm_isdst:
+        return time.altzone//60
+    else:
+        return time.timezone//60
+
 # this is initialized by storage.Collection
 class _Collection:
 
@@ -73,6 +79,7 @@ class _Collection:
             d = datetime.datetime(d.year, d.month, d.day)
             d += datetime.timedelta(hours=4)
             self.crt = int(time.mktime(d.timetuple()))
+        self.conf['localOffset'] = timezoneOffset()
         self._loadScheduler()
         if not self.conf.get("newBury", False):
             self.conf['newBury'] = True
