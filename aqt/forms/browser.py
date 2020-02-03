@@ -144,6 +144,8 @@ class Ui_Dialog(object):
         self.menubar = QtGui.QMenuBar(Dialog)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 750, 22))
         self.menubar.setObjectName("menubar")
+        self.menuTool = QtGui.QMenu(self.menubar)
+        self.menuTool.setObjectName("menuTool")
         self.menuEdit = QtGui.QMenu(self.menubar)
         self.menuEdit.setObjectName("menuEdit")
         self.menuView = QtGui.QMenu(self.menubar)
@@ -320,6 +322,7 @@ class Ui_Dialog(object):
         self.menu_Cards.addAction(self.menuFlag.menuAction())
 
         # main menubar
+        self.menubar.addAction(self.menuTool.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menu_Notes.menuAction())
@@ -336,6 +339,7 @@ class Ui_Dialog(object):
         self.searchButton.setText(_("Search"))
         # self.previewButton.setText(_("Preview"))
         # self.previewButton.setShortcut(_("Ctrl+Shift+P"))
+        self.menuTool.setTitle(_("&Tools"))
         self.menuEdit.setTitle(_("&Edit"))
         self.menuJump.setTitle(_("&Go"))
         self.menuView.setTitle(_("&View"))
