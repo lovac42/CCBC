@@ -93,14 +93,13 @@ class CardLayout(QDialog):
             self.addTab(t)
 
     def addTab(self, t):
-        c = self.connect
-        w = QWidget()
+        w = self.mainArea = QWidget()
         l = QHBoxLayout()
-        l.setMargin(0)
+        l.setContentsMargins(0,0,0,0)
         l.setSpacing(3)
         left = QWidget()
         # template area
-        tform = aqt.forms.template.Ui_Form()
+        tform = self.tform = aqt.forms.template.Ui_Form()
         tform.setupUi(left)
         tform.label1.setText(u" →")
         tform.label2.setText(u" →")
@@ -114,13 +113,13 @@ class CardLayout(QDialog):
         if len(self.cards) > 1:
             tform.groupBox_3.setTitle(_(
                 "Styling (shared between cards)"))
-        c(tform.front, SIGNAL("textChanged()"), self.saveCard)
-        c(tform.css, SIGNAL("textChanged()"), self.saveCard)
-        c(tform.back, SIGNAL("textChanged()"), self.saveCard)
+        tform.front.textChanged.connect(self.saveCard)
+        tform.css.textChanged.connect(self.saveCard)
+        tform.back.textChanged.connect(self.saveCard)
         l.addWidget(left, 5)
         # preview area
         right = QWidget()
-        pform = aqt.forms.preview.Ui_Form()
+        pform = self.pform = aqt.forms.preview.Ui_Form()
         pform.setupUi(right)
         if self.style().objectName() == "gtk+":
             # gtk+ requires margins in inner layout
@@ -132,6 +131,14 @@ class CardLayout(QDialog):
                 self.model, joinFields(self.note.fields)))
             for g in pform.groupBox, pform.groupBox_2:
                 g.setTitle(g.title() + _(" (1 of %d)") % max(cnt, 1))
+        self.setupWebviews()
+        l.addWidget(right, 5)
+        w.setLayout(l)
+        self.forms.append({'tform': tform, 'pform': pform})
+        self.tabs.addTab(w, t['name'])
+
+    def setupWebviews(self):
+        pform = self.pform
         pform.frontWeb = AnkiWebView()
         pform.frontPrevBox.addWidget(pform.frontWeb)
         pform.backWeb = AnkiWebView()
@@ -139,11 +146,14 @@ class CardLayout(QDialog):
         for wig in pform.frontWeb, pform.backWeb:
             wig.page().setLinkDelegationPolicy(
                 QWebPage.DelegateExternalLinks)
-        l.addWidget(right, 5)
-        w.setLayout(l)
-        self.forms.append({'tform': tform, 'pform': pform})
-        self.tabs.addTab(w, t['name'])
-
+        # jsinc = ["jquery.js","browsersel.js",
+                 # "mathjax/conf.js", "mathjax/MathJax.js",
+                 # "reviewer.js"]
+        rev = self.mw.reviewer.revHtml()
+        css = self.mw.reviewer._styles()
+        jsinc = ccbc.js.jquery + ccbc.js.browserSel
+        pform.frontWeb.stdHtml(rev, css, js=jsinc)
+        pform.backWeb.stdHtml(rev, css, js=jsinc)
         pform.frontWeb.setLinkHandler(self._linkHandler)
         pform.backWeb.setLinkHandler(self._linkHandler)
 
@@ -172,27 +182,26 @@ Please create a new card type first."""))
     ##########################################################################
 
     def setupButtons(self):
-        c = self.connect
         l = self.buttons = QHBoxLayout()
         # l.addStretch()
         addField = QPushButton(_("Add Field"))
         addField.setAutoDefault(False)
         l.addWidget(addField)
-        c(addField, SIGNAL("clicked()"), self.onAddField)
+        addField.clicked.connect(self.onAddField)
         if self.model['type'] != MODEL_CLOZE:
             flip = QPushButton(_("Flip"))
             flip.setAutoDefault(False)
             l.addWidget(flip)
-            c(flip, SIGNAL("clicked()"), self.onFlip)
+            flip.clicked.connect(self.onFlip)
         more = QPushButton(_("More") + u" "+downArrow())
         more.setAutoDefault(False)
         l.addWidget(more)
-        c(more, SIGNAL("clicked()"), lambda: self.onMore(more))
+        more.clicked.connect(lambda: self.onMore(more))
         l.addStretch()
         close = QPushButton(_("Close"))
         close.setAutoDefault(False)
         l.addWidget(close)
-        c(close, SIGNAL("clicked()"), self.accept)
+        close.clicked.connect(self.accept)
 
     # Cards
     ##########################################################################
