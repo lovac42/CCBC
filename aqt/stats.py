@@ -130,15 +130,20 @@ to your desktop."""))
 
     def refresh(self):
         self.mw.progress.start(immediate=True)
-        self.oldPos = self.form.web.page().mainFrame().scrollPosition()
-        stats = self.mw.col.stats()
-        stats.wholeCollection = self.wholeCollection
-        txt = stats.report(type=self.period)
-        self.report="<style>%s</style><script>%s\n</script>%s"%(
-                ccbc.css.stats,
-                ccbc.js.jquery+ccbc.js.plot,txt)
-        self.form.web.setHtml(self.report)
-        klass=self.mw.web.page().mainFrame().evaluateJavaScript(
-                                        'document.body.className')
-        self.form.web.eval('document.body.className += "%s";'%klass)
-        self.mw.progress.finish()
+        try:
+            self.oldPos = self.form.web.page().mainFrame().scrollPosition()
+            stats = self.mw.col.stats()
+            stats.wholeCollection = self.wholeCollection
+            txt = stats.report(type=self.period)
+            self.report="<style>%s</style><script>%s\n</script>%s"%(
+                    ccbc.css.stats,
+                    ccbc.js.jquery+ccbc.js.plot,txt)
+            self.form.web.setHtml(self.report)
+            klass=self.mw.web.page().mainFrame().evaluateJavaScript(
+                                            'document.body.className')
+            self.form.web.eval('document.body.className += "%s";'%klass)
+        finally:
+            self.mw.progress.finish()
+
+    def canClose(self):
+        return True
