@@ -29,6 +29,7 @@ class DeckStats(QDialog):
         self.oldPos = None
         self.wholeCollection = False
         self.setMinimumWidth(700)
+        self.refreshLock = False
         self.setStyleSheet(ccbc.css.stats)
         f = self.form
         f.setupUi(self)
@@ -131,6 +132,14 @@ to your desktop."""))
     def refresh(self):
         self.mw.progress.start(immediate=True)
         try:
+            self._refresh()
+        finally:
+            self.refreshLock = False
+            self.mw.progress.finish()
+
+    def _refresh(self):
+        if not self.refreshLock:
+            self.refreshLock = True
             self.oldPos = self.form.web.page().mainFrame().scrollPosition()
             stats = self.mw.col.stats()
             stats.wholeCollection = self.wholeCollection
@@ -142,8 +151,6 @@ to your desktop."""))
             klass=self.mw.web.page().mainFrame().evaluateJavaScript(
                                             'document.body.className')
             self.form.web.eval('document.body.className += "%s";'%klass)
-        finally:
-            self.mw.progress.finish()
 
     def canClose(self):
         return True
