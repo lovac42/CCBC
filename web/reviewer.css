@@ -17,14 +17,6 @@ body {
     overflow-wrap: break-word;
 }
 
-/* the first card for preview mode doesn't show up with
-   correct colors so this is a cheap trick to get around that.
-*/
-body.night_mode {
-    background-color: #272828;
-    color: #ffffff;
-}
-
 img {
     max-width: 95%;
     max-height: 95%;
