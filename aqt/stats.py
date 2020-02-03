@@ -6,6 +6,7 @@
 
 from aqt.qt import *
 import os, time
+from anki.hooks import addHook
 from aqt.utils import saveGeom, restoreGeom, maybeHideClose, showInfo, addCloseShortcut, tooltip, getSaveFile
 from anki.lang import _
 import aqt
@@ -56,6 +57,11 @@ class DeckStats(QDialog):
         self.show()
         self.refresh()
         self.activateWindow()
+
+        addHook("night_mode_state_changed", self.changeToNightMode)
+
+    def changeToNightMode(self, b):
+        pass
 
     def reject(self):
         saveGeom(self, self.name)

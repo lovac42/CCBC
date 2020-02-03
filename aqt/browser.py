@@ -442,6 +442,11 @@ class Browser(QMainWindow):
         self.onSearch()
         self.show()
 
+        addHook("night_mode_state_changed", self.changeToNightMode)
+
+    def changeToNightMode(self, b):
+        pass
+
     def toggleFullScreen(self):
         b = self.windowState() ^ Qt.WindowFullScreen
         if b:

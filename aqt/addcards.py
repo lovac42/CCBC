@@ -47,6 +47,11 @@ class AddCards(QDialog):
         self.show()
         self.setupNewNote()
 
+        addHook("night_mode_state_changed", self.changeToNightMode)
+
+    def changeToNightMode(self, b):
+        pass
+
     def resizeEvent(self, evt):
         super().resizeEvent(evt)
         width = evt.size().width()

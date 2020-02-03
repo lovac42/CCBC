@@ -4,8 +4,10 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 # Support: https://github.com/lovac42/CCBC
 
-from aqt.qt import *
 import re
+from aqt.qt import *
+from anki.hooks import addHook
+
 
 class TagEdit(QLineEdit):
 
@@ -24,6 +26,11 @@ class TagEdit(QLineEdit):
         self.completer.setCompletionMode(QCompleter.PopupCompletion)
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.setCompleter(self.completer)
+
+        addHook("night_mode_state_changed", self.changeToNightMode)
+
+    def changeToNightMode(self, b):
+        pass
 
     def setCol(self, col):
         "Set the current col, updating list of available tags."
