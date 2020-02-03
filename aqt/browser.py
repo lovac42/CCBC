@@ -575,7 +575,7 @@ class Browser(QMainWindow):
         # for act in self.form.menu_Notes.actions():
             # m.addAction(act)
         runHook("browser.onContextMenu", self, m)
-        qtMenuShortcutWorkaround(m)
+        # qtMenuShortcutWorkaround(m)
         m.exec_(QCursor.pos())
 
     def updateFont(self):
@@ -1609,7 +1609,7 @@ Red items will be deleted.""")))
         for c, act in enumerate(flagActions):
             act.setChecked(flag == c+1)
 
-        qtMenuShortcutWorkaround(self.form.menuFlag)
+        # qtMenuShortcutWorkaround(self.form.menuFlag)
 
     def isSuspended(self):
         return not not (self.card and self.card.queue == -1)

@@ -524,10 +524,12 @@ class MenuItem:
         a.triggered.connect(self.func)
 
 def qtMenuShortcutWorkaround(qmenu):
-    if qtminor < 10:
-        return
-    for act in qmenu.actions():
-        act.setShortcutVisibleInContextMenu(True)
+    # Not currently used by CCBC with qt4
+    return
+    # if qtminor < 10:
+        # return
+    # for act in qmenu.actions():
+        # act.setShortcutVisibleInContextMenu(True)
 
 ######################################################################
 
