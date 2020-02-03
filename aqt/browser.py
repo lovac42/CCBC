@@ -1307,6 +1307,9 @@ where id in %s""" % ids2str(sf))
             # self._openPreview()
 
     def _openPreview(self):
+        if self._previewWindow:
+            return
+
         c = self.connect
         self._previewState = "question"
         self._previewWindow = QDialog(self, Qt.Window)
