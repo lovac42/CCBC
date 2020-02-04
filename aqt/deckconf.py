@@ -38,6 +38,10 @@ class DeckConf(QDialog):
         self.exec_()
         saveGeom(self, "deckconf")
 
+    def show(self):
+        super().show()
+
+
     def setupCombos(self):
         import anki.consts as cs
         f = self.form

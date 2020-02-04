@@ -26,7 +26,7 @@ class DeckStats(QDialog):
         self.name = "deckStats"
         self.period = 0
         self.form = aqt.forms.stats.Ui_Dialog()
-        self.oldPos = None
+        self.oldPos = QPoint(0,0)
         self.wholeCollection = False
         self.setMinimumWidth(700)
         self.refreshLock = False
@@ -63,6 +63,9 @@ class DeckStats(QDialog):
 
     def changeToNightMode(self, b):
         pass
+
+    def show(self):
+        super().show()
 
     def reject(self):
         saveGeom(self, self.name)

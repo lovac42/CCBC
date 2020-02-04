@@ -67,11 +67,15 @@ def showText(txt, parent=None, type="text", run=True, geomKey=None, \
 
     try:
         c = aqt.mw.night_mode.config
-        co = c.color_t.value
-        bg = c.color_s.value
-        text.setStyleSheet(
-            """color:%s; background-color:%s;"""%(co,bg)
-        )
+        if c.state_on.value:
+            co = c.color_t.value
+            bg = c.color_s.value
+            diag.setStyleSheet(
+                """color:%s; background-color:%s;"""%(co,bg)
+            )
+            text.setStyleSheet(
+                """color:%s; background-color:%s;"""%(co,bg)
+            )
     except: pass
 
     text.setOpenExternalLinks(True)
@@ -264,11 +268,12 @@ def getFile(parent, title, cb, filter="*.*", dir=None, key=None, multi=False):
 
     try:
         c = aqt.mw.night_mode.config
-        co = c.color_t.value
-        bg = c.color_s.value
-        d.setStyleSheet(
-            """color:%s; background-color:%s;"""%(co,bg)
-        )
+        if c.state_on.value:
+            co = c.color_t.value
+            bg = c.color_s.value
+            d.setStyleSheet(
+                """color:%s; background-color:%s;"""%(co,bg)
+            )
     except: pass
 
     d.exec_()
