@@ -64,6 +64,16 @@ def showText(txt, parent=None, type="text", run=True, geomKey=None, \
     layout = QVBoxLayout(diag)
     diag.setLayout(layout)
     text = QTextBrowser()
+
+    try:
+        c = aqt.mw.night_mode.config
+        co = c.color_t.value
+        bg = c.color_s.value
+        text.setStyleSheet(
+            """color:%s; background-color:%s;"""%(co,bg)
+        )
+    except: pass
+
     text.setOpenExternalLinks(True)
     if type == "text":
         text.setPlainText(txt)
@@ -251,6 +261,16 @@ def getFile(parent, title, cb, filter="*.*", dir=None, key=None, multi=False):
     d.accepted.connect(accept)
     if key:
         restoreState(d, key)
+
+    try:
+        c = aqt.mw.night_mode.config
+        co = c.color_t.value
+        bg = c.color_s.value
+        d.setStyleSheet(
+            """color:%s; background-color:%s;"""%(co,bg)
+        )
+    except: pass
+
     d.exec_()
     if key:
         saveState(d, key)

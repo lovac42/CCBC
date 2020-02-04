@@ -45,6 +45,7 @@ class AnkiQt(QMainWindow):
         self.pm.meta['firstRun'] = False
         self.pm.save()
 
+        self.night_mode = None
 
         # init rest of app
         if qtmajor == 4 and qtminor < 8:
