@@ -39,6 +39,11 @@ class EditCurrent(QDialog):
         # pylint: disable=unnecessary-lambda
         self.mw.progress.timer(100, lambda: self.editor.web.setFocus(), False)
 
+        addHook("night_mode_state_changed", self.changeToNightMode)
+
+    def changeToNightMode(self, b):
+        pass
+
     def onReset(self):
         # lazy approach for now: throw away edits
         try:
