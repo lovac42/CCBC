@@ -785,7 +785,11 @@ title="%s">%s</button>''' % (
 
     def onBrowse(self):
         from aqt import browser
-        aqt.dialogs.open("Browser", self)
+        rev = self.state=='review'
+        b=aqt.dialogs.open("Browser", self, not rev)
+        if rev:
+            b.form.searchEdit.lineEdit().setText("is:current")
+        b.onSearch()
 
     def onStats(self):
         deck = self._selectedDeck()

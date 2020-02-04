@@ -436,10 +436,12 @@ class Browser(QMainWindow):
         self.setupEditor()
         self.updateFont()
         self.onUndoState(self.mw.form.actionUndo.isEnabled())
+
         self.form.searchEdit.setFocus()
         self.form.searchEdit.lineEdit().setText("is:current")
         self.form.searchEdit.lineEdit().selectAll()
         self.onSearch()
+
         self.show()
 
         addHook("night_mode_state_changed", self.changeToNightMode)
