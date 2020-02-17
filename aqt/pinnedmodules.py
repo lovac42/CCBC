@@ -30,6 +30,6 @@ import decimal
 # import logging
 # import logging.handlers
 # import logging.config
-# import typing
+import typing
 
 from PIL import Image
