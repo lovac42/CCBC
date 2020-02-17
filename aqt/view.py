@@ -84,7 +84,7 @@ class ViewManager:
             self.zoom.adjust()
 
     def isFullScreen(self):
-        return self.mw.windowState() == Qt.WindowFullScreen
+        return self.mw.isFullScreen()
 
     def _wheelHandler(self, evt):
         if evt.modifiers() == Qt.ControlModifier:
@@ -96,12 +96,20 @@ class ViewManager:
 
     def _keyHandler(self, evt):
         if self.mw.reviewer._catchEsc(evt):
-            # print("esc key")
             return True
         return self.ir.onEvent(evt)
 
+    def unhover(self):
+        if self.mw.isFullScreen():
+            self.fullScr.stateChanged("review")
 
+    def hoverBottom(self):
+        if self.mw.isFullScreen():
+            self.fullScr.hoverBottom()
 
+    def hoverTop(self):
+        if self.mw.isFullScreen():
+            self.fullScr.hoverTop()
 
 
 
@@ -261,7 +269,6 @@ class FullScreenManager:
         self.savedState = self.mw.windowState()
         addHook('profileLoaded', self.onProfileLoaded)
         self.setupMenu()
-        self.mwCSS = mw.styleSheet()
 
     def setupMenu(self):
         menu = self.mw.form.menuView
@@ -310,23 +317,25 @@ class FullScreenManager:
         self.set(toggle)
 
     def stateChanged(self, state):
-        self.mwCSS = mw.styleSheet().replace("QMenuBar{height:0 !important;}","")
+        if self.mw.isFullScreen() and state == 'review':
+            bh,th,hide = (0,0,True)
+        else:
+            bh,th,hide = (9999,self.tb_height,False)
+
         self.reset()
-
-        #yikes
-        g,h,b = ('QMenuBar{height:0 !important;}',0,self.mw.bottomWeb.hide) if \
-                    self.mw.isFullScreen() and state == 'review' else \
-                    ('',self.tb_height,self.mw.bottomWeb.show)
-
         if self.menubar.isChecked():
-            self.mw.setStyleSheet(self.mwCSS+g) #hide by css to keep hotkeys active
+            #using show/hide prevents hotkeys from working
+            self.mw.menuBar().setMaximumHeight(bh)
         if self.toolbar.isChecked():
-            self.mw.toolbar.web.setFixedHeight(h) #menubar
-        if self.bottombar.isChecked():
-            b()
+            self.mw.toolbar.web.setFixedHeight(th)
+        if hide and self.bottombar.isChecked():
+            self.mw.bottomWeb.hide()
+            self.mw.web.setFocus()
+        else:
+            self.mw.bottomWeb.show()
 
     def reset(self):
-        self.mw.setStyleSheet(self.mwCSS)
+        self.mw.menuBar().setMaximumHeight(9999)
         self.mw.toolbar.web.setFixedHeight(self.tb_height)
         self.mw.bottomWeb.show()
 
@@ -341,6 +350,14 @@ class FullScreenManager:
             self.mw.setWindowState(self.savedState)
         self.stateChanged(self.mw.state)
 
+    def hoverBottom(self):
+        if self.bottombar.isChecked():
+            self.mw.bottomWeb.show()
+
+    def hoverTop(self):
+        if self.menubar.isChecked():
+            self.mw.toolbar.web.setFixedHeight(0)
+            self.mw.menuBar().setMaximumHeight(9999)
 
 
 

@@ -66,3 +66,22 @@ function _typeAnsPress() {
         py.link("ansHack");
     }
 }
+
+
+var menu_shown=false;
+$(document).mousemove(function(event){
+    if(event.pageY>$(window).height()-20){
+        menu_shown=true;
+        py.link("showBottombar");
+    }
+    else if(event.pageY<20){
+        menu_shown=true;
+        py.link("showMenubar");
+    }
+    else if(menu_shown){
+        menu_shown=false;
+        window.setTimeout(function(){
+            py.link("revFocused");
+        }, 100);
+    }
+});

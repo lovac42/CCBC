@@ -351,6 +351,12 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             self._showAnswer()
         elif url == "nxt":
             self.nextCard()
+        elif url == "revFocused":
+            self.mw.viewmanager.unhover()
+        elif url == "showBottombar":
+            self.mw.viewmanager.hoverBottom()
+        elif url == "showMenubar":
+            self.mw.viewmanager.hoverTop()
         elif url == "ansHack":
             self.mw.progress.timer(100, self._showAnswerHack, False)
         elif url.startswith("ease"):
