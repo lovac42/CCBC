@@ -69,6 +69,7 @@ function _typeAnsPress() {
 
 
 var menu_shown=false;
+var mouse_shown=true;
 $(document).mousemove(function(event){
     if(event.pageY>$(window).height()-20){
         menu_shown=true;
@@ -84,4 +85,19 @@ $(document).mousemove(function(event){
             py.link("revFocused");
         }, 100);
     }
+
+    if(!mouse_shown){
+        mouse_shown=true;
+        py.link("showCursor");
+    }
 });
+
+
+$(document).mousedown(function(event){
+    py.link("showCursor");
+});
+
+$(document).mouseleave(function(event){
+    py.link("showCursor");
+});
+

@@ -29,6 +29,8 @@ class ViewManager:
 
         self.fullScr = FullScreenManager(mw)
         self.setFullScreen = self.fullScr.set
+        self.showCursor = self.fullScr.showCursor
+        self.hideCursor = self.fullScr.hideCursor
 
         self.mw.web.setKeyHandler(self._keyHandler)
         self.mw.web.setMouseBtnHandler(self.ir.onEvent)
@@ -55,12 +57,14 @@ class ViewManager:
             self.ir.flush(*args)
 
     def onBeforeStateChange(self, newS, oldS, *args):
+        self.fullScr.showCursor()
         if oldS == 'review':
             self.ir.flush()
 
     def onAfterStateChange(self, newS, oldS, *args):
         self.fullScr.stateChanged(newS)
         if newS != 'review':
+            self.fullScr.hideCursor()
             self.zoom.isIR = False
             self.zoom.adjust() #reload
 
@@ -102,14 +106,18 @@ class ViewManager:
     def unhover(self):
         if self.mw.isFullScreen():
             self.fullScr.stateChanged("review")
+            self.fullScr.hideCursor()
 
     def hoverBottom(self):
         if self.mw.isFullScreen():
             self.fullScr.hoverBottom()
+            self.fullScr.showCursor()
 
     def hoverTop(self):
         if self.mw.isFullScreen():
             self.fullScr.hoverTop()
+            self.fullScr.showCursor()
+
 
 
 
@@ -267,6 +275,7 @@ class FullScreenManager:
         self.mu_height = self.mw.height()
         self.tb_height = self.mw.toolbar.web.height()
         self.savedState = self.mw.windowState()
+        self.cursor_timer = None
         addHook('profileLoaded', self.onProfileLoaded)
         self.setupMenu()
 
@@ -277,7 +286,7 @@ class FullScreenManager:
 
         a = QAction("Full Screen", subMenu)
         a.setCheckable(True)
-        a.setChecked(self.mw.windowState()==Qt.WindowFullScreen)
+        a.setChecked(self.mw.isFullScreen())
         a.triggered.connect(self.onFullScreen)
         a.setShortcut("F11")
         subMenu.addAction(a)
@@ -298,10 +307,22 @@ class FullScreenManager:
         self.bottombar.triggered.connect(self.cb_toggle)
         subMenu.addAction(self.bottombar)
 
+        subMenu.addSeparator()
+        self.cbHideCursor = QAction("Hide Cursor", subMenu)
+        self.cbHideCursor.setCheckable(True)
+        self.cbHideCursor.triggered.connect(self.cb_toggle)
+        subMenu.addAction(self.cbHideCursor)
+
+
     def cb_toggle(self):
         self.mw.pm.profile['fs_hide_menubar'] = self.menubar.isChecked()
         self.mw.pm.profile['fs_hide_toolbar'] = self.toolbar.isChecked()
         self.mw.pm.profile['fs_hide_bottombar'] = self.bottombar.isChecked()
+        t = self.mw.pm.profile['fs_hide_cursor'] = self.cbHideCursor.isChecked()
+        if t:
+            self.hideCursor()
+        else:
+            self.showCursor()
         self.stateChanged(self.mw.state)
 
     def onProfileLoaded(self):
@@ -311,10 +332,16 @@ class FullScreenManager:
         self.toolbar.setChecked(b)
         b = self.mw.pm.profile.get('fs_hide_bottombar',False)
         self.bottombar.setChecked(b)
+        b = self.mw.pm.profile.get('fs_hide_cursor',False)
+        self.cbHideCursor.setChecked(b)
 
     def onFullScreen(self):
         toggle = self.mw.windowState() ^ Qt.WindowFullScreen
         self.set(toggle)
+        if toggle:
+            self.hideCursor()
+        else:
+            self.showCursor()
 
     def stateChanged(self, state):
         if self.mw.isFullScreen() and state == 'review':
@@ -359,6 +386,22 @@ class FullScreenManager:
             self.mw.toolbar.web.setFixedHeight(0)
             self.mw.menuBar().setMaximumHeight(9999)
 
+    def showCursor(self):
+        if self.cursor_timer:
+            self.cursor_timer.stop()
+        QApplication.setOverrideCursor(QCursor())
+
+    def hideCursor(self):
+        if self.mw.isFullScreen() and \
+        self.mw.state == 'review' and \
+        self.cbHideCursor.isChecked():
+            self.cursor_timer = self.mw.progress.timer(
+                5000, self._hideCursor, False #TODO: config for timer
+            )
+
+    def _hideCursor(self):
+        self.mw.reviewer.web.eval("mouse_shown=false;")
+        QApplication.setOverrideCursor(Qt.BlankCursor)
 
 
 

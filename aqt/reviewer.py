@@ -357,6 +357,9 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             self.mw.viewmanager.hoverBottom()
         elif url == "showMenubar":
             self.mw.viewmanager.hoverTop()
+        elif url == "showCursor":
+            self.mw.viewmanager.showCursor()
+            self.mw.viewmanager.hideCursor()
         elif url == "ansHack":
             self.mw.progress.timer(100, self._showAnswerHack, False)
         elif url.startswith("ease"):
