@@ -389,7 +389,7 @@ class FullScreenManager:
     def showCursor(self):
         if self.cursor_timer:
             self.cursor_timer.stop()
-        QApplication.setOverrideCursor(QCursor())
+        QApplication.restoreOverrideCursor()
 
     def hideCursor(self):
         if self.mw.isFullScreen() and \
