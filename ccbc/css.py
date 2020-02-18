@@ -27,3 +27,5 @@ reviewer = readFile("reviewer.css")
 editor = readFile("editor.css")
 
 stats = readFile("stats.css")
+
+lightbox = readFile("lightbox.css")

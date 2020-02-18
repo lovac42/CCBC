@@ -16,3 +16,5 @@ browserSel = readFile("browsersel.js")
 editor = readFile("editor.js")
 
 reviewer = readFile("reviewer.js")
+
+lightbox = readFile("lightbox.js")

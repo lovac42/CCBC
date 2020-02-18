@@ -28,6 +28,11 @@ An adze is a tool used in woodworking that is extremely cheap to make and could 
 ## Sync:
 Sync has been disabled, but can be enabled for custom servers using modules.
 
+## Addons:
+Some reasonable addons are integrated into CCBC.
+
+See: https://github.com/lovac42/CCBC/blob/master/doc/addons.md
+
 ## Zooming:
 Fullscreen (F11) and zooming is builtin. Use Ctrl++/Ctrl+- to zoom-in/out or add Shift for finer control.  
 
@@ -50,10 +55,31 @@ Added a small button to drop current card from the reviewer. The card will re-ap
 
 Hotkey: CTRL+Enter (on question side only)
 
-## Addons:
-Some reasonable addons are integrated into CCBC.
 
-See: https://github.com/lovac42/CCBC/blob/master/doc/addons.md
+## Lightbox:
+This will show one image in the reviewer and extra images in the lightbox.  
+
+Field data:
+```
+<img src="image-1.jpg"/>
+<img class="extra" src="image-2.jpg"/>
+<img class="extra" src="image-3.jpg"/>
+```
+
+CSS in card layout:
+```
+img.extra {
+  display: none;
+}
+img {
+  max-width: 150px;
+}
+```
+
+Use single quotes or non /> in templates to prevent lightboxing.  
+
+<img src="https://github.com/lovac42/CCBC/blob/master/screenshots/lightbox.png?raw=true">  
+
 
 
 ## Screenshots:

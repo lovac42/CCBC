@@ -153,8 +153,11 @@ class Reviewer(object):
     ##########################################################################
 
     _revHtml = ccbc.html.rev_html%(ccbc.html.flag,ccbc.js.reviewer)
+    _revHtml_lightbox = ccbc.html.rev_html%(ccbc.html.flag,ccbc.js.reviewer+ccbc.js.lightbox)
 
     def revHtml(self): #2.1 addons
+        if self.mw.viewmanager.cbLightbox.isChecked():
+            return self._revHtml_lightbox
         return self._revHtml #2.0 addons
 
     def _initWeb(self):
@@ -175,6 +178,19 @@ class Reviewer(object):
     # Showing the question
     ##########################################################################
 
+    # Use single quotes or non /> in templates to prevent lightboxing
+    RE_LIGHTBOX = re.compile(r"""\<img [^>]*src="([^"]*\.(?:jpe?g|png|gif|tiff?|bmp))"[^>]*\/\>""", re.I)
+
+    def lightbox(self, html):
+        if self.mw.viewmanager.ir.isIRCard():
+            return html
+        def add_anchor(t):
+            return f"""<a href="{t.group(1)}" data-lightbox="lightbox" class="ir-filter">{t.group(0)}</a>"""
+        imgs,cnt=self.RE_LIGHTBOX.subn(add_anchor, html)
+        if not cnt:
+            return html
+        return imgs
+
     def _mungeQA(self, buf):
         return self.typeAnsFilter(mungeQA(self.mw.col, buf))
 
@@ -183,6 +199,7 @@ class Reviewer(object):
         self.state = "question"
         self.typedAnswer = None
         c = self.card
+        self.mw.viewmanager.ir.setCard(c)
         # grab the question and play audio
         if c.isEmpty():
             q = _("""\
@@ -191,6 +208,8 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             q = c.q()
         if self.autoplay(c):
             playFromText(q)
+        if self.mw.viewmanager.cbLightbox.isChecked():
+            q = self.lightbox(q)
         # render & update bottom
         q = self._mungeQA(q)
         q = runFilter("prepareQA", q, c, "reviewQuestion")
@@ -254,6 +273,8 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         # play audio?
         if self.autoplay(c):
             playFromText(a)
+        if self.mw.viewmanager.cbLightbox.isChecked():
+            a = self.lightbox(a)
         # render and update bottom
         a = self._mungeQA(a)
         a = runFilter("prepareQA", a, c, "reviewAnswer")
@@ -382,8 +403,11 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
     ##########################################################################
 
     _css = ccbc.css.reviewer
+    _css_lightbox = ccbc.css.reviewer + ccbc.css.lightbox
 
     def _styles(self):
+        if self.mw.viewmanager.cbLightbox.isChecked():
+            return self._css_lightbox
         return self._css
 
     # Type in the answer
