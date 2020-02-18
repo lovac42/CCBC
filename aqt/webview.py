@@ -46,6 +46,8 @@ class AnkiWebPage(QWebPage):
 
 class AnkiWebView(QWebView):
 
+    DEFAULT_JS = ccbc.js.jquery + ccbc.js.browserSel
+
     def __init__(self, canFocus=True):
         QWebView.__init__(self)
         self.setRenderHints(
@@ -184,7 +186,7 @@ button {
 
 </head>
 <body class="%s">%s</body></html>""" % (
-    button, css, js or ccbc.js.jquery+ccbc.js.browserSel,
+    button, css, js or self.DEFAULT_JS,
     head, bodyClass, body), loadCB)
 
     def setBridge(self, bridge):
