@@ -14,3 +14,5 @@ plot = readFile("plot.js")
 browserSel = readFile("browsersel.js")
 
 editor = readFile("editor.js")
+
+reviewer = readFile("reviewer.js")

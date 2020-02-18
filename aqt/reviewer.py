@@ -152,7 +152,7 @@ class Reviewer(object):
     # Initializing the webview
     ##########################################################################
 
-    _revHtml = ccbc.html.rev_html%(ccbc.html.flag,ccbc.html.rev_js)
+    _revHtml = ccbc.html.rev_html%(ccbc.html.flag,ccbc.js.reviewer)
 
     def revHtml(self): #2.1 addons
         return self._revHtml #2.0 addons
