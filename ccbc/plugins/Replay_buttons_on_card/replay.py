@@ -15,11 +15,13 @@ from anki.hooks import addHook
 from aqt import mw
 
 
-RE=re.compile(r"\[sound:(.*?)\]")
+RE_PLAYBTN = re.compile(r"\[sound:(.*?)\]")
 
 
 def play_button_filter(qa_html, qa_type, *args, **kwargs):
     if not mw.pm.profile.get("ccbc.showAudPlayBtn", True):
+        return qa_html
+    if mw.state ==  "review" and mw.viewmanager.ir.isIRCard():
         return qa_html
 
     def add_button(sound):
@@ -29,7 +31,7 @@ def play_button_filter(qa_html, qa_type, *args, **kwargs):
             title = sound.group(1)
         return u"""%s\
 <a href='javascript:py.link("ankiplay:%s");' \
-title="%s" class="replaybutton browserhide"><span><svg viewBox="0 0 32 32">\
+title="%s" class="replaybutton browserhide ir-filter"><span><svg viewBox="0 0 32 32">\
 <polygon points="11,25 25,16 11,7"/>Replay</svg></span></a>\
 <span style="display: none;">&#91;sound:%s&#93;</span>\
 """%(sound.group(0), sound.group(1), title, sound.group(1))
@@ -38,7 +40,7 @@ title="%s" class="replaybutton browserhide"><span><svg viewBox="0 0 32 32">\
         # sound. The span inside the a around the svg is there to
         # bring this closer in line with AnkiDroid.
 
-    s,cnt=RE.subn(add_button, qa_html)
+    s,cnt=RE_PLAYBTN.subn(add_button, qa_html)
     if not cnt:
         return qa_html
     #prevent focus on btn clicks/touches
