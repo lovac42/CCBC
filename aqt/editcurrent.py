@@ -66,10 +66,9 @@ class EditCurrent(QDialog):
         try:
             r.card.load()
         except:
-            # card was removed by clayout
-            pass
+            pass # card was removed by clayout
         else:
-            self.mw.reviewer.cardQueue.append(self.mw.reviewer.card)
+            r.cardQueue.append(self.mw.reviewer.card)
         self.mw.moveToState("review")
         saveGeom(self, "editcurrent")
         aqt.dialogs.close("EditCurrent")
