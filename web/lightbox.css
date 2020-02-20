@@ -164,7 +164,14 @@ body.lb-disable-scrolling {
   text-align: left;
   line-height: 1.1em;
   font-size: 10px;
+}
+
+.lb-zoom {
   color: aqua;
+}
+
+.lb-replay {
+  color: navy;
 }
 
 .lb-data .lb-details{

@@ -4,6 +4,7 @@
 /* File has been modified by lovac42 for ccbc project */
 
 
+var CCBC_FORK = true;
 var ankiPlatform = "desktop";
 var typeans;
 
