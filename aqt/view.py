@@ -94,8 +94,6 @@ class ViewManager:
             self.fullScr.hideCursor()
             self.zoom.isIR = False
             self.zoom.adjust() #reload
-        elif self.cbLightbox.isChecked():
-            self.mw.web.eval("lightbox_enabled=true;")
 
     def onShowQuestion(self):
         c = self.mw.reviewer.card
@@ -109,6 +107,8 @@ class ViewManager:
             self.zoom.isIR = False
             if not self.zoom.zoomLock.isChecked():
                 self.zoom.adjust() #reload
+            if self.cbLightbox.isChecked():
+                self.mw.web.eval("lightbox_enabled=true;")
 
     def onShowAnswer(self):
         if self.ir.isIRCard():
@@ -337,7 +337,7 @@ class FullScreenManager:
         subMenu.addAction(self.bottombar)
 
         subMenu.addSeparator()
-        self.cbHideCursor = QAction("Hide Cursor", subMenu)
+        self.cbHideCursor = QAction("Hide Idle Cursor", subMenu)
         self.cbHideCursor.setCheckable(True)
         self.cbHideCursor.triggered.connect(self.cb_toggle)
         subMenu.addAction(self.cbHideCursor)
