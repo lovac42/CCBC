@@ -1234,6 +1234,9 @@ class EditorWebView(AnkiWebView):
             a.triggered.connect(self.onPaste)
             a = m.addAction(_("Edit HTML"))
             a.triggered.connect(self.editor.onHtmlEdit)
+            m.addSeparator()
+            a = m.addAction(_("Use External Editor"))
+            a.triggered.connect(self._extTextEditor)
 
         runHook("EditorWebView.contextMenuEvent", self, m)
         m.popup(QCursor.pos())
@@ -1287,6 +1290,39 @@ class EditorWebView(AnkiWebView):
         self.editor.mw.hide()
         self.editor.parentWindow.hide()
         subprocess.call('''%s "%s"'''%(cmd,fname), shell=True)
-        self.editor.parentWindow.show()
         self.editor.mw.show()
+        self.editor.parentWindow.show()
         self.eval('reloadImages("file:///%s");'%src)
+
+    def _extTextEditor(self):
+        cmd = self.editor.mw.pm.profile.get("ccbc.extTxtCmd","")
+        if not cmd:
+            if isWin:
+                cmd = "notepad.exe"
+            else:
+                showInfo("No external text editor was set.")
+                return
+        if isWin:
+            cmd = cmd.replace('/','\\')
+
+        import subprocess, time
+        from anki.utils import tmpdir
+        fname = os.path.join(tmpdir(), "note%d.txt"%time.time())
+
+        f = open(fname, "w")
+        data = self.editor.note.fields[self.editor.currentField]
+        f.write(data)
+        f.close()
+
+        self.editor.mw.hide()
+        self.editor.parentWindow.hide()
+        subprocess.call('''%s "%s"'''%(cmd,fname), shell=True)
+
+        f = open(fname, "r")
+        data = f.read()
+        f.close()
+
+        self.editor.note.fields[self.editor.currentField] = data
+        self.editor.loadNote()
+        self.editor.mw.show()
+        self.editor.parentWindow.show()

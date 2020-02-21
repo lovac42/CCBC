@@ -200,6 +200,11 @@ class Ui_Preferences(object):
         self.noScript.setObjectName("noScript")
         self.advancedVLayout.addWidget(self.noScript)
 
+        # spacer to push everything up
+        spacerItem=QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.advancedVLayout.addItem(spacerItem)
+        self.tabWidget.addTab(self.tab_adv, _("Advanced"))
+
         # External image editor
         extImgCmdLayout = QtWidgets.QHBoxLayout()
         extImgCmdLayout.setObjectName("extImgCmdLayout")
@@ -207,18 +212,22 @@ class Ui_Preferences(object):
         lbl_extImgCmd.setObjectName("lbl_extImgCmd")
         lbl_extImgCmd.setText(_("External Image Editor:"))
         extImgCmdLayout.addWidget(lbl_extImgCmd)
-
         self.extImgCmdLEdit = QtWidgets.QLineEdit(self.tab_adv)
         self.extImgCmdLEdit.setObjectName("extImgCmdLEdit")
         extImgCmdLayout.addWidget(self.extImgCmdLEdit)
         self.advancedVLayout.addLayout(extImgCmdLayout)
 
-
-        # spacer to push everything up
-        spacerItem=QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.advancedVLayout.addItem(spacerItem)
-        self.tabWidget.addTab(self.tab_adv, _("Advanced"))
-
+        # External text editor
+        extTxtCmdLayout = QtWidgets.QHBoxLayout()
+        extTxtCmdLayout.setObjectName("extTxtCmdLayout")
+        lbl_extTxtCmd = QtWidgets.QLabel(self.tab_adv)
+        lbl_extTxtCmd.setObjectName("lbl_extTxtCmd")
+        lbl_extTxtCmd.setText(_("External Text Editor:"))
+        extTxtCmdLayout.addWidget(lbl_extTxtCmd)
+        self.extTxtCmdLEdit = QtWidgets.QLineEdit(self.tab_adv)
+        self.extTxtCmdLEdit.setObjectName("extTxtCmdLEdit")
+        extTxtCmdLayout.addWidget(self.extTxtCmdLEdit)
+        self.advancedVLayout.addLayout(extTxtCmdLayout)
 
         #####################################################
         # Create Audio Tab

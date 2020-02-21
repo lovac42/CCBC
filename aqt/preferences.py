@@ -242,9 +242,9 @@ Not currently enabled; click the sync button in the main window to enable."""))
         self.form.autoCompleter.setChecked(self.prof.get("ccbc.autoCompleter", False))
         self.form.powerUserMode.setChecked(self.prof.get("ccbc.powerUserMode", False))
 
-        ed="mspaint.exe" if isWin else ""
-        self.form.extImgCmdLEdit.setText(self.prof.get("ccbc.extImgCmd",ed))
-
+        ed=("notepad.exe","mspaint.exe") if isWin else ("","")
+        self.form.extTxtCmdLEdit.setText(self.prof.get("ccbc.extTxtCmd",ed[0]))
+        self.form.extImgCmdLEdit.setText(self.prof.get("ccbc.extImgCmd",ed[1]))
 
         self.form.showAudPlayBtn.setChecked(self.prof.get("ccbc.showAudPlayBtn", True))
         self.form.stpAudOnShwAns.setChecked(self.prof.get("ccbc.stpAudOnShwAns", True))
@@ -292,7 +292,7 @@ Not currently enabled; click the sync button in the main window to enable."""))
         self.prof['ccbc.powerUserMode'] = self.form.powerUserMode.isChecked()
 
         self.prof['ccbc.extImgCmd'] = self.form.extImgCmdLEdit.text()
-
+        self.prof['ccbc.extTxtCmd'] = self.form.extTxtCmdLEdit.text()
 
         self.prof['ccbc.showAudPlayBtn'] = self.form.showAudPlayBtn.isChecked()
         self.prof['ccbc.stpAudOnShwAns'] = self.form.stpAudOnShwAns.isChecked()
