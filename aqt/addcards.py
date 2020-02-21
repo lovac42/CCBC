@@ -240,6 +240,9 @@ question on all cards."""))
 
     def keyPressEvent(self, evt):
         "Show answer on RET or register answer."
+        if evt.key() == Qt.Key_F1:
+            self.mw.boss_key()
+            return
         if (evt.key() in (Qt.Key_Enter, Qt.Key_Return)
             and self.editor.tags.hasFocus()):
             evt.accept()

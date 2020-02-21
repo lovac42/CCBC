@@ -157,3 +157,10 @@ to your desktop."""))
 
     def canClose(self):
         return True
+
+    def keyPressEvent(self, evt):
+        "Show answer on RET or register answer."
+        if evt.key() == Qt.Key_F1:
+            self.mw.boss_key()
+            return
+        return QDialog.keyPressEvent(self, evt)

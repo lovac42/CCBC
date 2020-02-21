@@ -618,7 +618,9 @@ class Browser(QMainWindow):
 
     def keyPressEvent(self, evt):
         "Show answer on RET or register answer."
-        if evt.key() == Qt.Key_Escape:
+        if evt.key() == Qt.Key_F1:
+            self.mw.boss_key()
+        elif evt.key() == Qt.Key_Escape:
             self.close()
         elif self.mw.app.focusWidget() == self.sidebarTree:
             if evt.key() in (Qt.Key_Return, Qt.Key_Enter):

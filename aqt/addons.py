@@ -25,6 +25,7 @@ from aqt.downloader import download
 from anki.lang import _, ngettext
 from anki.utils import intTime
 from anki.sync import AnkiRequestsClient
+from anki.hooks import addHook
 
 class AddonManager:
 
@@ -480,6 +481,11 @@ class AddonsDialog(QDialog):
         restoreGeom(self, "addons")
         self.show()
 
+        addHook("BOSS_KEY", self.boss_key)
+
+    def boss_key(self, t):
+        self.close()
+
     def dragEnterEvent(self, event):
         mime = event.mimeData()
         if not mime.hasUrls():
@@ -682,6 +688,13 @@ class AddonsDialog(QDialog):
                 item.setSelected(True)
         addonList.repaint()
 
+    def keyPressEvent(self, evt):
+        "Show answer on RET or register answer."
+        if evt.key() == Qt.Key_F1:
+            self.close()
+            self.mw.boss_key()
+            return
+        return QDialog.keyPressEvent(self, evt)
 
 
 # Fetching Add-ons
@@ -735,6 +748,7 @@ class ConfigEditor(QDialog):
 
     def __init__(self, dlg, addon, conf):
         super().__init__(dlg)
+        self.mw = dlg.mw
         self.addon = addon
         self.conf = conf
         self.mgr = dlg.mgr
@@ -801,3 +815,11 @@ class ConfigEditor(QDialog):
         
         self.onClose()
         super().accept()
+
+    def keyPressEvent(self, evt):
+        "Show answer on RET or register answer."
+        if evt.key() == Qt.Key_F1:
+            self.close()
+            self.mw.boss_key()
+            return
+        return QDialog.keyPressEvent(self, evt)

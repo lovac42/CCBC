@@ -82,3 +82,10 @@ class EditCurrent(QDialog):
         super().resizeEvent(evt)
         width = evt.size().width()
         self.editor.toggleExtraFormatButtons(width)
+
+    def keyPressEvent(self, evt):
+        "Show answer on RET or register answer."
+        if evt.key() == Qt.Key_F1:
+            self.mw.boss_key()
+            return
+        return QDialog.keyPressEvent(self, evt)

@@ -874,6 +874,7 @@ title="%s">%s</button>''' % (
     def setupMenus(self):
         m = self.form
         s = SIGNAL("triggered()")
+        self.connect(m.actionBossKey, s, self.boss_key)
         self.connect(m.actionSwitchProfile, s, self.unloadProfile)
         self.connect(m.actionImport, s, self.onImport)
         self.connect(m.actionExport, s, self.onExport)
@@ -1357,3 +1358,35 @@ Please ensure a profile is open and Anki is not busy, then try again."""),
 
     # def serverURL(self):
         # return "http://127.0.0.1:%d/" % self.mediaServer.getPort()
+
+
+    # Boss key (privacy mode)
+    ##########################################################################
+
+    def boss_key(self):
+        cmd = self.pm.profile.get("ccbc.bossCmd","notepad.exe")
+        if not cmd:
+            showInfo("No external text editor was set.")
+            return
+        if isWin:
+            cmd = cmd.replace('/','\\')
+
+        import subprocess, time
+        from anki.utils import tmpdir
+        fname = os.path.join(tmpdir(), "note%d.txt"%time.time())
+
+        f = open(fname, "w")
+        f.write(self.pm.profile.get("ccbc.bossText","To Whom It May Concern:"))
+        f.close()
+
+        runHook("BOSS_KEY", True)
+        self.hideAllCollectionWindows()
+        self.hide()
+        try:
+            self.debugDiag.close()
+        except AttributeError: pass
+
+        subprocess.call('''%s "%s"'''%(cmd,fname), shell=True)
+        self.show()
+        self.showAllCollectionWindows()
+        runHook("BOSS_KEY", False)
