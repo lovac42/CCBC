@@ -1204,6 +1204,10 @@ class EditorWebView(AnkiWebView):
             a.setCheckable(True)
             a.setChecked(p.evaluateJavaScript("isImgHiddenFromRev();"))
             a.triggered.connect(self._toggleHiddenImage)
+
+            a = m.addAction(_("Edit Image"))
+            a.setEnabled(en)
+            a.triggered.connect(lambda:self._extImageEditor(src))
             m.addSeparator()
 
             a = m.addAction(_("Flip Horizontal"))
@@ -1263,4 +1267,26 @@ class EditorWebView(AnkiWebView):
         img = Image.open(src)
         img = img.transpose(Image.ROTATE_180)
         img.save(src)
+        self.eval('reloadImages("file:///%s");'%src)
+
+    def _extImageEditor(self, src):
+        fname = src
+        cmd = self.editor.mw.pm.profile.get("ccbc.extImgCmd","")
+        if not cmd:
+            if isWin:
+                cmd = "mspaint.exe"
+            else:
+                showInfo("No external editor set for images.")
+                return
+        if isWin:
+            cmd = cmd.replace('/','\\')
+            fname = src.replace('/','\\')
+
+        import subprocess
+        self.settings().clearMemoryCaches()
+        self.editor.mw.hide()
+        self.editor.parentWindow.hide()
+        subprocess.call('''%s "%s"'''%(cmd,fname), shell=True)
+        self.editor.parentWindow.show()
+        self.editor.mw.show()
         self.eval('reloadImages("file:///%s");'%src)

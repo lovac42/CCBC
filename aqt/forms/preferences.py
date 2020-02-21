@@ -199,6 +199,21 @@ class Ui_Preferences(object):
         self.noScript = QtWidgets.QCheckBox(self.tab_adv)
         self.noScript.setObjectName("noScript")
         self.advancedVLayout.addWidget(self.noScript)
+
+        # External image editor
+        extImgCmdLayout = QtWidgets.QHBoxLayout()
+        extImgCmdLayout.setObjectName("extImgCmdLayout")
+        lbl_extImgCmd = QtWidgets.QLabel(self.tab_adv)
+        lbl_extImgCmd.setObjectName("lbl_extImgCmd")
+        lbl_extImgCmd.setText(_("External Image Editor:"))
+        extImgCmdLayout.addWidget(lbl_extImgCmd)
+
+        self.extImgCmdLEdit = QtWidgets.QLineEdit(self.tab_adv)
+        self.extImgCmdLEdit.setObjectName("extImgCmdLEdit")
+        extImgCmdLayout.addWidget(self.extImgCmdLEdit)
+        self.advancedVLayout.addLayout(extImgCmdLayout)
+
+
         # spacer to push everything up
         spacerItem=QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.advancedVLayout.addItem(spacerItem)
