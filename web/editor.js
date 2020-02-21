@@ -282,11 +282,6 @@ function toggleImgHiddenFromRev(){
     mouseDownImageElement = null;
 }
 
-function reloadImages(src){
-    //This does not include dup elements with the same source.
-    mouseDownImageElement.attr('src',src);
-}
-
 function currentFieldOrdinal() {
     return currentField.id.substring(1);
 }

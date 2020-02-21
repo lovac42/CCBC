@@ -1193,6 +1193,8 @@ class EditorWebView(AnkiWebView):
     def contextMenuEvent(self, evt):
         m = QMenu(self)
         p = self.page().mainFrame()
+
+        # Image MIME type options
         img = p.evaluateJavaScript("mouseDownImageSrc")
         if img:
             self.eval("mouseDownImageSrc='';")
@@ -1225,21 +1227,26 @@ class EditorWebView(AnkiWebView):
             a.setEnabled(en)
             a.triggered.connect(lambda:self._rotate_180(src))
 
-        else:
-            a = m.addAction(_("Cut"))
-            a.triggered.connect(self.onCut)
-            a = m.addAction(_("Copy"))
-            a.triggered.connect(self.onCopy)
-            a = m.addAction(_("Paste"))
-            a.triggered.connect(self.onPaste)
-            a = m.addAction(_("Edit HTML"))
-            a.triggered.connect(self.editor.onHtmlEdit)
-            m.addSeparator()
-            a = m.addAction(_("Use External Editor"))
-            a.triggered.connect(self._extTextEditor)
+            runHook("EditorWebView.contextImageEvent", self, m)
+            m.popup(QCursor.pos())
+            return
+
+        # Text options:
+        a = m.addAction(_("Cut"))
+        a.triggered.connect(self.onCut)
+        a = m.addAction(_("Copy"))
+        a.triggered.connect(self.onCopy)
+        a = m.addAction(_("Paste"))
+        a.triggered.connect(self.onPaste)
+        a = m.addAction(_("Edit HTML"))
+        a.triggered.connect(self.editor.onHtmlEdit)
+        m.addSeparator()
+        a = m.addAction(_("Use External Editor"))
+        a.triggered.connect(self._extTextEditor)
 
         runHook("EditorWebView.contextMenuEvent", self, m)
         m.popup(QCursor.pos())
+
 
     def _toggleHiddenImage(self):
         self.eval("toggleImgHiddenFromRev();")
@@ -1249,28 +1256,29 @@ class EditorWebView(AnkiWebView):
         img = Image.open(src)
         new_img = ImageOps.mirror(img)
         new_img.save(src)
-        self.eval('reloadImages("file:///%s");'%src)
+        self.editor.loadNote()
 
     def _flipVertical(self, src):
         self.settings().clearMemoryCaches()
         img = Image.open(src)
         new_img = ImageOps.flip(img)
         new_img.save(src)
-        self.eval('reloadImages("file:///%s");'%src)
+        self.editor.loadNote()
 
     def _rotate_90(self, src):
         self.settings().clearMemoryCaches()
         img = Image.open(src)
         img = img.transpose(Image.ROTATE_90)
         img.save(src)
-        self.eval('reloadImages("file:///%s");'%src)
+        self.editor.loadNote()
 
     def _rotate_180(self, src):
         self.settings().clearMemoryCaches()
         img = Image.open(src)
         img = img.transpose(Image.ROTATE_180)
         img.save(src)
-        self.eval('reloadImages("file:///%s");'%src)
+        self.editor.loadNote()
+
 
     def _extImageEditor(self, src):
         fname = src
@@ -1292,7 +1300,7 @@ class EditorWebView(AnkiWebView):
         subprocess.call('''%s "%s"'''%(cmd,fname), shell=True)
         self.editor.mw.show()
         self.editor.parentWindow.show()
-        self.eval('reloadImages("file:///%s");'%src)
+        self.editor.loadNote()
 
     def _extTextEditor(self):
         cmd = self.editor.mw.pm.profile.get("ccbc.extTxtCmd","")
