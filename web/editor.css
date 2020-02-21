@@ -106,3 +106,7 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #555; 
 }
+
+img.rev-hidden {
+    opacity: 0.2;
+}

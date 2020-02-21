@@ -224,6 +224,8 @@ function hideDupes() {
 }
 
 var mouseDown = 0;
+var mouseDownImageSrc = "";
+var mouseDownImageElement = null;
 
 $(function () {
 document.body.onmousedown = function () {
@@ -248,7 +250,42 @@ document.onclick = function (evt) {
     }
 }
 
+document.oncontextmenu = function (evt) {
+    if(window.getSelection().toString())
+        return
+
+    var src = window.event.srcElement;
+    if (src.tagName == "IMG") {
+        // image clicked; find contenteditable parent
+        var p = src;
+        while (p = p.parentNode) {
+            if (p.className == "field") {
+                $("#"+p.id).focus();
+                mouseDownImageSrc = src.src;
+                mouseDownImageElement = $(window.event.srcElement);
+                break;
+            }
+        }
+    }
+}
+
 });
+
+function isImgHiddenFromRev(){
+    if(mouseDownImageElement.hasClass("rev-hidden"))
+        return true;
+    return false;
+}
+
+function toggleImgHiddenFromRev(){
+    mouseDownImageElement.toggleClass("rev-hidden");
+    mouseDownImageElement = null;
+}
+
+function reloadImages(src){
+    //This does not include dup elements with the same source.
+    mouseDownImageElement.attr('src',src);
+}
 
 function currentFieldOrdinal() {
     return currentField.id.substring(1);

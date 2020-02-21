@@ -5,16 +5,14 @@
 # Support: https://github.com/lovac42/CCBC
 
 
-import re
-import os
-import ctypes
-import base64
-import warnings
+import re, os
+import ctypes, base64, warnings
 import urllib.request, urllib.parse, urllib.error
 
 from anki.lang import _
 from aqt.qt import *
 from PyQt4 import QtCore, QtGui
+from PIL import Image, ImageOps
 
 from anki.utils import stripHTML, isWin, isMac, namedtmp, json, stripHTMLMedia
 import anki.sound
@@ -1194,13 +1192,75 @@ class EditorWebView(AnkiWebView):
 
     def contextMenuEvent(self, evt):
         m = QMenu(self)
-        a = m.addAction(_("Cut"))
-        a.connect(a, SIGNAL("triggered()"), self.onCut)
-        a = m.addAction(_("Copy"))
-        a.connect(a, SIGNAL("triggered()"), self.onCopy)
-        a = m.addAction(_("Paste"))
-        a.connect(a, SIGNAL("triggered()"), self.onPaste)
-        a = m.addAction(_("Edit HTML"))
-        a.connect(a, SIGNAL("triggered()"), self.editor.onHtmlEdit)
+        p = self.page().mainFrame()
+        img = p.evaluateJavaScript("mouseDownImageSrc")
+        if img:
+            self.eval("mouseDownImageSrc='';")
+            img = urllib.parse.unquote(img)
+            proto, src = img[:8], img[8:]
+            en = True if proto == "file:///" else False #localized images only
+
+            a = m.addAction(_("Hide during review"))
+            a.setCheckable(True)
+            a.setChecked(p.evaluateJavaScript("isImgHiddenFromRev();"))
+            a.triggered.connect(self._toggleHiddenImage)
+            m.addSeparator()
+
+            a = m.addAction(_("Flip Horizontal"))
+            a.setEnabled(en)
+            a.triggered.connect(lambda:self._flipHorizontal(src))
+            a = m.addAction(_("Flip Vertical"))
+            a.setEnabled(en)
+            a.triggered.connect(lambda:self._flipVertical(src))
+            m.addSeparator()
+
+            a = m.addAction(_("Rotate 90°"))
+            a.setEnabled(en)
+            a.triggered.connect(lambda:self._rotate_90(src))
+            a = m.addAction(_("Rotate 180°"))
+            a.setEnabled(en)
+            a.triggered.connect(lambda:self._rotate_180(src))
+
+        else:
+            a = m.addAction(_("Cut"))
+            a.triggered.connect(self.onCut)
+            a = m.addAction(_("Copy"))
+            a.triggered.connect(self.onCopy)
+            a = m.addAction(_("Paste"))
+            a.triggered.connect(self.onPaste)
+            a = m.addAction(_("Edit HTML"))
+            a.triggered.connect(self.editor.onHtmlEdit)
+
         runHook("EditorWebView.contextMenuEvent", self, m)
         m.popup(QCursor.pos())
+
+    def _toggleHiddenImage(self):
+        self.eval("toggleImgHiddenFromRev();")
+
+    def _flipHorizontal(self, src):
+        self.settings().clearMemoryCaches()
+        img = Image.open(src)
+        new_img = ImageOps.mirror(img)
+        new_img.save(src)
+        self.eval('reloadImages("file:///%s");'%src)
+
+    def _flipVertical(self, src):
+        self.settings().clearMemoryCaches()
+        img = Image.open(src)
+        new_img = ImageOps.flip(img)
+        new_img.save(src)
+        self.eval('reloadImages("file:///%s");'%src)
+
+    def _rotate_90(self, src):
+        self.settings().clearMemoryCaches()
+        img = Image.open(src)
+        img = img.transpose(Image.ROTATE_90)
+        img.save(src)
+        self.eval('reloadImages("file:///%s");'%src)
+
+    def _rotate_180(self, src):
+        self.settings().clearMemoryCaches()
+        img = Image.open(src)
+        img = img.transpose(Image.ROTATE_180)
+        img.save(src)
+        self.eval('reloadImages("file:///%s");'%src)

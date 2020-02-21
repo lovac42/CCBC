@@ -94,3 +94,7 @@ img {
 ::-webkit-scrollbar-thumb:hover {
     background: #555; 
 }
+
+img.rev-hidden {
+    display: none;
+}
