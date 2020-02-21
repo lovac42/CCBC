@@ -1295,11 +1295,12 @@ class EditorWebView(AnkiWebView):
 
         import subprocess
         self.settings().clearMemoryCaches()
+        self.editor.mw.hideAllCollectionWindows()
         self.editor.mw.hide()
-        self.editor.parentWindow.hide()
         subprocess.call('''%s "%s"'''%(cmd,fname), shell=True)
         self.editor.mw.show()
-        self.editor.parentWindow.show()
+        self.editor.mw.showAllCollectionWindows()
+        self.editor.parentWindow.activateWindow()
         self.editor.loadNote()
 
     def _extTextEditor(self):
@@ -1322,8 +1323,8 @@ class EditorWebView(AnkiWebView):
         f.write(data)
         f.close()
 
+        self.editor.mw.hideAllCollectionWindows()
         self.editor.mw.hide()
-        self.editor.parentWindow.hide()
         subprocess.call('''%s "%s"'''%(cmd,fname), shell=True)
 
         f = open(fname, "r")
@@ -1333,4 +1334,5 @@ class EditorWebView(AnkiWebView):
         self.editor.note.fields[self.editor.currentField] = data
         self.editor.loadNote()
         self.editor.mw.show()
-        self.editor.parentWindow.show()
+        self.editor.mw.showAllCollectionWindows()
+        self.editor.parentWindow.activateWindow()

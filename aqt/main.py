@@ -553,6 +553,12 @@ title="%s">%s</button>''' % (
     def closeAllCollectionWindows(self):
         return aqt.dialogs.closeAll()
 
+    def hideAllCollectionWindows(self):
+        aqt.dialogs.hideAll()
+
+    def showAllCollectionWindows(self):
+        aqt.dialogs.showAll()
+
     # Managers setup
     ##########################################################################
 

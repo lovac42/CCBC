@@ -92,6 +92,16 @@ class DialogManager(object):
                 self.close(name)
         return True
 
+    def hideAll(self):
+        for (name, (creator, instance)) in self._dialogs.items():
+            if instance:
+                instance.hide()
+
+    def showAll(self):
+        for (name, (creator, instance)) in self._dialogs.items():
+            if instance:
+                instance.show()
+
 dialogs = DialogManager()
 
 # Language handling
