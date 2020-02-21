@@ -74,6 +74,8 @@ class EditCurrent(QDialog):
         aqt.dialogs.close("EditCurrent")
 
     def canClose(self):
+        self.close()
+        self.reject()
         return True
 
     def resizeEvent(self, evt):
