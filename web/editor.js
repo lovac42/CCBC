@@ -271,6 +271,11 @@ document.oncontextmenu = function (evt) {
 
 });
 
+function clearInlineStyle(){
+    mouseDownImageElement.removeAttr("style")
+        .removeAttr("width").removeAttr("height");
+}
+
 function isImgHiddenFromRev(){
     if(mouseDownImageElement.hasClass("rev-hidden"))
         return true;

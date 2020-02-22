@@ -1210,6 +1210,9 @@ class EditorWebView(AnkiWebView):
             a = m.addAction(_("Edit Image"))
             a.setEnabled(en)
             a.triggered.connect(lambda:self._extImageEditor(src))
+
+            a = m.addAction(_("Clear Style"))
+            a.triggered.connect(self._clearInlineStyle)
             m.addSeparator()
 
             a = m.addAction(_("Flip Horizontal"))
@@ -1250,6 +1253,9 @@ class EditorWebView(AnkiWebView):
 
     def _toggleHiddenImage(self):
         self.eval("toggleImgHiddenFromRev();")
+
+    def _clearInlineStyle(self):
+        self.eval("clearInlineStyle();")
 
     def _flipHorizontal(self, src):
         self.settings().clearMemoryCaches()
