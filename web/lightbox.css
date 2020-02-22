@@ -13,6 +13,11 @@ body.lb-disable-scrolling {
   display: none;
 }
 
+#lightbox .lb-details {
+    text-size-adjust: none;
+    -webkit-text-size-adjust: none;
+}
+
 .lightbox {
   position: absolute;
   left: 0;
