@@ -240,6 +240,8 @@ class Editor(object):
         s.connect(s, SIGNAL("activated()"), self.insertLatexMathEnv)
         s = QShortcut(QKeySequence("Ctrl+Shift+X"), self.widget)
         s.connect(s, SIGNAL("activated()"), self.onHtmlEdit)
+        s = QShortcut(QKeySequence("Ctrl+Shift+N"), self.widget)
+        s.connect(s, SIGNAL("activated()"), self.onExtTextEditor)
         s = QShortcut(QKeySequence("Ctrl+Shift+V"), self.widget)
         s.connect(s, SIGNAL("activated()"), lambda:self.web.onPaste(True))
         # tags
@@ -906,6 +908,9 @@ to a cloze type first, via Edit>Change Note Type."""))
         a = m.addAction(_("Edit HTML"))
         a.setShortcut(QKeySequence("Ctrl+Shift+X"))
         a.connect(a, SIGNAL("triggered()"), self.onHtmlEdit)
+        a = m.addAction(_("Edit With Notepad"))
+        a.setShortcut(QKeySequence("Ctrl+Shift+N"))
+        a.connect(a, SIGNAL("triggered()"), self.onExtTextEditor)
         m.exec_(QCursor.pos())
 
     # LaTeX
@@ -958,6 +963,77 @@ to a cloze type first, via Edit>Change Note Type."""))
             return
         if self.currentField in self.keyboardLayouts:
             self.activateKeyboard(self.keyboardLayouts[self.currentField], 0)
+
+
+
+    # External Editors
+    ######################################################################
+
+    def onExtImageEditor(self, src):
+        fname = src
+        cmd = self.mw.pm.profile.get("ccbc.extImgCmd","")
+        if not cmd:
+            if isWin:
+                cmd = "mspaint.exe"
+            else:
+                showInfo("No external editor set for images.")
+                return
+        if isWin:
+            cmd = cmd.replace('/','\\')
+            fname = src.replace('/','\\')
+
+        import subprocess
+        self.web.settings().clearMemoryCaches()
+        self.mw.hideAllCollectionWindows()
+        self.mw.hide()
+        subprocess.call('''%s "%s"'''%(cmd,fname), shell=True)
+        self.mw.show()
+        self.mw.showAllCollectionWindows()
+        self.parentWindow.activateWindow()
+        self.loadNote()
+
+    def onExtTextEditor(self):
+        cmd = self.mw.pm.profile.get("ccbc.extTxtCmd","")
+        if not cmd:
+            if isWin:
+                cmd = "notepad.exe"
+            else:
+                showInfo("No external text editor was set.")
+                return
+        if isWin:
+            cmd = cmd.replace('/','\\')
+
+        import subprocess, time
+        from anki.utils import tmpdir
+        fname = os.path.join(tmpdir(), "note%d.txt"%time.time())
+
+        f = open(fname, "w")
+        data = self.note.fields[self.currentField]
+        f.write(data)
+        f.close()
+
+        self.mw.hideAllCollectionWindows()
+        self.mw.hide()
+        subprocess.call('''%s "%s"'''%(cmd,fname), shell=True)
+
+        f = open(fname, "r")
+        data = f.read()
+        f.close()
+
+        self.note.fields[self.currentField] = data
+        self.loadNote()
+        self.mw.show()
+        self.mw.showAllCollectionWindows()
+        self.parentWindow.activateWindow()
+
+
+
+
+
+
+
+
+
 
 # Pasting, drag & drop, and keyboard layouts
 ######################################################################
@@ -1207,9 +1283,9 @@ class EditorWebView(AnkiWebView):
             a.setChecked(p.evaluateJavaScript("isImgHiddenFromRev();"))
             a.triggered.connect(self._toggleHiddenImage)
 
-            a = m.addAction(_("Edit Image"))
+            a = m.addAction(_("Edit With MSPaint"))
             a.setEnabled(en)
-            a.triggered.connect(lambda:self._extImageEditor(src))
+            a.triggered.connect(lambda:self.editor.onExtImageEditor(src))
 
             a = m.addAction(_("Clear Style"))
             a.triggered.connect(self._clearInlineStyle)
@@ -1241,11 +1317,11 @@ class EditorWebView(AnkiWebView):
         a.triggered.connect(self.onCopy)
         a = m.addAction(_("Paste"))
         a.triggered.connect(self.onPaste)
+        m.addSeparator()
         a = m.addAction(_("Edit HTML"))
         a.triggered.connect(self.editor.onHtmlEdit)
-        m.addSeparator()
-        a = m.addAction(_("Use External Editor"))
-        a.triggered.connect(self._extTextEditor)
+        a = m.addAction(_("Edit With Notepad"))
+        a.triggered.connect(self.editor.onExtTextEditor)
 
         runHook("EditorWebView.contextMenuEvent", self, m)
         m.popup(QCursor.pos())
@@ -1285,60 +1361,3 @@ class EditorWebView(AnkiWebView):
         img.save(src)
         self.editor.loadNote()
 
-
-    def _extImageEditor(self, src):
-        fname = src
-        cmd = self.editor.mw.pm.profile.get("ccbc.extImgCmd","")
-        if not cmd:
-            if isWin:
-                cmd = "mspaint.exe"
-            else:
-                showInfo("No external editor set for images.")
-                return
-        if isWin:
-            cmd = cmd.replace('/','\\')
-            fname = src.replace('/','\\')
-
-        import subprocess
-        self.settings().clearMemoryCaches()
-        self.editor.mw.hideAllCollectionWindows()
-        self.editor.mw.hide()
-        subprocess.call('''%s "%s"'''%(cmd,fname), shell=True)
-        self.editor.mw.show()
-        self.editor.mw.showAllCollectionWindows()
-        self.editor.parentWindow.activateWindow()
-        self.editor.loadNote()
-
-    def _extTextEditor(self):
-        cmd = self.editor.mw.pm.profile.get("ccbc.extTxtCmd","")
-        if not cmd:
-            if isWin:
-                cmd = "notepad.exe"
-            else:
-                showInfo("No external text editor was set.")
-                return
-        if isWin:
-            cmd = cmd.replace('/','\\')
-
-        import subprocess, time
-        from anki.utils import tmpdir
-        fname = os.path.join(tmpdir(), "note%d.txt"%time.time())
-
-        f = open(fname, "w")
-        data = self.editor.note.fields[self.editor.currentField]
-        f.write(data)
-        f.close()
-
-        self.editor.mw.hideAllCollectionWindows()
-        self.editor.mw.hide()
-        subprocess.call('''%s "%s"'''%(cmd,fname), shell=True)
-
-        f = open(fname, "r")
-        data = f.read()
-        f.close()
-
-        self.editor.note.fields[self.editor.currentField] = data
-        self.editor.loadNote()
-        self.editor.mw.show()
-        self.editor.mw.showAllCollectionWindows()
-        self.editor.parentWindow.activateWindow()
