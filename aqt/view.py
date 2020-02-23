@@ -299,26 +299,29 @@ class ZoomManager():
 
 
 class FullScreenManager:
+
     def __init__(self, mw):
         self.mw = mw
         self.mu_height = self.mw.height()
         self.tb_height = self.mw.toolbar.web.height()
-        self.savedState = self.mw.windowState()
         self.cursor_timer = None
+
         addHook('profileLoaded', self.onProfileLoaded)
+        addHook('unloadProfile', self.onUnloadProfile)
+
         self.setupMenu()
+
 
     def setupMenu(self):
         menu = self.mw.form.menuView
         subMenu = QMenu('&Screen', menu)
         menu.addMenu(subMenu)
 
-        a = QAction("Full Screen", subMenu)
-        a.setCheckable(True)
-        a.setChecked(self.mw.isFullScreen())
-        a.triggered.connect(self.onFullScreen)
-        a.setShortcut("F11")
-        subMenu.addAction(a)
+        self.cbFullScreen = QAction("Full Screen", subMenu)
+        self.cbFullScreen.setCheckable(True)
+        self.cbFullScreen.triggered.connect(self.onFullScreen)
+        self.cbFullScreen.setShortcut("F11")
+        subMenu.addAction(self.cbFullScreen)
         subMenu.addSeparator()
 
         self.menubar = QAction("Hide Menubar", subMenu)
@@ -354,7 +357,13 @@ class FullScreenManager:
             self.showCursor()
         self.stateChanged(self.mw.state)
 
+    def onUnloadProfile(self):
+        if self.mw.isFullScreen():
+            #must not save FS state to profile
+            self.mw.showNormal()
+
     def onProfileLoaded(self):
+        self.wasMaxState = self.mw.isMaximized()
         b = self.mw.pm.profile.get('fs_hide_menubar',True)
         self.menubar.setChecked(b)
         b = self.mw.pm.profile.get('fs_hide_toolbar',True)
@@ -363,9 +372,10 @@ class FullScreenManager:
         self.bottombar.setChecked(b)
         b = self.mw.pm.profile.get('fs_hide_cursor',False)
         self.cbHideCursor.setChecked(b)
+        self.cbFullScreen.setChecked(self.mw.isFullScreen())
 
     def onFullScreen(self):
-        toggle = self.mw.windowState() ^ Qt.WindowFullScreen
+        toggle = not self.mw.isFullScreen()
         self.set(toggle)
         if toggle:
             self.hideCursor()
@@ -395,16 +405,20 @@ class FullScreenManager:
         self.mw.toolbar.web.setFixedHeight(self.tb_height)
         self.mw.bottomWeb.show()
 
-    def set(self, bool):
-        if bool:
-            self.savedState = self.mw.windowState()
-            self.mw.setWindowState(Qt.WindowFullScreen)
-            # prevent FS lockup from addons using restoreGeom
-            if self.savedState == Qt.WindowFullScreen:
-                self.savedState = Qt.WindowNoState
+    def set(self, toFS):
+        self.mw.hide()
+        if toFS:
+            self.wasMaxState = self.mw.isMaximized()
+            self.mw.showNormal() #lock oldSize
+            self.mw.showFullScreen()
+        elif self.wasMaxState:
+            self.mw.showNormal() #lock oldSize
+            self.mw.showMaximized()
         else:
-            self.mw.setWindowState(self.savedState)
+            self.mw.showNormal()
+        self.mw.show()
         self.stateChanged(self.mw.state)
+        self.cbFullScreen.setChecked(self.mw.isFullScreen())
 
     def hoverBottom(self):
         if self.bottombar.isChecked():

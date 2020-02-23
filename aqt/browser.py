@@ -415,8 +415,10 @@ class Browser(QMainWindow):
         restoreState(self, "editor")
         restoreSplitter(self.form.splitter_2, "editor2")
         restoreSplitter(self.form.splitter, "editor3")
-        self.setWindowState(
-            self.mw.windowState() if sidebar else Qt.WindowNoState)
+
+        self.setWindowState(self.mw.windowState())
+        self.wasMaxState = self.isMaximized()
+
         self.form.splitter_2.setChildrenCollapsible(False)
         self.form.splitter.setChildrenCollapsible(False)
         self.card = None
@@ -450,11 +452,19 @@ class Browser(QMainWindow):
         pass
 
     def toggleFullScreen(self):
-        b = self.windowState() ^ Qt.WindowFullScreen
-        if b:
-            self.setWindowState(Qt.WindowFullScreen)
+        toFS = self.windowState() ^ Qt.WindowFullScreen
+        self.hide()
+        if toFS:
+            self.wasMaxState = self.isMaximized()
+            self.showNormal() #lock oldSize
+            self.showFullScreen()
+        elif self.wasMaxState:
+            self.showNormal() #lock oldSize
+            self.showMaximized()
         else:
-            self.setWindowState(Qt.WindowNoState)
+            self.showNormal()
+        self.show()
+        self.form.actionFullScreen.setChecked(toFS)
 
     def toggleSidebar(self):
         b = not self.showSidebar
