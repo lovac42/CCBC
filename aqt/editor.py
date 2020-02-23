@@ -19,7 +19,7 @@ import anki.sound
 from anki.hooks import runHook, runFilter
 from aqt.sound import getAudio
 from aqt.webview import AnkiWebView
-from aqt.utils import shortcut, showInfo, showWarning, getBase, getFile, tooltip, downArrow
+from aqt.utils import shortcut, showInfo, showWarning, getBase, getFile, tooltip, downArrow, getText
 
 import aqt
 import ccbc.js
@@ -232,6 +232,8 @@ class Editor(object):
         self.extraFormatBtn.insert(1,self.iconsBox.count())
         # self._buttons=runFilter("setupEditorButtons", self._buttons, self) #require list (v2.1)
         b("adv", self.onAdvanced, text=downArrow())
+        s = QShortcut(QKeySequence("Ctrl+H"), self.widget)
+        s.connect(s, SIGNAL("activated()"), self.insertHyperlink)
         s = QShortcut(QKeySequence("Ctrl+T, T"), self.widget)
         s.connect(s, SIGNAL("activated()"), self.insertLatex)
         s = QShortcut(QKeySequence("Ctrl+T, E"), self.widget)
@@ -624,6 +626,13 @@ class Editor(object):
     def insertOrderedList(self):
         self.web.eval("setFormat('insertOrderedList');")
 
+    def insertHyperlink(self):
+        t,k = getText("Enter URL:")
+        if k:
+            t=t.strip()
+            if t:
+                self.web.eval("setFormat('createLink','%s');"%t)
+
     def indentText(self):
         self.web.eval("setFormat('indent');")
 
@@ -896,6 +905,9 @@ to a cloze type first, via Edit>Change Note Type."""))
 
     def onAdvanced(self):
         m = QMenu(self.mw)
+        a = m.addAction(_("Insert Hyperlink"))
+        a.setShortcut(QKeySequence("Ctrl+H"))
+        a.connect(a, SIGNAL("triggered()"), self.insertHyperlink)
         a = m.addAction(_("LaTeX"))
         a.setShortcut(QKeySequence("Ctrl+T, T"))
         a.connect(a, SIGNAL("triggered()"), self.insertLatex)
@@ -1318,6 +1330,8 @@ class EditorWebView(AnkiWebView):
         a = m.addAction(_("Paste"))
         a.triggered.connect(self.onPaste)
         m.addSeparator()
+        a = m.addAction(_("Insert Hyperlink"))
+        a.triggered.connect(self.editor.insertHyperlink)
         a = m.addAction(_("Edit HTML"))
         a.triggered.connect(self.editor.onHtmlEdit)
         a = m.addAction(_("Edit With Notepad"))
@@ -1360,4 +1374,3 @@ class EditorWebView(AnkiWebView):
         img = img.transpose(Image.ROTATE_180)
         img.save(src)
         self.editor.loadNote()
-
