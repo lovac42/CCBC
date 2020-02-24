@@ -1335,6 +1335,9 @@ class EditorWebView(AnkiWebView):
             a.setEnabled(en)
             a.triggered.connect(lambda:self._rotate_180(src))
 
+            a = s.addAction("Note: Above Ops Removes Exif")
+            a.setEnabled(False)
+
             z = self._getImageSize(src)
             a = m.addAction("%d x %dpx, %.1fKB"%z)
             a.setEnabled(False)
