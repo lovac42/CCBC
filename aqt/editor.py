@@ -1300,28 +1300,38 @@ class EditorWebView(AnkiWebView):
             a.setChecked(pg.evaluateJavaScript("isImgHiddenFromRev('rev-noLightbox');"))
             a.triggered.connect(lambda:self.eval("toggleImgHiddenFromRev('rev-noLightbox');"))
 
-            a = m.addAction(_("Edit With MSPaint"))
-            a.setEnabled(en)
-            a.triggered.connect(lambda:self.editor.onExtImageEditor(src))
-
             a = m.addAction(_("Clear Style"))
             a.triggered.connect(self._clearInlineStyle)
             m.addSeparator()
 
-            a = m.addAction(_("Flip Horizontal"))
+            a = m.addAction(_("Edit With MSPaint"))
+            a.setEnabled(en)
+            a.triggered.connect(lambda:self.editor.onExtImageEditor(src))
+
+            s = QMenu('&Rotate', m)
+            m.addMenu(s)
+            a = s.addAction(_("Flip Horizontal"))
             a.setEnabled(en)
             a.triggered.connect(lambda:self._flipHorizontal(src))
-            a = m.addAction(_("Flip Vertical"))
+
+            a = s.addAction(_("Flip Vertical"))
             a.setEnabled(en)
             a.triggered.connect(lambda:self._flipVertical(src))
-            m.addSeparator()
+            s.addSeparator()
 
-            a = m.addAction(_("Rotate 90°"))
+            a = s.addAction(_("Rotate Right 90° CW"))
             a.setEnabled(en)
-            a.triggered.connect(lambda:self._rotate_90(src))
-            a = m.addAction(_("Rotate 180°"))
+            a.triggered.connect(lambda:self._rotate_R90(src))
+            a = s.addAction(_("Rotate Left 90° CCW"))
+            a.setEnabled(en)
+            a.triggered.connect(lambda:self._rotate_L90(src))
+            a = s.addAction(_("Rotate 180°"))
             a.setEnabled(en)
             a.triggered.connect(lambda:self._rotate_180(src))
+
+            z = self._getImageSize(src)
+            a = m.addAction("%d x %dpx, %.1fKB"%z)
+            a.setEnabled(False)
 
             runHook("EditorWebView.contextImageEvent", self, m)
             m.popup(QCursor.pos())
@@ -1354,6 +1364,7 @@ class EditorWebView(AnkiWebView):
         img = Image.open(src)
         new_img = ImageOps.mirror(img)
         new_img.save(src)
+        new_img.close()
         self.editor.loadNote()
 
     def _flipVertical(self, src):
@@ -1361,13 +1372,23 @@ class EditorWebView(AnkiWebView):
         img = Image.open(src)
         new_img = ImageOps.flip(img)
         new_img.save(src)
+        new_img.close()
         self.editor.loadNote()
 
-    def _rotate_90(self, src):
+    def _rotate_R90(self, src):
+        self.settings().clearMemoryCaches()
+        img = Image.open(src)
+        img = img.transpose(Image.ROTATE_270)
+        img.save(src)
+        img.close()
+        self.editor.loadNote()
+
+    def _rotate_L90(self, src):
         self.settings().clearMemoryCaches()
         img = Image.open(src)
         img = img.transpose(Image.ROTATE_90)
         img.save(src)
+        img.close()
         self.editor.loadNote()
 
     def _rotate_180(self, src):
@@ -1375,4 +1396,12 @@ class EditorWebView(AnkiWebView):
         img = Image.open(src)
         img = img.transpose(Image.ROTATE_180)
         img.save(src)
+        img.close()
         self.editor.loadNote()
+
+    def _getImageSize(self, src):
+        img = Image.open(src)
+        w,h = img.size
+        img.close()
+        b = os.path.getsize(src)/1024
+        return w,h,b
