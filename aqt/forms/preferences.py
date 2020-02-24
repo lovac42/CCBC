@@ -122,51 +122,49 @@ class Ui_Preferences(object):
         self.tab_adv.setObjectName("tab_adv")
         self.advancedVLayout=QtWidgets.QVBoxLayout(self.tab_adv)
         self.advancedVLayout.addLayout(QtWidgets.QGridLayout())
-        # Extra grading buttons
-        self.ansKeysLayout = QtWidgets.QHBoxLayout()
-        self.ansKeysLayout.setObjectName("ansKeysLayout")
-        self.lbl_ans_keys = QtWidgets.QLabel(self.tab_adv)
-        self.lbl_ans_keys.setObjectName("lbl_ans_keys")
-        self.ansKeysLayout.addWidget(self.lbl_ans_keys)
+
+        # Grading button configs
+        gbLayout=QtWidgets.QVBoxLayout()
+        hLayout=QtWidgets.QHBoxLayout()
+        # ans keys
+        hLayout.addWidget(QtWidgets.QLabel(_("Answer keys:")))
         self.ansKeysLEdit = QtWidgets.QLineEdit(self.tab_adv)
         self.ansKeysLEdit.setObjectName("ansKeysLEdit")
-        self.ansKeysLayout.addWidget(self.ansKeysLEdit)
-        self.advancedVLayout.addLayout(self.ansKeysLayout)
-        # Grading button action
-        self.ansKeyActionLayout = QtWidgets.QHBoxLayout()
-        self.ansKeyActionLayout.setObjectName("ansKeyActionLayout")
-        self.lbl_ans_key_act = QtWidgets.QLabel(self.tab_adv)
-        self.lbl_ans_key_act.setObjectName("lbl_ans_key_act")
-        self.ansKeyActionLayout.addWidget(self.lbl_ans_key_act)
+        hLayout.addWidget(self.ansKeysLEdit)
+        gbLayout.addLayout(hLayout)
+        # button action
+        hLayout=QtWidgets.QHBoxLayout()
+        hLayout.addWidget(QtWidgets.QLabel(
+            _("Action on quesiton side:")))
         self.ansKeyActNothing = QtWidgets.QRadioButton(self.tab_adv)
         self.ansKeyActNothing.setObjectName("ansKeyActNothing")
         self.ansKeyActNothing.setChecked(True)
-        self.ansKeyActionLayout.addWidget(self.ansKeyActNothing)
+        hLayout.addWidget(self.ansKeyActNothing)
         self.ansKeyActFlip = QtWidgets.QRadioButton(self.tab_adv)
         self.ansKeyActFlip.setObjectName("ansKeyActFlip")
-        self.ansKeyActionLayout.addWidget(self.ansKeyActFlip)
+        hLayout.addWidget(self.ansKeyActFlip)
         self.ansKeyActGrade = QtWidgets.QRadioButton(self.tab_adv)
         self.ansKeyActGrade.setObjectName("ansKeyActGrade")
-        self.ansKeyActionLayout.addWidget(self.ansKeyActGrade)
-        self.advancedVLayout.addLayout(self.ansKeyActionLayout)
+        hLayout.addWidget(self.ansKeyActGrade)
+        gbLayout.addLayout(hLayout)
 
-        self.advancedVLayout.addItem(
-            QtWidgets.QSpacerItem(10,10,
-                QtWidgets.QSizePolicy.Fixed,
-                QtWidgets.QSizePolicy.Fixed
-        ))
-
+        hLayout=QtWidgets.QHBoxLayout()
         # colorize review buttons
         self.colorGradeBtns = QtWidgets.QCheckBox(self.tab_adv)
         self.colorGradeBtns.setObjectName("colorGradeBtns")
-        self.advancedVLayout.addWidget(self.colorGradeBtns)
+        hLayout.addWidget(self.colorGradeBtns)
         # large review buttons
         self.bigGradeBtns = QtWidgets.QCheckBox(self.tab_adv)
         self.bigGradeBtns.setObjectName("bigGradeBtns")
-        self.advancedVLayout.addWidget(self.bigGradeBtns)
+        hLayout.addWidget(self.bigGradeBtns)
+        gbLayout.addLayout(hLayout)
+
+        groupBox = QtWidgets.QGroupBox('Grade Buttons')
+        groupBox.setLayout(gbLayout)
+        self.advancedVLayout.addWidget(groupBox)
 
         self.advancedVLayout.addItem(
-            QtWidgets.QSpacerItem(5,5,
+            QtWidgets.QSpacerItem(10,10,
                 QtWidgets.QSizePolicy.Fixed,
                 QtWidgets.QSizePolicy.Fixed
         ))
@@ -203,31 +201,31 @@ class Ui_Preferences(object):
         # spacer to push everything up
         spacerItem=QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.advancedVLayout.addItem(spacerItem)
-        self.tabWidget.addTab(self.tab_adv, _("Advanced"))
 
-        # External image editor
-        extImgCmdLayout = QtWidgets.QHBoxLayout()
-        extImgCmdLayout.setObjectName("extImgCmdLayout")
-        lbl_extImgCmd = QtWidgets.QLabel(self.tab_adv)
-        lbl_extImgCmd.setObjectName("lbl_extImgCmd")
-        lbl_extImgCmd.setText(_("External Image Editor:"))
-        extImgCmdLayout.addWidget(lbl_extImgCmd)
+
+        # External editor group box
+        gbLayout=QtWidgets.QGridLayout()
+        gbLayout.addWidget(QtWidgets.QLabel('Image:'), 0, 0, 1, 1)
         self.extImgCmdLEdit = QtWidgets.QLineEdit(self.tab_adv)
         self.extImgCmdLEdit.setObjectName("extImgCmdLEdit")
-        extImgCmdLayout.addWidget(self.extImgCmdLEdit)
-        self.advancedVLayout.addLayout(extImgCmdLayout)
 
-        # External text editor
-        extTxtCmdLayout = QtWidgets.QHBoxLayout()
-        extTxtCmdLayout.setObjectName("extTxtCmdLayout")
-        lbl_extTxtCmd = QtWidgets.QLabel(self.tab_adv)
-        lbl_extTxtCmd.setObjectName("lbl_extTxtCmd")
-        lbl_extTxtCmd.setText(_("External Text Editor:"))
-        extTxtCmdLayout.addWidget(lbl_extTxtCmd)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.extImgCmdLEdit.sizePolicy().hasHeightForWidth())
+        self.extImgCmdLEdit.setSizePolicy(sizePolicy)
+        gbLayout.addWidget(self.extImgCmdLEdit, 0, 1, 1, 1)
+
+        gbLayout.addWidget(QtWidgets.QLabel('Text:'), 1, 0, 1, 1)
         self.extTxtCmdLEdit = QtWidgets.QLineEdit(self.tab_adv)
         self.extTxtCmdLEdit.setObjectName("extTxtCmdLEdit")
-        extTxtCmdLayout.addWidget(self.extTxtCmdLEdit)
-        self.advancedVLayout.addLayout(extTxtCmdLayout)
+        gbLayout.addWidget(self.extTxtCmdLEdit, 1, 1, 1, 1)
+
+        groupBox = QtWidgets.QGroupBox('External Editor')
+        groupBox.setLayout(gbLayout)
+        self.advancedVLayout.addWidget(groupBox)
+        self.tabWidget.addTab(self.tab_adv, _("Advanced"))
+
 
         #####################################################
         # Create Audio Tab
@@ -464,14 +462,11 @@ class Ui_Preferences(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _("Backups"))
 
         # Advanced tab
-        # self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_adv), _("Advanced"))
-        self.lbl_ans_keys.setText(_("Answer grade keys:"))
-        self.lbl_ans_key_act.setText(_("Select grade key action on quesiton side:"))
         self.ansKeyActNothing.setText(_("Nothing"))
         self.ansKeyActFlip.setText(_("Flip"))
         self.ansKeyActGrade.setText(_("Grade"))
-        self.colorGradeBtns.setText(_("Colorize grading buttons for review"))
-        self.bigGradeBtns.setText(_("Enlarge grading buttons for review"))
+        self.colorGradeBtns.setText(_("Colorized"))
+        self.bigGradeBtns.setText(_("Enlarged"))
         self.showFormatBtns.setText(_("Show extra formatting buttons in editor"))
         self.autoCompleter.setText(_("Use auto complete when adding card?"))
         self.powerUserMode.setText(_("Power User Mode (req. lots of ram)"))
