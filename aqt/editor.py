@@ -30,7 +30,7 @@ from ccbc.cleaner import TidyTags
 from bs4 import BeautifulSoup
 from anki.utils import checksum
 
-from ccbc.utils import getIcon
+from ccbc.utils import getIcon, isURL
 
 
 pics = ("jpg", "jpeg", "png", "tif", "tiff", "gif", "svg", "webp")
@@ -627,7 +627,13 @@ class Editor(object):
         self.web.eval("setFormat('insertOrderedList');")
 
     def insertHyperlink(self):
-        t,k = getText("Enter URL:")
+        try:
+            url = str(QApplication.clipboard().mimeData().text())
+            if not isURL(url):
+                raise
+        except:
+            url = ""
+        t,k = getText("Enter URL:", title="Add Hyperlink", default=url)
         if k:
             t=t.strip()
             if t:
@@ -1210,7 +1216,7 @@ class EditorWebView(AnkiWebView):
         txt = mime.text()
         html = None
         # if the user is pasting an image or sound link, convert it to local
-        if self.editor.isURL(txt):
+        if isURL(txt):
             txt = txt.split("\r\n")[0]
             html = self.editor.urlToLink(txt)
         new = QMimeData()
