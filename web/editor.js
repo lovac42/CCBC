@@ -276,14 +276,14 @@ function clearInlineStyle(){
         .removeAttr("width").removeAttr("height");
 }
 
-function isImgHiddenFromRev(){
-    if(mouseDownImageElement.hasClass("rev-hidden"))
+function isImgHiddenFromRev(klass){
+    if(mouseDownImageElement.hasClass(klass))
         return true;
     return false;
 }
 
-function toggleImgHiddenFromRev(){
-    mouseDownImageElement.toggleClass("rev-hidden");
+function toggleImgHiddenFromRev(klass){
+    mouseDownImageElement.toggleClass(klass);
     mouseDownImageElement = null;
 }
 

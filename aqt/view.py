@@ -47,37 +47,10 @@ class ViewManager:
         addHook('showQuestion', self.onShowQuestion)
         addHook('showAnswer', self.onShowAnswer)
 
-        self.setupMenu()
-
-    def setupMenu(self):
-        menu = self.mw.form.menuView
-        self.cbLightbox = QAction("Lightbox", menu)
-        self.cbLightbox.setCheckable(True)
-        self.cbLightbox.triggered.connect(self._cb_lightbox_toggle)
-        menu.addAction(self.cbLightbox)
-
-    def _cb_lightbox_toggle(self):
-        b = self.mw.pm.profile['viewm.lightbox'] = self.cbLightbox.isChecked()
-        if self.mw.state == "review":
-            if self.ir.isIRCard():
-                return
-            if b:
-                b = self.mw.web.page().mainFrame().evaluateJavaScript("lightbox_enabled")
-                if b == None: #js not loaded
-                    self.mw.reviewer.cardQueue.append(self.mw.reviewer.card)
-                    self.mw.reset(guiOnly=True)
-                self.mw.web.eval("lightbox_enabled=true;")
-            else:
-                self.mw.web.eval("lightbox_enabled=false;")
-
     def onProfileLoaded(self):
         zi=self.mw.pm.profile.get("zoom.img",False)
         self.zoom.zoomImage.setChecked(zi)
         self.zoom.setZoomTextOnly() #init zoom settings
-
-        b = self.mw.pm.profile.get('viewm.lightbox',False)
-        self.cbLightbox.setChecked(b)
-        self._cb_lightbox_toggle()
 
     def flush(self, *args):
         if self.mw.state == 'review':
@@ -107,8 +80,6 @@ class ViewManager:
             self.zoom.isIR = False
             if not self.zoom.zoomLock.isChecked():
                 self.zoom.adjust() #reload
-            if self.cbLightbox.isChecked():
-                self.mw.web.eval("lightbox_enabled=true;")
 
     def onShowAnswer(self):
         if self.ir.isIRCard():

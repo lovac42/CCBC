@@ -57,26 +57,7 @@ Hotkey: CTRL+Enter (on question side only)
 
 
 ## Lightbox:
-This will show one image in the reviewer and extra images in the lightbox.  
-
-Field data:
-```
-<img src="image-1.jpg"/>
-<img class="extra" src="image-2.jpg"/>
-<img class="extra" src="image-3.jpg"/>
-```
-
-CSS in card layout:
-```
-img.extra {
-  display: none;
-}
-img {
-  max-width: 150px;
-}
-```
-
-Use single quotes or non /> in templates to prevent lightboxing.  
+Lightbox allows zooming in on small images without resizing. All images in the reviewer are affected.  
 
 <img src="https://github.com/lovac42/CCBC/blob/master/screenshots/lightbox.png?raw=true">  
 

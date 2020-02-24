@@ -14,7 +14,24 @@
  * @preserve
  */
 
-var lightbox_enabled; //uninitialized state is used to test if js was loaded.
+
+var lightbox_loaded = true;
+
+function lightbox_wrap() {
+    $('.lb-close').click();
+    $('#qa img:not(.rev-noLightbox)').each(function(){
+        $(this).attr("data-lightbox","lightbox");
+    });
+}
+
+
+function lightbox_unwrap() {
+    $('.lb-close').click();
+    $('#qa img[data-lightbox="lightbox"]').each(function(){
+        $(this).attr("data-lightbox","");
+    });
+}
+
 
 
 // Uses Node, AMD or browser globals to create a module.
@@ -50,11 +67,11 @@ var lightbox_enabled; //uninitialized state is used to test if js was loaded.
     alwaysShowNavOnTouchDevices: false,
     fadeDuration: 100,
     fitImagesInViewport: true,
-    imageFadeDuration: 200,
+    imageFadeDuration: 100,
     // maxWidth: 800,
     // maxHeight: 600,
     positionFromTop: 50,
-    resizeDuration: 200,
+    resizeDuration: 100,
     showImageNumberLabel: true,
     wrapAround: true,
     disableScrolling: false,
@@ -90,7 +107,7 @@ var lightbox_enabled; //uninitialized state is used to test if js was loaded.
   // that contain 'lightbox'. When these are clicked, start lightbox.
   Lightbox.prototype.enable = function() {
     var self = this;
-    $('body').on('click', 'a[rel^=lightbox], area[rel^=lightbox], a[data-lightbox], area[data-lightbox]', function(event) {
+    $('#qa').on('click', 'img[data-lightbox=lightbox]', function(event) {
       self.start($(event.currentTarget));
       return false;
     });
@@ -230,8 +247,6 @@ var lightbox_enabled; //uninitialized state is used to test if js was loaded.
 
   // Show overlay and lightbox. If the image is part of a set, add siblings to album array.
   Lightbox.prototype.start = function($link) {
-    if(!lightbox_enabled) return false;
-
     var self    = this;
     var $window = $(window);
 
@@ -245,7 +260,7 @@ var lightbox_enabled; //uninitialized state is used to test if js was loaded.
     function addToAlbum($link) {
       self.album.push({
         alt: $link.attr('data-alt'),
-        link: $link.attr('href'),
+        link: $link.attr('src'),
         title: $link.attr('data-title') || $link.attr('title')
       });
     }

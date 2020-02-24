@@ -108,5 +108,8 @@ body {
 }
 
 img.rev-hidden {
-    opacity: 0.2;
+    opacity: 0.3;
+}
+img.rev-noLightbox {
+    border: 1px dashed lime;
 }

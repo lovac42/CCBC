@@ -24,6 +24,7 @@ import aqt
 import ccbc
 from anki.lang import _
 from html.parser import HTMLParser
+from aqt.lightbox import Lightbox
 
 
 class Reviewer(object):
@@ -46,6 +47,9 @@ class Reviewer(object):
         self.mw.connect(self.delShortcut, SIGNAL("activated()"), self.onDelete)
         addHook("addedNote", self.onAddedNote)
         addHook("leech", self.onLeech)
+
+        self.lightbox = Lightbox(mw)
+
 
     def show(self):
         self.mw.col.reset()
@@ -156,7 +160,7 @@ class Reviewer(object):
     _revHtml_lightbox = ccbc.html.rev_html%(ccbc.html.flag,ccbc.js.reviewer+ccbc.js.lightbox)
 
     def revHtml(self): #2.1 addons
-        if self.mw.viewmanager.cbLightbox.isChecked():
+        if self.lightbox.isChecked():
             return self._revHtml_lightbox
         return self._revHtml #2.0 addons
 
@@ -178,19 +182,6 @@ class Reviewer(object):
     # Showing the question
     ##########################################################################
 
-    # Use single quotes or non /> in templates to prevent lightboxing
-    RE_LIGHTBOX = re.compile(r"""\<img [^>]*src="([^"]*\.(?:jpe?g|png|gif|tiff?|bmp))"[^>]*\/\>""", re.I)
-
-    def lightbox(self, html):
-        if self.mw.viewmanager.ir.isIRCard():
-            return html
-        def add_anchor(t):
-            return f"""<a href="{t.group(1)}" data-lightbox="lightbox" class="ir-filter">{t.group(0)}</a>"""
-        imgs,cnt=self.RE_LIGHTBOX.subn(add_anchor, html)
-        if not cnt:
-            return html
-        return imgs
-
     def _mungeQA(self, buf):
         return self.typeAnsFilter(mungeQA(self.mw.col, buf))
 
@@ -208,8 +199,6 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
             q = c.q()
         if self.autoplay(c):
             playFromText(q)
-        if self.mw.viewmanager.cbLightbox.isChecked():
-            q = self.lightbox(q)
         # render & update bottom
         q = self._mungeQA(q)
         q = runFilter("prepareQA", q, c, "reviewQuestion")
@@ -273,8 +262,6 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         # play audio?
         if self.autoplay(c):
             playFromText(a)
-        if self.mw.viewmanager.cbLightbox.isChecked():
-            a = self.lightbox(a)
         # render and update bottom
         a = self._mungeQA(a)
         a = runFilter("prepareQA", a, c, "reviewAnswer")
@@ -406,7 +393,7 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
     _css_lightbox = ccbc.css.reviewer + ccbc.css.lightbox
 
     def _styles(self):
-        if self.mw.viewmanager.cbLightbox.isChecked():
+        if self.lightbox.isChecked():
             return self._css_lightbox
         return self._css
 

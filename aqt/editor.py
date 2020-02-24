@@ -1280,20 +1280,25 @@ class EditorWebView(AnkiWebView):
 
     def contextMenuEvent(self, evt):
         m = QMenu(self)
-        p = self.page().mainFrame()
+        pg = self.page().mainFrame()
 
         # Image MIME type options
-        img = p.evaluateJavaScript("mouseDownImageSrc")
+        img = pg.evaluateJavaScript("mouseDownImageSrc")
         if img:
             self.eval("mouseDownImageSrc='';")
             img = urllib.parse.unquote(img)
             proto, src = img[:8], img[8:]
             en = True if proto == "file:///" else False #localized images only
 
-            a = m.addAction(_("Hide during review"))
+            a = m.addAction(_("Hide From Reviewer"))
             a.setCheckable(True)
-            a.setChecked(p.evaluateJavaScript("isImgHiddenFromRev();"))
-            a.triggered.connect(self._toggleHiddenImage)
+            a.setChecked(pg.evaluateJavaScript("isImgHiddenFromRev('rev-hidden');"))
+            a.triggered.connect(lambda:self.eval("toggleImgHiddenFromRev('rev-hidden');"))
+
+            a = m.addAction(_("Hide From Lightbox"))
+            a.setCheckable(True)
+            a.setChecked(pg.evaluateJavaScript("isImgHiddenFromRev('rev-noLightbox');"))
+            a.triggered.connect(lambda:self.eval("toggleImgHiddenFromRev('rev-noLightbox');"))
 
             a = m.addAction(_("Edit With MSPaint"))
             a.setEnabled(en)
@@ -1340,9 +1345,6 @@ class EditorWebView(AnkiWebView):
         runHook("EditorWebView.contextMenuEvent", self, m)
         m.popup(QCursor.pos())
 
-
-    def _toggleHiddenImage(self):
-        self.eval("toggleImgHiddenFromRev();")
 
     def _clearInlineStyle(self):
         self.eval("clearInlineStyle();")
