@@ -276,15 +276,24 @@ function clearInlineStyle(){
         .removeAttr("width").removeAttr("height");
 }
 
-function isImgHiddenFromRev(klass){
+function isImgHiddenFrom(klass){
     if(mouseDownImageElement.hasClass(klass))
         return true;
     return false;
 }
 
-function toggleImgHiddenFromRev(klass){
+function toggleImgHiddenFrom(klass){
     mouseDownImageElement.toggleClass(klass);
     mouseDownImageElement = null;
+}
+
+function hasAttr(arr) {
+    for (var i=0; i<arr.length; i++) {
+        if(mouseDownImageElement.attr(arr[i])){
+            return true;
+        }
+    }
+    return false;
 }
 
 function currentFieldOrdinal() {

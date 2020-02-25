@@ -1298,15 +1298,16 @@ class EditorWebView(AnkiWebView):
 
             a = m.addAction(_("Hide From Reviewer"))
             a.setCheckable(True)
-            a.setChecked(pg.evaluateJavaScript("isImgHiddenFromRev('rev-hidden');"))
-            a.triggered.connect(lambda:self.eval("toggleImgHiddenFromRev('rev-hidden');"))
+            a.setChecked(pg.evaluateJavaScript("isImgHiddenFrom('rev-hidden');"))
+            a.triggered.connect(lambda:self.eval("toggleImgHiddenFrom('rev-hidden');"))
 
             a = m.addAction(_("Hide From Lightbox"))
             a.setCheckable(True)
-            a.setChecked(pg.evaluateJavaScript("isImgHiddenFromRev('rev-noLightbox');"))
-            a.triggered.connect(lambda:self.eval("toggleImgHiddenFromRev('rev-noLightbox');"))
+            a.setChecked(pg.evaluateJavaScript("isImgHiddenFrom('rev-noLightbox');"))
+            a.triggered.connect(lambda:self.eval("toggleImgHiddenFrom('rev-noLightbox');"))
 
             a = m.addAction(_("Clear Style"))
+            a.setEnabled(pg.evaluateJavaScript("hasAttr(['style','width','height']);"))
             a.triggered.connect(self._clearInlineStyle)
             m.addSeparator()
 
@@ -1353,6 +1354,8 @@ class EditorWebView(AnkiWebView):
         a.triggered.connect(self.onCopy)
         a = m.addAction(_("Paste"))
         a.triggered.connect(self.onPaste)
+        a = m.addAction(_("Paste Special"))
+        a.triggered.connect(lambda:self.onPaste(True))
         m.addSeparator()
         a = m.addAction(_("Insert Hyperlink"))
         a.triggered.connect(self.editor.insertHyperlink)
