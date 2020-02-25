@@ -335,6 +335,7 @@ class FullScreenManager:
 
     def onProfileLoaded(self):
         self.wasMaxState = self.mw.isMaximized()
+        self.normalState = self.mw.normalGeometry()
         b = self.mw.pm.profile.get('fs_hide_menubar',True)
         self.menubar.setChecked(b)
         b = self.mw.pm.profile.get('fs_hide_toolbar',True)
@@ -361,7 +362,7 @@ class FullScreenManager:
 
         self.reset()
         if self.menubar.isChecked():
-            #using show/hide prevents hotkeys from working
+            #Note: using show/hide prevents hotkeys from working
             self.mw.menuBar().setMaximumHeight(bh)
         if self.toolbar.isChecked():
             self.mw.toolbar.web.setFixedHeight(th)
@@ -377,17 +378,15 @@ class FullScreenManager:
         self.mw.bottomWeb.show()
 
     def set(self, toFS):
-        self.mw.hide()
         if toFS:
             self.wasMaxState = self.mw.isMaximized()
-            self.mw.showNormal() #lock oldSize
+            self.normalState = self.mw.normalGeometry()
             self.mw.showFullScreen()
         elif self.wasMaxState:
-            self.mw.showNormal() #lock oldSize
+            self.mw.setGeometry(self.normalState)
             self.mw.showMaximized()
         else:
-            self.mw.showNormal()
-        self.mw.show()
+            self.mw.setGeometry(self.normalState)
         self.stateChanged(self.mw.state)
         self.cbFullScreen.setChecked(self.mw.isFullScreen())
 

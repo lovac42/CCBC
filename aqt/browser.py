@@ -418,6 +418,7 @@ class Browser(QMainWindow):
 
         self.setWindowState(self.mw.windowState())
         self.wasMaxState = self.isMaximized()
+        self.normalState = self.normalGeometry()
 
         self.form.splitter_2.setChildrenCollapsible(False)
         self.form.splitter.setChildrenCollapsible(False)
@@ -453,17 +454,15 @@ class Browser(QMainWindow):
 
     def toggleFullScreen(self):
         toFS = self.windowState() ^ Qt.WindowFullScreen
-        self.hide()
         if toFS:
             self.wasMaxState = self.isMaximized()
-            self.showNormal() #lock oldSize
+            self.normalState = self.normalGeometry()
             self.showFullScreen()
         elif self.wasMaxState:
-            self.showNormal() #lock oldSize
+            self.setGeometry(self.normalState)
             self.showMaximized()
         else:
-            self.showNormal()
-        self.show()
+            self.setGeometry(self.normalState)
         self.form.actionFullScreen.setChecked(toFS)
 
     def toggleSidebar(self):
