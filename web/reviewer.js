@@ -72,11 +72,11 @@ function _typeAnsPress() {
 var menu_shown=false;
 var mouse_shown=true;
 $(document).mousemove(function(event){
-    if(event.pageY>$(window).height()-20){
+    if(event.screenY>$(window).height()-20){
         menu_shown=true;
         py.link("showBottombar");
     }
-    else if(event.pageY<20){
+    else if(event.screenY<20){
         menu_shown=true;
         py.link("showMenubar");
     }
