@@ -932,6 +932,8 @@ Difference to correct time: %s.""") % diffText
         self.progress.timer(10*60*1000, self.onRefreshTimer, True)
 
     def onRefreshTimer(self):
+        if not self.col:
+            return #exiting anki
         if self.state == "deckBrowser":
             self.deckBrowser.refresh()
         elif self.state == "overview":
