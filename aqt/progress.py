@@ -83,30 +83,6 @@ class ProgressManager:
     # Creating progress dialogs
     ##########################################################################
 
-    class ProgressDialog(QDialog):
-        def __init__(self, parent):
-            QDialog.__init__(self, parent)
-            self.form = aqt.forms.progress.Ui_Dialog()
-            self.form.setupUi(self)
-            self._closingDown = False
-            self.wantCancel = False
-
-        def cancel(self):
-            self._closingDown = True
-            self.hide()
-
-        def closeEvent(self, evt):
-            if self._closingDown:
-                evt.accept()
-            else:
-                self.wantCancel  = True
-                evt.ignore()
-
-        def keyPressEvent(self, evt):
-            if evt.key() == Qt.Key_Escape:
-                evt.ignore()
-                self.wantCancel  = True
-
     def start(self, max=0, min=0, label=None, parent=None, immediate=False):
         self._levels += 1
         if self._levels > 1:
@@ -117,7 +93,7 @@ class ProgressManager:
             parent = self.mw
 
         label = label or _("Processing...")
-        self._win = self.ProgressDialog(parent)
+        self._win = ProgressDialog(parent)
         self._win.form.progressBar.setMinimum(min)
         self._win.form.progressBar.setMaximum(max)
         self._win.form.progressBar.setTextVisible(False)
@@ -210,3 +186,29 @@ class ProgressManager:
     def busy(self):
         "True if processing."
         return self._levels
+
+
+
+class ProgressDialog(QDialog):
+    def __init__(self, parent):
+        QDialog.__init__(self, parent)
+        self.form = aqt.forms.progress.Ui_Dialog()
+        self.form.setupUi(self)
+        self._closingDown = False
+        self.wantCancel = False
+
+    def cancel(self):
+        self._closingDown = True
+        self.hide()
+
+    def closeEvent(self, evt):
+        if self._closingDown:
+            evt.accept()
+        else:
+            self.wantCancel  = True
+            evt.ignore()
+
+    def keyPressEvent(self, evt):
+        if evt.key() == Qt.Key_Escape:
+            evt.ignore()
+            self.wantCancel  = True
