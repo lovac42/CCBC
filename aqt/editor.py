@@ -1023,33 +1023,24 @@ to a cloze type first, via Edit>Change Note Type."""))
 
         import subprocess, time
         from anki.utils import tmpdir
-        fname = os.path.join(tmpdir(), "note%d.txt"%time.time())
+        fname = os.path.join(tmpdir(), "note%d.htm"%time.time())
 
-        f = open(fname, "w")
         data = self.note.fields[self.currentField]
-        f.write(data)
-        f.close()
+        with open(fname, mode='w', encoding='utf-8') as f:
+            f.write(data)
 
         self.mw.hideAllCollectionWindows()
         self.mw.hide()
         subprocess.call('''%s "%s"'''%(cmd,fname), shell=True)
 
-        f = open(fname, "r")
-        data = f.read()
-        f.close()
+        with open(fname, mode='r', encoding='utf-8') as f:
+            data = f.read()
 
         self.note.fields[self.currentField] = data
         self.loadNote()
         self.mw.show()
         self.mw.showAllCollectionWindows()
         self.parentWindow.activateWindow()
-
-
-
-
-
-
-
 
 
 
