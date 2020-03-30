@@ -127,6 +127,9 @@ def fmtFloat(float_value, point=1):
 
 # HTML
 ##############################################################################
+reSpace = re.compile(r"(\<br ?\/?\>|\n)")
+reSound = re.compile(r"\[sound:[^]]+\]")
+reType = re.compile(r"\[\[type:[^]]+\]\]")
 reComment = re.compile("(?s)<!--.*?-->")
 reStyle = re.compile("(?si)<style.*?>.*?</style>")
 reScript = re.compile("(?si)<script.*?>.*?</script>")
@@ -158,12 +161,10 @@ def minimizeHTML(s):
     return s
 
 def htmlToTextLine(s):
-    s = s.replace("<br>", " ")
-    s = s.replace("<br />", " ")
-    s = s.replace("<div>", " ")
-    s = s.replace("\n", " ")
-    s = re.sub(r"\[sound:[^]]+\]", "", s)
-    s = re.sub(r"\[\[type:[^]]+\]\]", "", s)
+    s = stripHTML(s)
+    s = reSpace.sub(" ", s)
+    s = reSound.sub("", s)
+    s = reType.sub("", s)
     s = stripHTMLMedia(s)
     s = s.strip()
     return s
