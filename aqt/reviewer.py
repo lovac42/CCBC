@@ -173,10 +173,12 @@ class Reviewer(object):
             loadCB=lambda x: self._showQuestion(),
             head=base)
         # show answer / ease buttons
+        css = self.bottom.web.bundledCSS("toolbar-bottom.css") #trigger 2.1 addons
+        css += self.bottom.web.bundledCSS("reviewer-bottom.css")
         self.bottom.web.show()
         self.bottom.web.stdHtml(
             self._bottomHTML(),
-            self.bottom._css + self._bottomCSS,
+            self.bottom._css + self._bottomCSS + css,
         loadCB=lambda x: self._showAnswerButton())
 
     # Showing the question
@@ -393,9 +395,10 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
     _css_lightbox = ccbc.css.reviewer + ccbc.css.lightbox
 
     def _styles(self):
+        css = self.web.bundledCSS("reviewer.css") #trigger 2.1 addons
         if self.lightbox.isChecked():
-            return self._css_lightbox
-        return self._css
+            return self._css_lightbox + css
+        return self._css + css
 
     # Type in the answer
     ##########################################################################

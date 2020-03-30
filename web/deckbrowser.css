@@ -1,6 +1,8 @@
 /* Copyright: Ankitects Pty Ltd and contributors
  * License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html */
 
+/* File has been modified by lovac42 for ccbc project */
+
 a.deck {
     color: #000;
     text-decoration: none;
@@ -46,6 +48,7 @@ button {
 
 .current {
     background-color: #e7e7e7;
+    opacity: 0.6;
 }
 
 .decktd {
@@ -73,8 +76,8 @@ button {
 }
 
 .gears {
-    width: 1em;
-    height: 1em;
+    width: 1.5em;
+    height: 1.5em;
     opacity: .8;
     padding-top: 0.2em;
 }

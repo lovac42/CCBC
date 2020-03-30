@@ -89,6 +89,8 @@ class DeckBrowser(object):
 
     def _renderPage(self, reuse=False):
         css = self.mw.sharedCSS + self._css
+        css += self.web.bundledCSS("deckbrowser.css") #trigger 2.1 addons
+
         if not reuse:
             self._dueTree = self.mw.col.sched.deckDueTree()
         tree = self._renderDeckTree(self._dueTree)
@@ -191,7 +193,7 @@ where id > ?""", (self.mw.col.sched.dayCutoff-86400)*1000)
             nonzeroColour(new, "#000099"))
         # options
         buf += "<td align=right class=opts>%s</td></tr>" % self.mw.button(
-            link="opts:%d"%did, name="<img valign=bottom src='qrc:/icons/gears.png'>"+downArrow())
+            link="opts:%d"%did, name="<img class='gears' valign=bottom src='qrc:/icons/gears.png'>"+downArrow())
 
         # children
         buf += self._renderDeckTree(children, depth+1)

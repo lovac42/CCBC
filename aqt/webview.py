@@ -218,3 +218,12 @@ button {
         if self._loadFinishedCB:
             self._loadFinishedCB(self)
             self._loadFinishedCB = None
+
+    def bundledCSS(self, fname):
+        return ""
+
+    def bundledScript(self, fname):
+        return ""
+
+    def webBundlePath(self, path):
+        return "file:///%s" % path.replace('\\','/')

@@ -38,8 +38,9 @@ class Toolbar:
         }
 
     def draw(self):
+        css = self.web.bundledCSS("toolbar.css") #trigger 2.1 addons
         self.web.stdHtml(self._body % (
-            self._centerLinks() ), self._css)
+            self._centerLinks() ), self._css + css)
 
     # Available links
     ######################################################################
@@ -118,8 +119,10 @@ class BottomBar(Toolbar):
 """
 
     def draw(self, buf):
+        css = self.web.bundledCSS("toolbar.css") #trigger 2.1 addons
+        css += self.web.bundledCSS("toolbar-bottom.css")
         self.web.show()
         self.web.stdHtml(
             self._centerBody % buf,
-            self._css)
+            self._css + css)
 

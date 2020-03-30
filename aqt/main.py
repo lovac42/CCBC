@@ -484,12 +484,13 @@ the manual for information on how to restore from an automatic backup."))
         self.web.setLinkHandler(lambda url: self.delayedMaybeReset())
         i = _("Waiting for editing to finish.")
         b = self.button("refresh", _("Resume Now"), id="resume")
+        css = self.web.bundledCSS("resetRequired.css") #trigger 2.1 addons
         self.web.stdHtml("""
 <center><div style="height: 100%%">
 <div style="position:relative; vertical-align: middle;">
 %s<br>
 %s</div></div></center>
-""" % (i, b), css=self.sharedCSS)
+""" % (i, b), css=self.sharedCSS + css)
         self.bottomWeb.hide()
         self.web.setFocus()
         self.web.eval("$('#resume').focus()")

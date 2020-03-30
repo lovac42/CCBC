@@ -47,6 +47,7 @@ if os.environ.get("DEBUG"):
 
 qtmajor = (QT_VERSION & 0xff0000) >> 16
 qtminor = (QT_VERSION & 0x00ff00) >> 8
+qtpoint = QT_VERSION & 0xff
 
 # qt4.6 doesn't support ruby tags
 if qtmajor <= 4 and qtminor <= 6:

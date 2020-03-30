@@ -91,6 +91,7 @@ class Overview(object):
     ############################################################
 
     def _renderPage(self):
+        css = self.web.bundledCSS("overview.css") #trigger 2.1 addons
         but = self.mw.button
         deck = self.mw.col.decks.current()
         self.sid = deck.get("sharedFrom")
@@ -104,7 +105,7 @@ class Overview(object):
             shareLink=shareLink,
             desc=self._desc(deck),
             table=self._table()
-            ), self.mw.sharedCSS + self._css)
+            ), self.mw.sharedCSS + self._css + css)
 
     def _desc(self, deck):
         if deck['dyn']:
