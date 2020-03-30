@@ -322,12 +322,12 @@ class Ui_Dialog(object):
         self.menu_Cards.addAction(self.menuFlag.menuAction())
 
         # main menubar
-        self.menubar.addAction(self.menuTool.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menu_Notes.menuAction())
         self.menubar.addAction(self.menu_Cards.menuAction())
         self.menubar.addAction(self.menuJump.menuAction())
+        self.menubar.addAction(self.menuTool.menuAction())
 
         self.retranslateUi(Dialog)
         QtCore.QObject.connect(self.actionSelectAll, QtCore.SIGNAL("triggered()"), self.tableView.selectAll)
