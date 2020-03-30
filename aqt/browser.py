@@ -927,11 +927,14 @@ by clicking on one on the left."""))
         elif self.form.sidebarDockWidget.isVisible():
             # add slight delay to allow browser window to appear first
             def deferredDisplay():
-                root = self.buildTree()
-                model = SidebarModel(root)
-                self.sidebarTree.setModel(model)
-                model.expandWhereNeccessary(self.sidebarTree)
-            self.mw.progress.timer(10, deferredDisplay, False)
+                try:
+                    root = self.buildTree()
+                    model = SidebarModel(root)
+                    self.sidebarTree.setModel(model)
+                    model.expandWhereNeccessary(self.sidebarTree)
+                except RuntimeError:
+                    pass
+            self.mw.progress.timer(5, deferredDisplay, False)
 
     def buildTree(self) -> SidebarItem:
         root = SidebarItem("", "")
@@ -1759,7 +1762,7 @@ Red items will be deleted.""")))
         self.form.actionUndo.setEnabled(on)
         if on:
             self.form.actionUndo.setText(self.mw.form.actionUndo.text())
-        self.maybeRefreshSidebar()
+        # self.maybeRefreshSidebar()
 
 
 
