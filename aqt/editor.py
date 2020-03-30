@@ -1287,6 +1287,10 @@ class EditorWebView(AnkiWebView):
             proto, src = img[:8], img[8:]
             en = True if proto == "file:///" else False #localized images only
 
+            z = self._getImageSize(src)
+            if not z:
+                return
+
             a = m.addAction(_("Hide From Reviewer"))
             a.setCheckable(True)
             a.setChecked(pg.evaluateJavaScript("isImgHiddenFrom('rev-hidden');"))
@@ -1330,7 +1334,6 @@ class EditorWebView(AnkiWebView):
             a = s.addAction("Note: Above Ops Removes Exif")
             a.setEnabled(False)
 
-            z = self._getImageSize(src)
             a = m.addAction("%d x %dpx, %.1fKB"%z)
             a.setEnabled(False)
 
@@ -1403,8 +1406,11 @@ class EditorWebView(AnkiWebView):
         self.editor.loadNote()
 
     def _getImageSize(self, src):
-        img = Image.open(src)
-        w,h = img.size
-        img.close()
-        b = os.path.getsize(src)/1024
-        return w,h,b
+        try:
+            img = Image.open(src)
+            w,h = img.size
+            img.close()
+            b = os.path.getsize(src)/1024
+            return w,h,b
+        except FileNotFoundError:
+            return None
