@@ -125,6 +125,7 @@ class ProgressManager:
         elapsed = time.time() - self._lastUpdate
         if label:
             self._win.form.label.setText(label)
+            self._win.form.label.repaint()
         if self._max:
             self._counter = value or (self._counter+1)
             self._win.form.progressBar.setValue(self._counter)
