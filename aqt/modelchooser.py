@@ -80,7 +80,10 @@ class ModelChooser(QHBoxLayout):
         cdeck = self.deck.decks.current()
         cdeck['mid'] = m['id']
         self.deck.decks.save(cdeck)
-        self.parent.onModelChange()
+        try:
+            self.parent.onModelChange()
+        except AttributeError:
+            pass #no parent
         runHook("currentModelChanged")
         self.mw.reset() #calls updateModels
 
