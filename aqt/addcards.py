@@ -180,8 +180,8 @@ class AddCards(QDialog):
             if self.mw.col.findNotes("nid:%d" % nid):
                 fields = self.mw.col.getNote(nid).fields
                 txt = htmlToTextLine(", ".join(fields))
-                if len(txt) > 30:
-                    txt = txt[:30] + "..."
+                if len(txt) > 50:
+                    txt = txt[:20] + " ... " + txt[-25:]
                 a = m.addAction(_("Edit \"%s\"") % txt)
                 a.triggered.connect(lambda b, nid=nid: self.editHistory(nid))
         cnt = len(m.actions())
