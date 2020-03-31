@@ -1369,10 +1369,15 @@ Please ensure a profile is open and Anki is not busy, then try again."""),
     def boss_key(self):
         cmd = self.pm.profile.get("ccbc.bossCmd","notepad.exe")
         if not cmd:
+            # TODO: Write gui for this option
+            #   Use debugger to set command for ccbc.bossCmd
             showInfo("No external text editor was set.")
             return
         if isWin:
             cmd = cmd.replace('/','\\')
+
+        self.pm.save()
+        self.col.autosave()
 
         import subprocess, time
         from anki.utils import tmpdir
