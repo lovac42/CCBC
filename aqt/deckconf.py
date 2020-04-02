@@ -260,7 +260,7 @@ class DeckConf(QDialog):
                 continue
             #ADDON: Small potatoes
             if i.endswith('d'):
-                i = int(i[:-1])*1440
+                i = int(float(i[:-1])) * 1440
 
             try:
                 i = float(i)
