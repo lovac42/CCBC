@@ -403,3 +403,8 @@ create table if not exists profiles
         self.db.execute(sql, pickle.dumps(self.meta), "_global")
         self.db.commit()
         anki.lang.setLang(code, local=False)
+
+    def night_mode(self):
+        if not aqt.mw.night_mode:
+            return False
+        return aqt.mw.night_mode.config.state_on.value
