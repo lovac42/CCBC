@@ -726,6 +726,7 @@ where nid = ? and did in %s
     def _contextMenu(self):
         currentFlag = self.card and self.card.userFlag()
         opts = [
+            [_("Mark Note"), "*", self.onMark],
             [_("Flag Card"), [
                 [_("Red Flag"), "Ctrl+1", lambda: self.setFlag(1),
                  dict(checked=currentFlag == 1)],
@@ -736,17 +737,20 @@ where nid = ? and did in %s
                 [_("Blue Flag"), "Ctrl+4", lambda: self.setFlag(4),
                  dict(checked=currentFlag == 4)],
             ]],
-            [_("Mark Note"), "*", self.onMark],
-            [_("Bury Card"), "-", self.onBuryCard],
-            [_("Bury Note"), "=", self.onBuryNote],
-            [_("Suspend Card"), "@", self.onSuspendCard],
-            [_("Suspend Note"), "!", self.onSuspend],
-            [_("Delete Note"), "Delete", self.onDelete],
+            [_("Card Action"), [
+                [_("Bury Card"), "-", self.onBuryCard],
+                [_("Bury Note"), "=", self.onBuryNote],
+                [_("Suspend Card"), "@", self.onSuspendCard],
+                [_("Suspend Note"), "!", self.onSuspend],
+                [_("Delete Note"), "Delete", self.onDelete],
+            ]],
+            [_("Audio"), [
+                [_("Replay Audio"), "R", self.replayAudio],
+                [_("Record Own Voice"), "Shift+V", self.onRecordVoice],
+                [_("Replay Own Voice"), "V", self.onReplayRecorded],
+            ]],
             [_("Options"), "O", self.onOptions],
             None,
-            [_("Replay Audio"), "R", self.replayAudio],
-            [_("Record Own Voice"), "Shift+V", self.onRecordVoice],
-            [_("Replay Own Voice"), "V", self.onReplayRecorded],
         ]
         return opts
 
