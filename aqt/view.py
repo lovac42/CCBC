@@ -314,7 +314,8 @@ class FullScreenManager:
         self.cbHideCursor = QAction("Hide Idle Cursor", subMenu)
         self.cbHideCursor.setCheckable(True)
         self.cbHideCursor.triggered.connect(self.cb_toggle)
-        subMenu.addAction(self.cbHideCursor)
+        # subMenu.addAction(self.cbHideCursor)
+        #TODO: re-enable this once workflow issue has been sorted out.
 
 
     def cb_toggle(self):
@@ -403,6 +404,7 @@ class FullScreenManager:
     def showCursor(self):
         if self.cursor_timer:
             self.cursor_timer.stop()
+        self.mw.reviewer.web.eval("mouse_shown=true;")
         QApplication.restoreOverrideCursor()
 
     def hideCursor(self):
