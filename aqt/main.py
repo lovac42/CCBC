@@ -1376,9 +1376,6 @@ Please ensure a profile is open and Anki is not busy, then try again."""),
         if isWin:
             cmd = cmd.replace('/','\\')
 
-        self.pm.save()
-        self.col.autosave()
-
         import subprocess, time
         from anki.utils import tmpdir
         fname = os.path.join(tmpdir(), "note%d.txt"%time.time())
@@ -1393,6 +1390,9 @@ Please ensure a profile is open and Anki is not busy, then try again."""),
         try:
             self.debugDiag.close()
         except AttributeError: pass
+
+        self.pm.save()
+        self.col.autosave()
 
         subprocess.call('''%s "%s"'''%(cmd,fname), shell=True)
         self.show()
