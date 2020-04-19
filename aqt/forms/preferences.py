@@ -145,6 +145,7 @@ class Ui_Preferences(object):
         hLayout.addWidget(self.ansKeyActFlip)
         self.ansKeyActGrade = QtWidgets.QRadioButton(self.tab_adv)
         self.ansKeyActGrade.setObjectName("ansKeyActGrade")
+        self.ansKeyActGrade.setSizePolicy(sizePolicy)
         hLayout.addWidget(self.ansKeyActGrade)
         gbLayout.addLayout(hLayout)
 
@@ -156,6 +157,7 @@ class Ui_Preferences(object):
         # large review buttons
         self.bigGradeBtns = QtWidgets.QCheckBox(self.tab_adv)
         self.bigGradeBtns.setObjectName("bigGradeBtns")
+        self.bigGradeBtns.setSizePolicy(sizePolicy)
         hLayout.addWidget(self.bigGradeBtns)
         gbLayout.addLayout(hLayout)
 
@@ -465,8 +467,8 @@ class Ui_Preferences(object):
         self.ansKeyActNothing.setText(_("Nothing"))
         self.ansKeyActFlip.setText(_("Flip"))
         self.ansKeyActGrade.setText(_("Grade"))
-        self.colorGradeBtns.setText(_("Colorized"))
-        self.bigGradeBtns.setText(_("Enlarged"))
+        self.colorGradeBtns.setText(_("Colorize Buttons"))
+        self.bigGradeBtns.setText(_("Enlarge Buttons"))
         self.showFormatBtns.setText(_("Show extra formatting buttons in editor"))
         self.autoCompleter.setText(_("Use auto complete when adding card?"))
         self.powerUserMode.setText(_("Power User Mode (req. lots of ram)"))
