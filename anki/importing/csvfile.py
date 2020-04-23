@@ -1,11 +1,12 @@
-# -*- coding: utf-8 -*-
 # Copyright: Ankitects Pty Ltd and contributors
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import csv
 import re
+from typing import Any, List, Optional, TextIO, Union
 
-from anki.importing.noteimp import NoteImporter, ForeignNote
+from anki.collection import _Collection
+from anki.importing.noteimp import ForeignNote, NoteImporter
 from anki.lang import _
 
 
@@ -14,15 +15,17 @@ class TextImporter(NoteImporter):
     needDelimiter = True
     patterns = "\t|,;:"
 
-    def __init__(self, col, file):
+    def __init__(self, col: _Collection, file: str) -> None:
         NoteImporter.__init__(self, col, file)
         self.lines = None
-        self.fileobj = None
-        self.delimiter = None
-        self.tagsToAdd = []
+        self.fileobj: Optional[TextIO] = None
+        self.delimiter: Optional[str] = None
+        self.tagsToAdd: List[str] = []
         self.numFields = 0
+        self.dialect: Optional[Any]
+        self.data: Optional[Union[str, List[str]]]
 
-    def foreignNotes(self):
+    def foreignNotes(self) -> List[ForeignNote]:
         self.open()
         # process all lines
         log = []
@@ -37,13 +40,14 @@ class TextImporter(NoteImporter):
             for row in reader:
                 if len(row) != self.numFields:
                     if row:
-                        log.append(_(
-                            "'%(row)s' had %(num1)d fields, "
-                            "expected %(num2)d") % {
-                            "row": " ".join(row),
-                            "num1": len(row),
-                            "num2": self.numFields,
-                            })
+                        log.append(
+                            _("'%(row)s' had %(num1)d fields, " "expected %(num2)d")
+                            % {
+                                "row": " ".join(row),
+                                "num1": len(row),
+                                "num2": self.numFields,
+                            }
+                        )
                         ignored += 1
                     continue
                 note = self.noteFromFields(row)
@@ -55,23 +59,27 @@ class TextImporter(NoteImporter):
         self.fileobj.close()
         return notes
 
-    def open(self):
+    def open(self) -> None:
         "Parse the top line and determine the pattern and number of fields."
         # load & look for the right pattern
         self.cacheFile()
 
-    def cacheFile(self):
+    def cacheFile(self) -> None:
         "Read file into self.lines if not already there."
         if not self.fileobj:
             self.openFile()
 
-    def openFile(self):
+    def openFile(self) -> None:
         self.dialect = None
-        self.fileobj = open(self.file, "r", encoding='utf-8-sig')
+        self.fileobj = open(self.file, "r", encoding="utf-8-sig")
         self.data = self.fileobj.read()
+
         def sub(s):
             return re.sub(r"^\#.*$", "__comment", s)
-        self.data = [sub(x)+"\n" for x in self.data.split("\n") if sub(x) != "__comment"]
+
+        self.data = [
+            sub(x) + "\n" for x in self.data.split("\n") if sub(x) != "__comment"
+        ]
         if self.data:
             if self.data[0].startswith("tags:"):
                 tags = str(self.data[0][5:]).strip()
@@ -81,15 +89,15 @@ class TextImporter(NoteImporter):
         if not self.dialect and not self.delimiter:
             raise Exception("unknownFormat")
 
-    def updateDelimiter(self):
+    def updateDelimiter(self) -> None:
         def err():
             raise Exception("unknownFormat")
+
         self.dialect = None
         sniffer = csv.Sniffer()
         if not self.delimiter:
             try:
-                self.dialect = sniffer.sniff("\n".join(self.data[:10]),
-                                             self.patterns)
+                self.dialect = sniffer.sniff("\n".join(self.data[:10]), self.patterns)
             except:
                 try:
                     self.dialect = sniffer.sniff(self.data[0], self.patterns)
@@ -121,12 +129,12 @@ class TextImporter(NoteImporter):
             err()
         self.initMapping()
 
-    def fields(self):
+    def fields(self) -> int:
         "Number of fields."
         self.open()
         return self.numFields
 
-    def noteFromFields(self, fields):
+    def noteFromFields(self, fields: List[str]) -> ForeignNote:
         note = ForeignNote()
         note.fields.extend([x for x in fields])
         note.tags.extend(self.tagsToAdd)
