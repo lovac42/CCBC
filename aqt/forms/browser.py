@@ -223,14 +223,17 @@ class Ui_Dialog(object):
         icon9.addPixmap(QtGui.QPixmap(":/icons/edit-find-replace.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionFindReplace.setIcon(icon9)
         self.actionFindReplace.setObjectName("actionFindReplace")
-        self.actionCram = QtGui.QAction(Dialog)
-        self.actionCram.setIcon(icon1)
-        self.actionCram.setObjectName("actionCram")
-        self.actionTags = QtGui.QAction(Dialog)
-        icon10 = QtGui.QIcon()
-        icon10.addPixmap(QtGui.QPixmap(":/icons/anki-tag.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionTags.setIcon(icon10)
-        self.actionTags.setObjectName("actionTags")
+
+        # self.actionCram = QtGui.QAction(Dialog)
+        # self.actionCram.setIcon(icon1)
+        # self.actionCram.setObjectName("actionCram")
+
+        # self.actionTags = QtGui.QAction(Dialog)
+        # icon10 = QtGui.QIcon()
+        # icon10.addPixmap(QtGui.QPixmap(":/icons/anki-tag.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        # self.actionTags.setIcon(icon10)
+        # self.actionTags.setObjectName("actionTags")
+
         self.actionCardList = QtGui.QAction(Dialog)
         icon11 = QtGui.QIcon()
         icon11.addPixmap(QtGui.QPixmap(":/icons/generate_07.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -269,9 +272,9 @@ class Ui_Dialog(object):
 
         # Go menu
         self.menuJump.addAction(self.actionFind)
-        self.menuJump.addAction(self.actionTags) #filter
-        self.menuJump.addAction(self.actionNote)
+        # self.menuJump.addAction(self.actionTags) #filter
         self.menuJump.addAction(self.actionSidebar)
+        self.menuJump.addAction(self.actionNote)
         self.menuJump.addAction(self.actionCardList)
         self.menuJump.addSeparator()
         self.menuJump.addAction(self.actionFirstCard)
@@ -368,9 +371,9 @@ class Ui_Dialog(object):
         self.actionSelectNotes.setShortcut(_("Ctrl+Shift+A"))
         self.actionFindReplace.setText(_("Find and Re&place..."))
         self.actionFindReplace.setShortcut(_("Ctrl+Alt+F"))
-        self.actionCram.setText(_("&Cram..."))
-        self.actionTags.setText(_("Fil&ters"))
-        self.actionTags.setShortcut(_("Ctrl+Shift+F"))
+        # self.actionCram.setText(_("&Cram..."))
+        # self.actionTags.setText(_("Fil&ters"))
+        # self.actionTags.setShortcut(_("Ctrl+Shift+F"))
         self.actionCardList.setText(_("Card List"))
         self.actionCardList.setShortcut(_("Ctrl+Shift+L"))
         self.actionFindDuplicates.setText(_("Find &Duplicates..."))

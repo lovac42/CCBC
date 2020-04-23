@@ -499,7 +499,7 @@ class Browser(QMainWindow):
             f.actionClose.setVisible(False)
         c(f.actionReposition, s, self.reposition)
         c(f.actionReschedule, s, self.reschedule)
-        c(f.actionCram, s, self.cram)
+        # c(f.actionCram, s, self.cram)
         c(f.actionChangeModel, s, self.onChangeModel)
 
         # edit
@@ -519,7 +519,6 @@ class Browser(QMainWindow):
         c(f.actionLastCard, s, self.onLastCard)
         c(f.actionFind, s, self.onFind)
         c(f.actionNote, s, self.onNote)
-        c(f.actionTags, s, self.onTags)
         c(f.actionSidebar, s, self.focusSidebar)
         c(f.actionCardList, s, self.onCardList)
 
@@ -1336,10 +1335,10 @@ where id in %s""" % ids2str(sf))
         if nids:
             ChangeModel(self, nids)
 
-    def cram(self):
-        return showInfo("not yet implemented")
-        self.close()
-        self.mw.onCram(self.selectedCards())
+    # def cram(self):
+        # return showInfo("not yet implemented")
+        # self.close()
+        # self.mw.onCram(self.selectedCards())
 
     # Preview
     ######################################################################
@@ -1970,9 +1969,6 @@ Red items will be deleted.""")))
         self.editor.focus()
         self.editor.web.setFocus()
         self.editor.web.eval("focusField(0);")
-
-    def onTags(self):
-        self.sidebarTree.setFocus()
 
     def onCardList(self):
         self.form.tableView.setFocus()
