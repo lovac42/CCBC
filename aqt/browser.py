@@ -582,6 +582,11 @@ class Browser(QMainWindow):
 
     def onContextMenu(self, _point):
         m = QMenu()
+
+        act = QAction("Card Info", self)
+        act.triggered.connect(self.showCardInfo)
+        m.addAction(act)
+
         for act in self.form.menuEdit.actions()[2:5]:
             m.addAction(act)
         m.addSeparator()
@@ -1191,16 +1196,28 @@ by clicking on one on the left."""))
     ######################################################################
 
     def showCardInfo(self):
-        if not self.card:
+        html = []
+        cids = self.selectedCards()
+        if cids:
+            for cid in cids:
+                card = self.col.getCard(cid)
+                s = self._getCardInfoHtml(card)
+                html.append(s)
+        elif self.card:
+            s = self._getCardInfoHtml(self.card)
+            html.append(s)
+        else:
             return
-        info, cs = self._cardInfoData()
-        reps = self._revlogData(cs)
+
         d = QDialog(self)
         l = QVBoxLayout()
         l.setMargin(0)
         w = AnkiWebView()
         l.addWidget(w)
-        w.stdHtml(info + "<p>" + reps)
+
+        # w.stdHtml(info + "<p>" + reps)
+        w.stdHtml("<br><hr><br>".join(html))
+
         bb = QDialogButtonBox(QDialogButtonBox.Close)
         l.addWidget(bb)
         bb.rejected.connect(d.reject)
@@ -1211,20 +1228,31 @@ by clicking on one on the left."""))
         d.exec_()
         saveGeom(d, "revlog")
 
-    def _cardInfoData(self):
+
+    def _getCardInfoHtml(self, card):
+        info, cs = self._cardInfoData(card)
+        reps = self._revlogData(cs)
+        return "<div>" + info + "<p>" + reps + "</div>"
+
+
+    def _cardInfoData(self, card=None):
+        if not card:
+            card = self.card
         from anki.stats import CardStats
-        cs = CardStats(self.col, self.card)
+        cs = CardStats(self.col, card)
         rep = cs.report()
-        m = self.card.model()
+        m = card.model()
         rep = """
 <div style='width: 400px; margin: 0 auto 0;
 border: 1px solid #000; padding: 3px; '>%s</div>""" % rep
         return rep, cs
 
-    def _revlogData(self, cs):
+    def _revlogData(self, cs, card=None):
+        if not card:
+            card = self.card
         entries = self.mw.col.db.all(
             "select id/1000.0, ease, ivl, factor, time/1000.0, type "
-            "from revlog where cid = ?", self.card.id)
+            "from revlog where cid = ?", card.id)
         if not entries:
             return ""
         s = "<table width=100%%><tr><th align=left>%s</th>" % _("Date")
@@ -1263,7 +1291,7 @@ border: 1px solid #000; padding: 3px; '>%s</div>""" % rep
                 "%d%%" % (factor/10) if factor else "",
                 cs.time(taken)) + "</tr>"
         s += "</table>"
-        if cnt < self.card.reps:
+        if cnt < card.reps:
             s += _("""\
 Note: Some of the history is missing. For more information, \
 please see the browser documentation.""")
