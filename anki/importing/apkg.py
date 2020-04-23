@@ -1,23 +1,21 @@
-# -*- coding: utf-8 -*-
 # Copyright: Ankitects Pty Ltd and contributors
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-import zipfile, os
-import unicodedata
 import json
-from anki.utils import tmpfile
+import os
+import unicodedata
+import zipfile
+from typing import Any, Dict, Optional
+
 from anki.importing.anki2 import Anki2Importer
+from anki.utils import tmpfile
+
 
 class AnkiPackageImporter(Anki2Importer):
+    nameToNum: Dict[str, str]
+    zip: Optional[zipfile.ZipFile]
 
-    def __init__(self, col, file):
-        super().__init__(col, file)
-
-        # set later; set here for typechecking
-        self.nameToNum = {}
-        self.zip = None
-
-    def run(self):
+    def run(self) -> None:  # type: ignore
         # extract the deck from the zip file
         self.zip = z = zipfile.ZipFile(self.file)
         # v2 scheduler?
@@ -27,8 +25,8 @@ class AnkiPackageImporter(Anki2Importer):
         except KeyError:
             suffix = ".anki2"
 
-        col = z.read("collection"+suffix)
-        colpath = tmpfile(suffix=suffix)
+        col = z.read("collection" + suffix)
+        colpath = tmpfile(suffix=".anki2")
         with open(colpath, "wb") as f:
             f.write(col)
         self.file = colpath
@@ -41,7 +39,7 @@ class AnkiPackageImporter(Anki2Importer):
             if os.path.commonprefix([path, dir]) != dir:
                 raise Exception("Invalid file")
 
-            self.nameToNum[unicodedata.normalize("NFC",v)] = k
+            self.nameToNum[unicodedata.normalize("NFC", v)] = k
         # run anki2 importer
         Anki2Importer.run(self)
         # import static media
@@ -53,7 +51,9 @@ class AnkiPackageImporter(Anki2Importer):
                 with open(path, "wb") as f:
                     f.write(z.read(c))
 
-    def _srcMediaData(self, fname):
+    def _srcMediaData(self, fname: str) -> Any:
         if fname in self.nameToNum:
-            return self.zip.read(self.nameToNum[fname])
+            return self.zip.read(
+                self.nameToNum[fname]
+            )  # pytype: disable=attribute-error
         return None

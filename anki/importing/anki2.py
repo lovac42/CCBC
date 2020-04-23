@@ -4,10 +4,14 @@
 
 import os
 import unicodedata
-from anki.storage import Collection
-from anki.utils import intTime, splitFields, joinFields
+from typing import Any, Dict, List, Optional, Tuple
+from anki.collection import _Collection
+
 from anki.importing.base import Importer
 from anki.lang import _
+from anki.storage import Collection
+from anki.utils import intTime, joinFields, splitFields
+
 
 GUID = 1
 MID = 2
@@ -16,18 +20,20 @@ MOD = 3
 class Anki2Importer(Importer):
 
     needMapper = False
-    deckPrefix = None
+    deckPrefix: Optional[str] = None
     allowUpdate = True
+    src: _Collection
+    dst: _Collection
 
-    def __init__(self, col, file):
+    def __init__(self, col: _Collection, file: str) -> None:
         super().__init__(col, file)
 
         # set later, defined here for typechecking
-        self.src = None
-        self._decks = {}
+        # self.src = None
+        self._decks: Dict[int, int] = {}
         self.mustResetLearning = False
 
-    def run(self, media=None):
+    def run(self, media: None = None) -> None:
         self._prepareFiles()
         if media is not None:
             # Anki1 importer has provided us with a custom media folder
@@ -37,21 +43,19 @@ class Anki2Importer(Importer):
         finally:
             self.src.close(save=False)
 
-    def _prepareFiles(self):
+    def _prepareFiles(self) -> None:
         importingV2 = self.file.endswith(".anki21")
-        if importingV2 and self.col.schedVer() == 1:
-            raise Exception("V2 scheduler must be enabled to import this file.")
+        self.mustResetLearning = False
 
         self.dst = self.col
         self.src = Collection(self.file)
 
         if not importingV2 and self.col.schedVer() != 1:
-            # if v2 scheduler enabled, can't import v1 decks that include scheduling
+            # any scheduling included?
             if self.src.db.scalar("select 1 from cards where queue != 0 limit 1"):
-                self.src.close(save=False)
-                raise Exception("V2 scheduler can not import V1 decks with scheduling included.")
+                self.mustResetLearning = True
 
-    def _import(self):
+    def _import(self) -> None:
         self._decks = {}
         if self.deckPrefix:
             id = self.dst.decks.id(self.deckPrefix)
@@ -62,34 +66,29 @@ class Anki2Importer(Importer):
         self._importCards()
         self._importStaticMedia()
         self._postImport()
-        self.dst.db.setAutocommit(True)
-        self.dst.db.execute("vacuum")
-        self.dst.db.execute("analyze")
-        self.dst.db.setAutocommit(False)
+        self.dst.optimize()
 
     # Notes
     ######################################################################
 
-    def _logNoteRow(self, action, noteRow):
-        self.log.append("[%s] %s" % (
-            action,
-            noteRow[6].replace("\x1f", ", ")
-        ))
+    def _logNoteRow(self, action: str, noteRow: List[str]) -> None:
+        self.log.append("[%s] %s" % (action, noteRow[6].replace("\x1f", ", ")))
 
-    def _importNotes(self):
+    def _importNotes(self) -> None:
         # build guid -> (id,mod,mid) hash & map of existing note ids
-        self._notes = {}
+        self._notes: Dict[str, Tuple[int, int, int]] = {}
         existing = {}
         for id, guid, mod, mid in self.dst.db.execute(
-            "select id, guid, mod, mid from notes"):
+            "select id, guid, mod, mid from notes"
+        ):
             self._notes[guid] = (id, mod, mid)
             existing[id] = True
         # we may need to rewrite the guid if the model schemas don't match,
         # so we need to keep track of the changes for the card import stage
-        self._changedGuids = {}
+        self._changedGuids: Dict[str, bool] = {}
         # we ignore updates to changed schemas. we need to note the ignored
         # guids, so we avoid importing invalid cards
-        self._ignoredGuids = {}
+        self._ignoredGuids: Dict[str, bool] = {}
         # iterate over source collection
         add = []
         update = []
@@ -99,8 +98,7 @@ class Anki2Importer(Importer):
         dupesIgnored = []
         total = 0
         script = 0
-        for note in self.src.db.execute(
-            "select * from notes"):
+        for note in self.src.db.execute("select * from notes"):
             total += 1
 
             if note[6].find('<script') > -1:
@@ -184,17 +182,17 @@ class Anki2Importer(Importer):
         self.updated = len(update)
         # add to col
         self.dst.db.executemany(
-            "insert or replace into notes values (?,?,?,?,?,?,?,?,?,?,?)",
-            add)
+            "insert or replace into notes values (?,?,?,?,?,?,?,?,?,?,?)", add
+        )
         self.dst.db.executemany(
-            "insert or replace into notes values (?,?,?,?,?,?,?,?,?,?,?)",
-            update)
+            "insert or replace into notes values (?,?,?,?,?,?,?,?,?,?,?)", update
+        )
         self.dst.updateFieldCache(dirty)
         self.dst.tags.registerNotes(dirty)
 
     # determine if note is a duplicate, and adjust mid and/or guid as required
     # returns true if note should be added
-    def _uniquifyNote(self, note):
+    def _uniquifyNote(self, note: List[Any]) -> bool:
         origGuid = note[GUID]
         srcMid = note[MID]
         dstMid = self._mid(srcMid)
@@ -216,11 +214,11 @@ class Anki2Importer(Importer):
     # the schemas don't match, we increment the mid and try again, creating a
     # new model if necessary.
 
-    def _prepareModels(self):
+    def _prepareModels(self) -> None:
         "Prepare index of schema hashes."
-        self._modelMap = {}
+        self._modelMap: Dict[int, int] = {}
 
-    def _mid(self, srcMid):
+    def _mid(self, srcMid: int) -> Any:
         "Return local id for remote MID."
         # already processed this mid?
         if srcMid in self._modelMap:
@@ -233,8 +231,8 @@ class Anki2Importer(Importer):
             if not self.dst.models.have(mid):
                 # copy it over
                 model = srcModel.copy()
-                model['id'] = mid
-                model['usn'] = self.col.usn()
+                model["id"] = mid
+                model["usn"] = self.col.usn()
                 self.dst.models.update(model)
                 break
             # there's an existing model; do the schemas match?
@@ -242,10 +240,10 @@ class Anki2Importer(Importer):
             dstScm = self.dst.models.scmhash(dstModel)
             if srcScm == dstScm:
                 # copy styling changes over if newer
-                if srcModel['mod'] > dstModel['mod']:
+                if srcModel["mod"] > dstModel["mod"]:
                     model = srcModel.copy()
-                    model['id'] = mid
-                    model['usn'] = self.col.usn()
+                    model["id"] = mid
+                    model["usn"] = self.col.usn()
                     self.dst.models.update(model)
                 break
             # as they don't match, try next id
@@ -257,14 +255,14 @@ class Anki2Importer(Importer):
     # Decks
     ######################################################################
 
-    def _did(self, did):
+    def _did(self, did: int) -> Any:
         "Given did in src col, return local id."
         # already converted?
         if did in self._decks:
             return self._decks[did]
         # get the name in src
         g = self.src.decks.get(did)
-        name = g['name']
+        name = g["name"]
         # if there's a prefix, replace the top level deck
         if self.deckPrefix:
             tmpname = "::".join(name.split("::")[1:])
@@ -281,21 +279,21 @@ class Anki2Importer(Importer):
             self._did(idInSrc)
         # if target is a filtered deck, we'll need a new deck name
         deck = self.dst.decks.byName(name)
-        if deck and deck['dyn']:
+        if deck and deck["dyn"]:
             name = "%s %d" % (name, intTime())
         # create in local
         newid = self.dst.decks.id(name)
         # pull conf over
-        if 'conf' in g and g['conf'] != 1:
-            conf = self.src.decks.getConf(g['conf'])
+        if "conf" in g and g["conf"] != 1:
+            conf = self.src.decks.getConf(g["conf"])
             self.dst.decks.save(conf)
-            self.dst.decks.updateConf(conf)
+            self.dst.decks.update_config(conf)
             g2 = self.dst.decks.get(newid)
-            g2['conf'] = g['conf']
+            g2["conf"] = g["conf"]
             self.dst.decks.save(g2)
         # save desc
         deck = self.dst.decks.get(newid)
-        deck['desc'] = g['desc']
+        deck["desc"] = g["desc"]
         self.dst.decks.save(deck)
         # add to deck map and return
         self._decks[did] = newid
@@ -304,13 +302,15 @@ class Anki2Importer(Importer):
     # Cards
     ######################################################################
 
-    def _importCards(self):
+    def _importCards(self) -> None:
+        if self.mustResetLearning:
+            self.src.changeSchedulerVer(2)
         # build map of (guid, ord) -> cid and used id cache
-        self._cards = {}
+        self._cards: Dict[Tuple[str, int], int] = {}
         existing = {}
         for guid, ord, cid in self.dst.db.execute(
-            "select f.guid, c.ord, c.id from cards c, notes f "
-            "where c.nid = f.id"):
+            "select f.guid, c.ord, c.id from cards c, notes f " "where c.nid = f.id"
+        ):
             existing[cid] = True
             self._cards[(guid, ord)] = cid
         # loop through src
@@ -320,8 +320,8 @@ class Anki2Importer(Importer):
         usn = self.dst.usn()
         aheadBy = self.src.sched.today - self.dst.sched.today
         for card in self.src.db.execute(
-            "select f.guid, f.mid, c.* from cards c, notes f "
-            "where c.nid = f.id"):
+            "select f.guid, f.mid, c.* from cards c, notes f " "where c.nid = f.id"
+        ):
             guid = card[0]
             if guid in self._changedGuids:
                 guid = self._changedGuids[guid]
@@ -371,25 +371,30 @@ class Anki2Importer(Importer):
                     card[6] = 0
             cards.append(card)
             # we need to import revlog, rewriting card ids and bumping usn
-            for rev in self.src.db.execute(
-                "select * from revlog where cid = ?", scid):
+            for rev in self.src.db.execute("select * from revlog where cid = ?", scid):
                 rev = list(rev)
                 rev[1] = card[0]
                 rev[2] = self.dst.usn()
                 revlog.append(rev)
             cnt += 1
         # apply
-        self.dst.db.executemany("""
-insert or ignore into cards values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", cards)
-        self.dst.db.executemany("""
-insert or ignore into revlog values (?,?,?,?,?,?,?,?,?)""", revlog)
+        self.dst.db.executemany(
+            """
+insert or ignore into cards values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            cards,
+        )
+        self.dst.db.executemany(
+            """
+insert or ignore into revlog values (?,?,?,?,?,?,?,?,?)""",
+            revlog,
+        )
 
     # Media
     ######################################################################
 
     # note: this func only applies to imports of .anki2. for .apkg files, the
     # apkg importer does the copying
-    def _importStaticMedia(self):
+    def _importStaticMedia(self) -> None:
         # Import any '_foo' prefixed media files regardless of whether
         # they're used on notes or not
         dir = self.src.media.dir()
@@ -399,7 +404,7 @@ insert or ignore into revlog values (?,?,?,?,?,?,?,?,?)""", revlog)
             if fname.startswith("_") and not self.dst.media.have(fname):
                 self._writeDstMedia(fname, self._srcMediaData(fname))
 
-    def _mediaData(self, fname, dir=None):
+    def _mediaData(self, fname: str, dir: Optional[str] = None) -> bytes:
         if not dir:
             dir = self.src.media.dir()
         path = os.path.join(dir, fname)
@@ -407,19 +412,18 @@ insert or ignore into revlog values (?,?,?,?,?,?,?,?,?)""", revlog)
             with open(path, "rb") as f:
                 return f.read()
         except (IOError, OSError):
-            return
+            return b""
 
-    def _srcMediaData(self, fname):
+    def _srcMediaData(self, fname: str) -> bytes:
         "Data for FNAME in src collection."
         return self._mediaData(fname, self.src.media.dir())
 
-    def _dstMediaData(self, fname):
+    def _dstMediaData(self, fname: str) -> bytes:
         "Data for FNAME in dst collection."
         return self._mediaData(fname, self.dst.media.dir())
 
-    def _writeDstMedia(self, fname, data):
-        path = os.path.join(self.dst.media.dir(),
-                            unicodedata.normalize("NFC", fname))
+    def _writeDstMedia(self, fname: str, data: bytes) -> None:
+        path = os.path.join(self.dst.media.dir(), unicodedata.normalize("NFC", fname))
         try:
             with open(path, "wb") as f:
                 f.write(data)
@@ -427,8 +431,9 @@ insert or ignore into revlog values (?,?,?,?,?,?,?,?,?)""", revlog)
             # the user likely used subdirectories
             pass
 
-    def _mungeMedia(self, mid, fields):
-        fields = splitFields(fields)
+    def _mungeMedia(self, mid: int, fieldsStr: str) -> str:
+        fields = splitFields(fieldsStr)
+
         def repl(match):
             fname = match.group("fname")
             srcData = self._srcMediaData(fname)
@@ -450,6 +455,7 @@ insert or ignore into revlog values (?,?,?,?,?,?,?,?,?)""", revlog)
             # exists but does not match, so we need to dedupe
             self._writeDstMedia(lname, srcData)
             return match.group(0).replace(fname, lname)
+
         for i in range(len(fields)):
             fields[i] = self.dst.media.transformNames(fields[i], repl)
         return joinFields(fields)
@@ -457,10 +463,11 @@ insert or ignore into revlog values (?,?,?,?,?,?,?,?,?)""", revlog)
     # Post-import cleanup
     ######################################################################
 
-    def _postImport(self):
+    def _postImport(self) -> None:
         for did in list(self._decks.values()):
             self.col.sched.maybeRandomizeDeck(did)
         # make sure new position is correct
-        self.dst.conf['nextPos'] = self.dst.db.scalar(
-            "select max(due)+1 from cards where type = 0") or 0
+        self.dst.conf["nextPos"] = (
+            self.dst.db.scalar("select max(due)+1 from cards where type = 0") or 0
+        )
         self.dst.save()
