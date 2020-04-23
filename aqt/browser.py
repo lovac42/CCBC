@@ -1198,7 +1198,7 @@ by clicking on one on the left."""))
         html = []
         cids = self.selectedCards()
         if cids:
-            for cid in cids:
+            for cid in cids[:25]:
                 card = self.col.getCard(cid)
                 s = self._getCardInfoHtml(card)
                 html.append(s)
@@ -1213,10 +1213,7 @@ by clicking on one on the left."""))
         l.setMargin(0)
         w = AnkiWebView()
         l.addWidget(w)
-
-        # w.stdHtml(info + "<p>" + reps)
         w.stdHtml("<br><hr><br>".join(html))
-
         bb = QDialogButtonBox(QDialogButtonBox.Close)
         l.addWidget(bb)
         bb.rejected.connect(d.reject)
