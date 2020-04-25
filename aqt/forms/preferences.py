@@ -150,6 +150,10 @@ class Ui_Preferences(object):
         gbLayout.addLayout(hLayout)
 
         hLayout=QtWidgets.QHBoxLayout()
+        # cascade review buttons
+        self.cascadeGradeBtns = QtWidgets.QCheckBox(self.tab_adv)
+        self.cascadeGradeBtns.setObjectName("cascadeGradeBtns")
+        hLayout.addWidget(self.cascadeGradeBtns)
         # colorize review buttons
         self.colorGradeBtns = QtWidgets.QCheckBox(self.tab_adv)
         self.colorGradeBtns.setObjectName("colorGradeBtns")
@@ -464,9 +468,10 @@ class Ui_Preferences(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _("Backups"))
 
         # Advanced tab
-        self.ansKeyActNothing.setText(_("Nothing"))
-        self.ansKeyActFlip.setText(_("Flip"))
-        self.ansKeyActGrade.setText(_("Grade"))
+        self.ansKeyActNothing.setText(_("Do Nothing"))
+        self.ansKeyActFlip.setText(_("Flip Card"))
+        self.ansKeyActGrade.setText(_("Grade Card"))
+        self.cascadeGradeBtns.setText(_("Cascade Buttons"))
         self.colorGradeBtns.setText(_("Colorize Buttons"))
         self.bigGradeBtns.setText(_("Enlarge Buttons"))
         self.showFormatBtns.setText(_("Show extra formatting buttons in editor"))

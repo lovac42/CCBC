@@ -274,6 +274,7 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         # user hook
         runHook('showAnswer')
 
+
     # Answering a card
     ############################################################
 
@@ -282,15 +283,23 @@ The front of this card is empty. Please run Tools>Empty Cards.""")
         if self.mw.state != "review":
             # showing resetRequired screen; ignore key
             return
+
         forceGrade = self.mw.pm.profile.get("ccbc.forceGrade",False)
         if self.state != "answer" and not forceGrade:
             return
-        if self.mw.col.sched.answerButtons(self.card) < ease:
-            return
+
+        max_ease = self.mw.col.sched.answerButtons(self.card)
+        if max_ease < ease:
+            if self.mw.pm.profile.get("ccbc.revCascadeBtn",False):
+                ease = max_ease
+            else:
+                return
+
         self.mw.col.sched.answerCard(self.card, ease)
         self._answeredIds.append(self.card.id)
         self.mw.autosave()
         self.nextCard()
+
 
     # Handlers
     ############################################################
