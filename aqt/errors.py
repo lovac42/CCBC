@@ -148,3 +148,7 @@ repeat this step until you discover the add-on that is causing the problem.</p>
         # highlight importance of first add-on:
         addons[0] = "<b>{}</b>".format(addons[0])
         return txt.format(", ".join(addons))
+
+    def flush(self):
+        # no-op to avoid pyinstaller exit warning
+        pass
