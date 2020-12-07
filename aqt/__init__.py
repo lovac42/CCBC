@@ -168,7 +168,13 @@ class AnkiApp(QApplication):
         # we accept only one command line argument. if it's missing, send
         # a blank screen to just raise the existing window
         opts, args = parseArgs(self._argv)
-        self.KEY = "anki"+checksum(opts.base+opts.profile+getpass.getuser())
+
+        try:
+            USER = getpass.getuser()
+        except ModuleNotFoundError as err:
+            print("Warning: the environment variable USERNAME is not set.")
+            USER = "foobar"
+        self.KEY = "anki"+checksum(opts.base+opts.profile+USER)
 
         buf = "raise"
         if args and args[0]:
