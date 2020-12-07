@@ -18,7 +18,7 @@ from anki.utils import ids2str, stripHTML, isMac, json
 from anki.hooks import addHook, runHook, runFilter
 from anki.sound import playFromText, clearAudioQueue, play
 from aqt.utils import mungeQA, getBase, openLink, tooltip, askUserDialog, \
-    downArrow
+    downArrow, askUser
 from aqt.sound import getAudio
 import aqt
 import ccbc
@@ -828,12 +828,24 @@ where nid = ? and did in %s
         self.mw.reset(guiOnly=True)
 
     def onDelete(self):
-        # need to check state because the shortcut is global to the main
-        # window
+        # need to check state because the shortcut is global to the main window
         if self.mw.state != "review" or not self.card:
             return
-        self.mw.checkpoint(_("Delete"))
+
+        # warn user before deleting important siblings in reviewer
         cnt = len(self.card.note().cards())
+        if cnt>1:
+            toDelete = askUser(
+                ngettext(
+                    "This note contains %d siblings, are you sure?",
+                    "This note contains %d siblings, are you sure?",
+                    cnt) % cnt,
+                defaultno=True, title="Delete Note"
+            )
+            if not toDelete:
+                return
+
+        self.mw.checkpoint(_("Delete"))
         self.mw.col.remNotes([self.card.note().id])
         self.mw.reset(guiOnly=True)
         tooltip(ngettext(
