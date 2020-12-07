@@ -287,7 +287,7 @@ class Anki2Importer(Importer):
         if "conf" in g and g["conf"] != 1:
             conf = self.src.decks.getConf(g["conf"])
             self.dst.decks.save(conf)
-            self.dst.decks.update_config(conf)
+            self.dst.decks.updateConf(conf)
             g2 = self.dst.decks.get(newid)
             g2["conf"] = g["conf"]
             self.dst.decks.save(g2)
