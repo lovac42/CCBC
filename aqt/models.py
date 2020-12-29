@@ -53,6 +53,9 @@ class Models(QDialog):
         f.modelsList.itemDoubleClicked.connect(self.onRename)
         self.updateModelsList()
         f.modelsList.setCurrentRow(0)
+        if len(self.models) >= 30:
+            b = box.addButton(_("ReCount"), t)
+            b.clicked.connect(self.onUpdateUsedCount)
         maybeHideClose(box)
 
     def onRename(self):
@@ -69,12 +72,25 @@ class Models(QDialog):
         self.models = self.col.models.all()
         self.models.sort(key=itemgetter("name"))
         self.form.modelsList.clear()
+        if len(self.models) < 30:
+            self._updateModelsListLive()
+        else:
+            self._updateModelsListCached()
+        self.form.modelsList.setCurrentRow(row)
+
+    def _updateModelsListCached(self):
+        for m in self.models:
+            mUse = m.get("use_count", 0)
+            mUse = ngettext("%d note", "%d notes", mUse) % mUse
+            item = QListWidgetItem("%s [%s]" % (m['name'], mUse))
+            self.form.modelsList.addItem(item)
+
+    def _updateModelsListLive(self):
         for m in self.models:
             mUse = self.mm.useCount(m)
             mUse = ngettext("%d note", "%d notes", mUse) % mUse
             item = QListWidgetItem("%s [%s]" % (m['name'], mUse))
             self.form.modelsList.addItem(item)
-        self.form.modelsList.setCurrentRow(row)
 
     def modelChanged(self):
         if self.model:
@@ -121,6 +137,17 @@ class Models(QDialog):
         # self.model['latexsvg'] = frm.latexsvg.isChecked()
         self.model['latexPre'] = str(frm.latexHeader.toPlainText())
         self.model['latexPost'] = str(frm.latexFooter.toPlainText())
+
+    def onUpdateUsedCount(self):
+        self.mw.progress.start(
+            label=_("Updating Count..."),
+            immediate=True
+        )
+        for m in self.models:
+            mUse = self.mm.useCount(m)
+            m["use_count"] = mUse
+        self.updateModelsList()
+        self.mw.progress.finish()
 
     def saveModel(self):
         self.mm.save(self.model)
