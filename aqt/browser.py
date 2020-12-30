@@ -1480,6 +1480,9 @@ where id in %s""" % ids2str(sf))
 
     def deleteNotes(self):
         nids = self.selectedNotes()
+        self._deleteNotes(nids)
+
+    def _deleteNotes(self, nids):
         if not nids:
             return
         self.mw.checkpoint(_("Delete Notes"))
@@ -1850,6 +1853,7 @@ Red items will be deleted.""")))
         fields = sorted(fields, key=lambda x: x.lower())
         frm.fields.addItems(fields)
         self._dupesButton = None
+        self._delDupesButton = None
         # links
         frm.webView.page().setLinkDelegationPolicy(
             QWebPage.DelegateAllLinks)
@@ -1871,9 +1875,13 @@ Red items will be deleted.""")))
         self.mw.progress.start()
         res = self.mw.col.findDupes(fname, search)
         if not self._dupesButton:
-            self._dupesButton = b = frm.buttonBox.addButton(
+            self._dupesButton = frm.buttonBox.addButton(
                 _("Tag Duplicates"), QDialogButtonBox.ActionRole)
-            self.connect(b, SIGNAL("clicked()"), lambda: self._onTagDupes(res))
+            self._delDupesButton = frm.buttonBox.addButton(
+                _("Del All Dups"), QDialogButtonBox.ActionRole)
+        self._dupesButton.clicked.connect(lambda: self._onTagDupes(res))
+        self._delDupesButton.clicked.connect(lambda: self._onDelDupes(res))
+
         t = "<html><body>"
         groups = len(res)
         notes = sum(len(r[1]) for r in res)
@@ -1890,6 +1898,14 @@ Red items will be deleted.""")))
         t += "</body></html>"
         web.setHtml(t)
         self.mw.progress.finish()
+
+    def _onDelDupes(self, res):
+        if not res:
+            return
+        toDelArr = []
+        for _, nids in res:
+            toDelArr.extend(nids[1:])
+        self._deleteNotes(toDelArr)
 
     def _onTagDupes(self, res):
         if not res:
