@@ -29,6 +29,9 @@ def Collection(path, lock=True, server=False, log=False):
     db.setAutocommit(True)
     if create:
         ver = _createDB(db)
+    elif db.scalar("select ver from col") > 11:
+        db.setAutocommit(False)
+        raise Exception("invalidColVersion")
     else:
         ver = _upgradeSchema(db)
     db.execute("pragma temp_store = memory")

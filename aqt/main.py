@@ -288,8 +288,12 @@ Debug info:
 """)+traceback.format_exc())
             self.unloadProfile()
         except Exception as e:
-            # the custom exception handler won't catch this if we immediately
+            # the custom exception handler won't catch these if we immediately
             # unload, so we have to manually handle it
+            if "invalidColVersion" == str(e):
+                showWarning("Profiles created with newer versions of Anki requires downgrading first.")
+                self.unloadProfile()
+                return
             if "invalidTempFolder" in repr(str(e)):
                 showWarning(self.errorHandler.tempFolderMsg())
                 self.unloadProfile()
