@@ -544,10 +544,12 @@ class Editor(object):
         html = tt.toString()
         tt.close()
 
-        # self.note.fields[self.currentField] = html
-        # self.loadNote()
-        self.web.eval("setFieldHtml(%s,%d);"%(
-            json.dumps(html),self.currentField))
+        self.note.fields[self.currentField] = html
+        self.loadNote() # performance issue on large notes.
+
+        # bug: jquery auto escapes &amp; chars inside img srcs
+        # self.web.eval("setFieldHtml(%s,%d);"%(
+            # json.dumps(html),self.currentField))
 
         # focus field so it's saved
         self.web.setFocus()
