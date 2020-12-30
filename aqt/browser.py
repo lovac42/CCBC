@@ -1873,31 +1873,36 @@ Red items will be deleted.""")))
 
     def duplicatesReport(self, web, fname, search, frm):
         self.mw.progress.start()
-        res = self.mw.col.findDupes(fname, search)
-        if not self._dupesButton:
-            self._dupesButton = frm.buttonBox.addButton(
-                _("Tag Duplicates"), QDialogButtonBox.ActionRole)
-            self._delDupesButton = frm.buttonBox.addButton(
-                _("Del All Dups"), QDialogButtonBox.ActionRole)
-        self._dupesButton.clicked.connect(lambda: self._onTagDupes(res))
-        self._delDupesButton.clicked.connect(lambda: self._onDelDupes(res))
+        try:
+            res = self.mw.col.findDupes(fname, search)
+            if not self._dupesButton:
+                self._dupesButton = frm.buttonBox.addButton(
+                    _("Tag Duplicates"), QDialogButtonBox.ActionRole)
+                self._delDupesButton = frm.buttonBox.addButton(
+                    _("Del All Dups"), QDialogButtonBox.ActionRole)
+            self._dupesButton.clicked.connect(lambda: self._onTagDupes(res))
+            self._delDupesButton.clicked.connect(lambda: self._onDelDupes(res))
 
-        t = "<html><body>"
-        groups = len(res)
-        notes = sum(len(r[1]) for r in res)
-        part1 = ngettext("%d group", "%d groups", groups) % groups
-        part2 = ngettext("%d note", "%d notes", notes) % notes
-        t += _("Found %(a)s across %(b)s.") % dict(a=part1, b=part2)
-        t += "<p><ol>"
-        for val, nids in res:
-            t += '<li><a href="%s">%s</a>: %s</a>' % (
-                "nid:" + ",".join(str(id) for id in nids),
-                ngettext("%d note", "%d notes", len(nids)) % len(nids),
-                cgi.escape(val))
-        t += "</ol>"
-        t += "</body></html>"
-        web.setHtml(t)
-        self.mw.progress.finish()
+            t = "<html><body>"
+            groups = len(res)
+            notes = sum(len(r[1]) for r in res)
+            part1 = ngettext("%d group", "%d groups", groups) % groups
+            part2 = ngettext("%d note", "%d notes", notes) % notes
+            t += _("Found %(a)s across %(b)s.") % dict(a=part1, b=part2)
+            t += "<p><ol>"
+            for val, nids in res:
+                n = ",".join(str(id) for id in nids)
+                t += '<li><a href="%s">%s</a>: %s &nbsp; [<a href="%s">del dups</a>]</li>' % (
+                    "nid:" + n,
+                    ngettext("%d note", "%d notes", len(nids)) % len(nids),
+                    cgi.escape(val),
+                    "del:" + n,
+                )
+            t += "</ol>"
+            t += "</body></html>"
+            web.setHtml(t)
+        finally:
+            self.mw.progress.finish()
 
     def _onDelDupes(self, res):
         if not res:
@@ -1910,21 +1915,29 @@ Red items will be deleted.""")))
     def _onTagDupes(self, res):
         if not res:
             return
-        self.model.beginReset()
         self.mw.checkpoint(_("Tag Duplicates"))
-        nids = set()
-        for s, nidlist in res:
-            nids.update(nidlist)
-        self.col.tags.bulkAdd(nids, _("duplicate"))
-        self.mw.progress.finish()
-        self.model.endReset()
-        self.mw.requireReset()
+        self.mw.progress.start()
+        self.model.beginReset()
+        try:
+            nids = set()
+            for s, nidlist in res:
+                nids.update(nidlist)
+            self.col.tags.bulkAdd(nids, _("duplicate"))
+        finally:
+            self.model.endReset()
+            self.mw.progress.finish()
+            self.mw.requireReset()
         tooltip(_("Notes tagged."))
 
     def dupeLinkClicked(self, link):
-        self.form.searchEdit.lineEdit().setText(link.toString())
-        self.onSearch()
-        self.onNote()
+        link = link.toString()
+        if link.startswith("del:"):
+            toDelArr = link.split(",")[1:]
+            self._deleteNotes(toDelArr)
+        else: #starts w/ nid:
+            self.form.searchEdit.lineEdit().setText(link)
+            self.onSearch()
+            self.onNote()
 
     # Jumping
     ######################################################################
