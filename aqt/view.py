@@ -8,7 +8,7 @@
 
 
 import json
-from aqt import mw
+from aqt import dialogs
 from aqt.qt import *
 from anki.hooks import addHook
 from anki.consts import MODEL_CLOZE
@@ -36,6 +36,8 @@ class ViewManager:
         self.mw.web.setMouseBtnHandler(self.ir.onEvent)
         self.mw.web.setWheelHandler(self._wheelHandler)
 
+        self.setupMenu()
+
         # I choose to use hooks in case old addons 
         # override these methods, hooks are then much
         # safer and backwards compatible.
@@ -47,10 +49,37 @@ class ViewManager:
         addHook('showQuestion', self.onShowQuestion)
         addHook('showAnswer', self.onShowAnswer)
 
+
+    def setupMenu(self):
+        menu = self.mw.form.menuView
+        self.cbOnTop = QAction("Aways on top", menu)
+        self.cbOnTop.setCheckable(True)
+        self.cbOnTop.triggered.connect(self.onAlwaysOnTop)
+        # self.cbOnTop.setShortcut("F12")
+        menu.addAction(self.cbOnTop)
+        menu.addSeparator()
+
+
+    def onAlwaysOnTop(self):
+        self.mw.pm.profile['vm_always_on_top'] = self.cbOnTop.isChecked()
+        windows = dialogs.getAllInstances([self.mw])
+        for window in windows:
+            windowFlags = window.windowFlags() ^ Qt.WindowStaysOnTopHint
+            window.setWindowFlags(windowFlags)
+            window.show()
+
+
     def onProfileLoaded(self):
-        zi=self.mw.pm.profile.get("zoom.img",False)
+        # init zoom settings
+        zi = self.mw.pm.profile.get("zoom.img",False)
         self.zoom.zoomImage.setChecked(zi)
-        self.zoom.setZoomTextOnly() #init zoom settings
+        self.zoom.setZoomTextOnly()
+        # init always_on_top settings
+        b = self.mw.pm.profile.get('vm_always_on_top',False)
+        self.cbOnTop.setChecked(b)
+        if b:
+            self.onAlwaysOnTop()
+
 
     def flush(self, *args):
         if self.mw.state == 'review':

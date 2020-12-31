@@ -445,6 +445,9 @@ class Browser(QMainWindow):
         self.form.searchEdit.lineEdit().selectAll()
         self.onSearch()
 
+        if self.mw.viewmanager.cbOnTop.isChecked():
+            windowFlags = self.windowFlags() | Qt.WindowStaysOnTopHint
+            self.setWindowFlags(windowFlags)
         self.show()
 
         addHook("night_mode_state_changed", self.changeToNightMode)

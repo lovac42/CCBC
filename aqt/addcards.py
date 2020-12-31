@@ -44,6 +44,10 @@ class AddCards(QDialog):
         restoreGeom(self, "add")
         addHook('reset', self.onReset)
         addCloseShortcut(self)
+
+        if self.mw.viewmanager.cbOnTop.isChecked():
+            windowFlags = self.windowFlags() | Qt.WindowStaysOnTopHint
+            self.setWindowFlags(windowFlags)
         self.show()
         self.setupNewNote()
 

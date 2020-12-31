@@ -102,6 +102,12 @@ class DialogManager(object):
             if instance:
                 instance.show()
 
+    def getAllInstances(self, arr=[]):
+        for dclass, instance in self._dialogs.values():
+            if instance:
+                arr.append(instance)
+        return arr
+
 dialogs = DialogManager()
 
 # Language handling
