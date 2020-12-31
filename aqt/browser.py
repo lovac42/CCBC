@@ -17,7 +17,7 @@ from aqt.qt import *
 import anki
 import aqt.forms
 import anki.find
-from anki.utils import fmtTimeSpan, ids2str, htmlToTextLine, stripHTMLMedia, isWin, intTime, isMac
+from anki.utils import fmtTimeSpan, ids2str, htmlToTextLine, stripHTMLMedia, isWin, intTime, isMac, stripAccentChars, noOpTxtSearch
 from aqt.utils import saveGeom, restoreGeom, saveSplitter, restoreSplitter, \
     saveHeader, restoreHeader, saveState, restoreState, applyStyles, getTag, \
     showInfo, askUser, tooltip, showWarning, shortcut, getBase, mungeQA, \
@@ -530,8 +530,6 @@ class Browser(QMainWindow):
         f.actionFullScreen.setChecked(self.windowState()==Qt.WindowFullScreen)
         f.actionShowSidebar.setChecked(self.showSidebar)
         f.actionShowSidebar.toggled.connect(self.toggleSidebar)
-        f.actionLockSearch.setChecked(not not self.lockedSearch)
-        f.actionLockSearch.toggled.connect(self.setSearchLock)
         f.actionShowEdit.setChecked(self.cb_shown["editor"])
         f.actionShowEdit.toggled.connect(self.toggleEditor)
         f.toRSideEditor.toggled.connect(self.toggleSplitOrientation)
@@ -539,6 +537,13 @@ class Browser(QMainWindow):
         if vert:
             f.splitter.setOrientation(Qt.Vertical)
             f.toRSideEditor.setChecked(True)
+
+        # Search menu
+        f.actionLockSearch.setChecked(not not self.lockedSearch)
+        f.actionLockSearch.toggled.connect(self.setSearchLock)
+        b = self.mw.pm.profile.get('ccbc.ignoreAccentSearch', False)
+        f.ignoreAccentSearch.toggled.connect(self.onIgnoreAccentSearch)
+        f.ignoreAccentSearch.setChecked(b)
 
         # keyboard shortcut for shift+home/end
         self.pgUpCut = QShortcut(QKeySequence("Shift+Home"), self)
@@ -581,6 +586,10 @@ class Browser(QMainWindow):
         # context menu
         self.form.tableView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.form.tableView.customContextMenuRequested.connect(self.onContextMenu)
+
+    def onIgnoreAccentSearch(self):
+        b = self.form.ignoreAccentSearch.isChecked()
+        self.mw.pm.profile['ccbc.ignoreAccentSearch'] = b
 
     def onContextMenu(self, _point):
         m = QMenu()
@@ -710,14 +719,21 @@ class Browser(QMainWindow):
         else:
             txt = "%s %s"%(self.lockedSearch, txt)
             self.form.searchEdit.lineEdit().setText(txt)
-        self.model.search(txt, reset)
+
+        if self.form.ignoreAccentSearch.isChecked():
+            self.col.db._db.create_function("filterTxtSearch",1,stripAccentChars)
+            txt = stripAccentChars(txt)
+            self.model.search(txt, reset)
+            self.col.db._db.create_function("filterTxtSearch",1,noOpTxtSearch)
+        else:
+            self.model.search(txt, reset)
         if not self.model.cards:
             # no row change will fire
             self.onRowChanged(None, None)
         elif self.mw.state == "review":
             self.focusCid(self.mw.reviewer.card.id)
 
-    def setSearchLock(self): #v2.1
+    def setSearchLock(self):
         txt,ok = getText(
             _("""Auto include search (e.g. is:new)"""),
             default=self.lockedSearch

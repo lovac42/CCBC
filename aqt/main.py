@@ -15,7 +15,7 @@ import time
 from send2trash import send2trash
 from aqt.qt import *
 from anki import Collection
-from anki.utils import  isWin, isMac, intTime, splitFields, ids2str, versionWithBuild
+from anki.utils import  isWin, isMac, intTime, splitFields, ids2str, versionWithBuild, noOpTxtSearch
 from anki.hooks import runHook, addHook, runFilter
 
 import aqt
@@ -301,6 +301,9 @@ Debug info:
             self.unloadProfile()
             raise
         self.progress.setupDB(self.col.db)
+        self.col.db._db.create_function(
+            "filterTxtSearch", 1, noOpTxtSearch
+        )
         self.maybeEnableUndo()
         self.moveToState("deckBrowser")
 

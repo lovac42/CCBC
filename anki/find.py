@@ -342,7 +342,7 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """+preds
         val = val.replace("*", "%")
         args.append("%"+val+"%")
         args.append("%"+val+"%")
-        return "(n.sfld like ? escape '\\' or n.flds like ? escape '\\')"
+        return "(n.sfld like ? escape '\\' or filterTxtSearch(n.flds) like ? escape '\\')"
 
     def _findNids(self, args):
         (val, args) = args

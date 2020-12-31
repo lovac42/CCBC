@@ -144,8 +144,6 @@ class Ui_Dialog(object):
         self.menubar = QtGui.QMenuBar(Dialog)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 750, 22))
         self.menubar.setObjectName("menubar")
-        self.menuTool = QtGui.QMenu(self.menubar)
-        self.menuTool.setObjectName("menuTool")
         self.menuEdit = QtGui.QMenu(self.menubar)
         self.menuEdit.setObjectName("menuEdit")
         self.menuView = QtGui.QMenu(self.menubar)
@@ -283,10 +281,6 @@ class Ui_Dialog(object):
         self.menuJump.addAction(self.actionLastCard)
 
         # View menu
-        self.actionLockSearch = QtGui.QAction(Dialog)
-        self.actionLockSearch.setObjectName("actionLockSearch")
-        self.actionLockSearch.setCheckable(True)
-        self.menuView.addAction(self.actionLockSearch)
         self.actionFullScreen = QtGui.QAction(Dialog)
         self.actionFullScreen.setObjectName("actionFullScreen")
         self.actionFullScreen.setCheckable(True)
@@ -324,13 +318,30 @@ class Ui_Dialog(object):
         self.menuFlag.addAction(self.actionBlue_Flag)
         self.menu_Cards.addAction(self.menuFlag.menuAction())
 
+        # Search menu
+        self.menuSearch = QtGui.QMenu(self.menubar)
+        self.menuSearch.setObjectName("menuSearch")
+        self.actionLockSearch = QtGui.QAction(Dialog)
+        self.actionLockSearch.setObjectName("actionLockSearch")
+        self.actionLockSearch.setCheckable(True)
+        self.menuSearch.addAction(self.actionLockSearch)
+        self.ignoreAccentSearch = QtGui.QAction(Dialog)
+        self.ignoreAccentSearch.setObjectName("ignoreAccentSearch")
+        self.ignoreAccentSearch.setCheckable(True)
+        self.menuSearch.addAction(self.ignoreAccentSearch)
+
+        # Tools menu
+        # self.menuTool = QtGui.QMenu(self.menubar)
+        # self.menuTool.setObjectName("menuTool")
+
         # main menubar
         self.menubar.addAction(self.menuEdit.menuAction())
+        self.menubar.addAction(self.menuSearch.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menu_Notes.menuAction())
         self.menubar.addAction(self.menu_Cards.menuAction())
         self.menubar.addAction(self.menuJump.menuAction())
-        self.menubar.addAction(self.menuTool.menuAction())
+        # self.menubar.addAction(self.menuTool.menuAction())
 
         self.retranslateUi(Dialog)
         QtCore.QObject.connect(self.actionSelectAll, QtCore.SIGNAL("triggered()"), self.tableView.selectAll)
@@ -342,7 +353,8 @@ class Ui_Dialog(object):
         self.searchButton.setText(_("Search"))
         # self.previewButton.setText(_("Preview"))
         # self.previewButton.setShortcut(_("Ctrl+Shift+P"))
-        self.menuTool.setTitle(_("&Tools"))
+        # self.menuTool.setTitle(_("&Tools"))
+        self.menuSearch.setTitle(_("&Search"))
         self.menuEdit.setTitle(_("&Edit"))
         self.menuJump.setTitle(_("&Go"))
         self.menuView.setTitle(_("&View"))
@@ -390,7 +402,6 @@ class Ui_Dialog(object):
         self.actionFullScreen.setShortcut(_("F11"))
         self.actionShowSidebar.setText(_("Show Sidebar"))
         self.actionShowSidebar.setShortcut(_("Ctrl+S"))
-        self.actionLockSearch.setText(_("Lock Search"))
         self.actionShowEdit.setText(_("Show Editor"))
         self.actionShowEdit.setShortcut(_("Ctrl+Shift+E"))
         self.toRSideEditor.setText(_("View editor on the right side"))
@@ -406,5 +417,9 @@ class Ui_Dialog(object):
         self.actionGreen_Flag.setShortcut(_("Ctrl+3"))
         self.actionBlue_Flag.setText(_("Blue Flag"))
         self.actionBlue_Flag.setShortcut(_("Ctrl+4"))
+        # Tools menu
+        # Search menu
+        self.actionLockSearch.setText(_("Lock Search"))
+        self.ignoreAccentSearch.setText(_("Ácçéñt Insènsïtîvé Sèârçhés"))
 
 from . import icons_rc

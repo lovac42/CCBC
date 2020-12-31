@@ -7,6 +7,7 @@ import os
 import random
 import time
 import math
+import unicodedata
 from html.entities import name2codepoint
 import subprocess
 import tempfile
@@ -422,3 +423,16 @@ def versionWithBuild():
     except:
         build = "dev"
     return "%s (%s)" % (version, build)
+
+# SQL
+##############################################################################
+
+def stripAccentChars(txt):
+    "Return txt with all combining characters removed."
+    norm = unicodedata.normalize('NFKD', txt)
+    return "".join([c for c in norm if not unicodedata.combining(c)])
+
+def noOpTxtSearch(txt):
+    # no-op function
+    return txt
+
