@@ -921,21 +921,20 @@ title="%s">%s</button>''' % (
     ##########################################################################
 
     def setupMenus(self):
-        m = self.form
-        s = SIGNAL("triggered()")
-        self.connect(m.actionExit, s, self.onMenuExit)
-        self.connect(m.actionBossKey, s, self.boss_key)
-        self.connect(m.actionSwitchProfile, s, self.onSwitchProfile)
-        self.connect(m.actionImport, s, self.onImport)
-        self.connect(m.actionExport, s, self.onExport)
-        self.connect(m.actionPreferences, s, self.onPrefs)
-        self.connect(m.actionUndo, s, self.onUndo)
-        self.connect(m.actionFullDatabaseCheck, s, self.onCheckDB)
-        self.connect(m.actionCheckMediaDatabase, s, self.onCheckMediaDB)
-        self.connect(m.actionStudyDeck, s, self.onStudyDeck)
-        self.connect(m.actionCreateFiltered, s, self.onCram)
-        self.connect(m.actionEmptyCards, s, self.onEmptyCards)
-        self.connect(m.actionNoteTypes, s, self.onNoteTypes)
+        f = self.form
+        f.actionExit.triggered.connect(self.onMenuExit)
+        f.actionBossKey.triggered.connect(self.boss_key)
+        f.actionSwitchProfile.triggered.connect(self.onSwitchProfile)
+        f.actionImport.triggered.connect(self.onImport)
+        f.actionExport.triggered.connect(self.onExport)
+        f.actionPreferences.triggered.connect(self.onPrefs)
+        f.actionUndo.triggered.connect(self.onUndo)
+        f.actionFullDatabaseCheck.triggered.connect(self.onCheckDB)
+        f.actionCheckMediaDatabase.triggered.connect(self.onCheckMediaDB)
+        f.actionStudyDeck.triggered.connect(self.onStudyDeck)
+        f.actionCreateFiltered.triggered.connect(self.onCram)
+        f.actionEmptyCards.triggered.connect(self.onEmptyCards)
+        f.actionNoteTypes.triggered.connect(self.onNoteTypes)
 
     def updateTitleBar(self):
         self.setWindowTitle("CCBC")
