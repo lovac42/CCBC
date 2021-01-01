@@ -331,8 +331,8 @@ class Ui_Dialog(object):
         self.menuSearch.addAction(self.ignoreAccentSearch)
 
         # Tools menu
-        # self.menuTool = QtGui.QMenu(self.menubar)
-        # self.menuTool.setObjectName("menuTool")
+        self.menuTool = QtGui.QMenu(self.menubar)
+        self.menuTool.setObjectName("menuTool")
 
         # main menubar
         self.menubar.addAction(self.menuEdit.menuAction())
@@ -341,7 +341,7 @@ class Ui_Dialog(object):
         self.menubar.addAction(self.menu_Notes.menuAction())
         self.menubar.addAction(self.menu_Cards.menuAction())
         self.menubar.addAction(self.menuJump.menuAction())
-        # self.menubar.addAction(self.menuTool.menuAction())
+        self.menubar.addAction(self.menuTool.menuAction())
 
         self.retranslateUi(Dialog)
         QtCore.QObject.connect(self.actionSelectAll, QtCore.SIGNAL("triggered()"), self.tableView.selectAll)
@@ -353,8 +353,6 @@ class Ui_Dialog(object):
         self.searchButton.setText(_("Search"))
         # self.previewButton.setText(_("Preview"))
         # self.previewButton.setShortcut(_("Ctrl+Shift+P"))
-        # self.menuTool.setTitle(_("&Tools"))
-        self.menuSearch.setTitle(_("&Search"))
         self.menuEdit.setTitle(_("&Edit"))
         self.menuJump.setTitle(_("&Go"))
         self.menuView.setTitle(_("&View"))
@@ -417,8 +415,12 @@ class Ui_Dialog(object):
         self.actionGreen_Flag.setShortcut(_("Ctrl+3"))
         self.actionBlue_Flag.setText(_("Blue Flag"))
         self.actionBlue_Flag.setShortcut(_("Ctrl+4"))
+
         # Tools menu
+        self.menuTool.setTitle(_("&Tools"))
+
         # Search menu
+        self.menuSearch.setTitle(_("&Search"))
         self.actionLockSearch.setText(_("Lock Search"))
         self.ignoreAccentSearch.setText(_("Ácçéñt Insènsïtîvé Sèârçhés"))
 
