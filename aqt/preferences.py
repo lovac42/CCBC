@@ -255,6 +255,10 @@ Not currently enabled; click the sync button in the main window to enable."""))
         self.form.noScript.setChecked(self.prof.get("tidyTags.noScript", True))
         self.form.importMedia.setChecked(self.prof.get("tidyTags.importMedia", True))
 
+        self.form.skipBackupQE.setChecked(self.prof.get("ccbc.skipBackupOnQuickExit", False))
+        self.form.skipBackupSP.setChecked(self.prof.get("ccbc.skipBackupOnSwitchProfile", False))
+        self.form.exitWarning.setChecked(self.prof.get("ccbc.warnOnQuickExit", True))
+
         self.form.micChannel.setCurrentIndex(self.prof.get("PYAU_CHANNELS", 1)-1)
         idx = getMics(self.prof.get("PYAU_INPUT_DEVICE", ""))
         try:
@@ -303,6 +307,10 @@ Not currently enabled; click the sync button in the main window to enable."""))
         self.prof['mpv.directAccess'] = self.form.mpvDA.isChecked()
         self.prof['tidyTags.noScript'] = self.form.noScript.isChecked()
         self.prof['tidyTags.importMedia'] = self.form.importMedia.isChecked()
+
+        self.prof['ccbc.skipBackupOnQuickExit'] = self.form.skipBackupQE.isChecked()
+        self.prof['ccbc.skipBackupOnSwitchProfile'] = self.form.skipBackupSP.isChecked()
+        self.prof['ccbc.warnOnQuickExit'] = self.form.exitWarning.isChecked()
 
         self.prof['PYAU_CHANNELS'] = self.form.micChannel.currentIndex()+1
 

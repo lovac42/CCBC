@@ -330,6 +330,7 @@ class Ui_Preferences(object):
         self.tabWidget.addTab(self.tab_2, _("Network"))
 
         #####################################################
+
         # Backup tab
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
@@ -364,13 +365,28 @@ class Ui_Preferences(object):
         self.label_4.setWordWrap(True)
         self.label_4.setObjectName("label_4")
         self.verticalLayout_3.addWidget(self.label_4)
+
+        self.skipBackupQE = QtWidgets.QCheckBox(self.tab)
+        self.skipBackupQE.setObjectName("skipBackupQE")
+        self.verticalLayout_3.addWidget(self.skipBackupQE)
+        self.skipBackupSP = QtWidgets.QCheckBox(self.tab)
+        self.skipBackupSP.setObjectName("skipBackupSP")
+        self.verticalLayout_3.addWidget(self.skipBackupSP)
+        self.exitWarning = QtWidgets.QCheckBox(self.tab)
+        self.exitWarning.setObjectName("exitWarning")
+        self.verticalLayout_3.addWidget(self.exitWarning)
+
+        # Warning message:
+        # Some settings will take effect after you restart Anki.
         spacerItem4 = QtWidgets.QSpacerItem(20, 59, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_3.addItem(spacerItem4)
+        # Somebody didn't properly label these labels and now it's too late to change them.
         self.label_21 = QtWidgets.QLabel(self.tab)
         self.label_21.setAlignment(QtCore.Qt.AlignCenter)
         self.label_21.setObjectName("label_21")
         self.verticalLayout_3.addWidget(self.label_21)
         self.tabWidget.addTab(self.tab, _("Backups"))
+
 
         #####################################################
         # Muffins tab
@@ -483,6 +499,11 @@ class Ui_Preferences(object):
         self.stpAudOnShwAns.setText(_("Stop media playback before show answer"))
         self.importMedia.setText(_("Import and localize media during edits (e.g. src=http...)"))
         self.noScript.setText(_("Remove <script> when editing HTML (add more conf later)"))
+
+        # Backup tab
+        self.skipBackupQE.setText(_("Skip backup on quick exit?"))
+        self.skipBackupSP.setText(_("Skip backup on switch profile?"))
+        self.exitWarning.setText(_("Show exit warning on quick exit?"))
 
         # Muffins tab
         self.skipFinalDrill.setText(_('Skip Final Drill'))

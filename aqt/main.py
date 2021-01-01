@@ -270,6 +270,11 @@ To import into a password protected profile, please open the profile before atte
         if browser:
             self.showProfileManager()
 
+    def onSwitchProfile(self):
+        self.form.actionSwitchProfile.setDisabled(True)
+        self.unloadProfile()
+        self.form.actionSwitchProfile.setDisabled(False)
+
 
     # Collection load/unload
     ##########################################################################
@@ -345,18 +350,34 @@ the manual for information on how to restore from an automatic backup."))
     ##########################################################################
 
     def backup(self):
+        if os.getenv("ANKIDEV", 0):
+            print("dev mode, no backups")
+            return
+
         nbacks = self.pm.profile['numBackups']
+        if not nbacks:
+            print("Backup disabled")
+            return
+
+        if not self.form.actionSwitchProfile.isEnabled():
+            if self.pm.profile.get(
+                'ccbc.skipBackupOnSwitchProfile', False
+            ):
+                print("Backup skipped on switch profile")
+                return
+        elif self.form.actionExit.isEnabled():
+            if self.pm.profile.get(
+                'ccbc.skipBackupOnQuickExit', False
+            ):
+                print("Backup skipped on quick exit")
+                return
+
         if self.pm.profile.get('compressBackups', True):
             zipStorage = zipfile.ZIP_DEFLATED
         else:
             zipStorage = zipfile.ZIP_STORED
 
-        if os.getenv("ANKIDEV", 0):
-            print("dev mode, no backups")
-            return
-        if not nbacks:
-            return
-
+        # print("Backup collection started...")
         dir = self.pm.backupFolder()
         path = self.pm.collectionPath()
         # find existing backups
@@ -368,11 +389,9 @@ the manual for information on how to restore from an automatic backup."))
                 continue
             backups.append((int(m.group(1)), file))
         backups.sort()
+
         # get next num
-        if not backups:
-            n = 1
-        else:
-            n = backups[-1][0] + 1
+        n = backups[-1][0] + 1 if backups else 1
         # do backup
         newpath = os.path.join(dir, "backup-%d.apkg" % n)
         z = zipfile.ZipFile(newpath, "w", zipStorage)
@@ -385,6 +404,7 @@ the manual for information on how to restore from an automatic backup."))
             delete = backups[:delete]
             for file in delete:
                 os.unlink(os.path.join(dir, file[1]))
+        print("Backup completed (total:%d)" % n)
 
     def maybeOptimize(self):
         # have two weeks passed?
@@ -724,6 +744,18 @@ title="%s">%s</button>''' % (
     # App exit
     ##########################################################################
 
+    def closeWarning(self):
+        if not self.pm.profile.get(
+            'ccbc.warnOnQuickExit', True
+        ):
+            return True
+        return askUser(_("Are you sure you want to exit?"))
+
+    def onMenuExit(self):
+        self.form.actionExit.setDisabled(True)
+        self.close()
+        self.form.actionExit.setDisabled(False)
+
     def closeEvent(self, event):
         "User hit the X button, etc."
         if self.state == "profileManager":
@@ -739,11 +771,21 @@ title="%s">%s</button>''' % (
     def onClose(self, force=False):
         "Called from a shortcut key. Close current active window."
         aw = self.app.activeWindow()
+        all_gui_closed = False
+
         if not aw or aw == self or force:
-            if self.closeAllCollectionWindows():
-                self.unloadProfile(browser=False)
-                self.app.closeAllWindows()
-                return True
+            if not self.closeAllCollectionWindows():
+                return False
+            all_gui_closed = True
+
+        if self.form.actionExit.isEnabled():
+            if not self.closeWarning():
+                return False
+
+        if all_gui_closed:
+            self.unloadProfile(browser=False)
+            self.app.closeAllWindows()
+            return True
         aw.close()
 
     # Undo & autosave
@@ -881,11 +923,11 @@ title="%s">%s</button>''' % (
     def setupMenus(self):
         m = self.form
         s = SIGNAL("triggered()")
+        self.connect(m.actionExit, s, self.onMenuExit)
         self.connect(m.actionBossKey, s, self.boss_key)
-        self.connect(m.actionSwitchProfile, s, self.unloadProfile)
+        self.connect(m.actionSwitchProfile, s, self.onSwitchProfile)
         self.connect(m.actionImport, s, self.onImport)
         self.connect(m.actionExport, s, self.onExport)
-        self.connect(m.actionExit, s, self, SLOT("close()"))
         self.connect(m.actionPreferences, s, self.onPrefs)
         self.connect(m.actionUndo, s, self.onUndo)
         self.connect(m.actionFullDatabaseCheck, s, self.onCheckDB)
