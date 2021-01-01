@@ -292,8 +292,7 @@ Debug info:
             # unload, so we have to manually handle it
             if "invalidColVersion" == str(e):
                 showWarning("Profiles created with newer versions of Anki requires downgrading first.")
-                self.unloadProfile()
-                return
+                sys.exit(1)
             if "invalidTempFolder" in repr(str(e)):
                 showWarning(self.errorHandler.tempFolderMsg())
                 self.unloadProfile()
