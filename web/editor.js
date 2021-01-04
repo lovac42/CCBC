@@ -1,4 +1,5 @@
-/* Copyright: Ankitects Pty Ltd and contributors
+/* Copyright: Lovac42
+ * Copyright: Ankitects Pty Ltd and contributors
  * License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html */
 
 var currentField = null;
@@ -161,6 +162,10 @@ function wrapInternal(front, back, plainText) {
     }
 };
 
+function onReplay(fname) {
+    py.run("play:"+fname);
+}
+
 function onSticky(id, el) {
     el.class="fname";
     py.run("sticky:"+id);
@@ -175,9 +180,10 @@ function setFields(fields, focusTo) {
     for (var i=0; i<fields.length; i++) {
         //class, name, sticky, field_data
         var c = "";
-        var n = fields[i][0];
-        var s = fields[i][1];
-        var f = fields[i][2];
+        var n = fields[i][0]; //name
+        var s = fields[i][1]; //sticky
+        var f = fields[i][2]; //data
+        var m = fields[i][3]; //media
         if (!f) {
             f = "<br>";
         }
@@ -191,6 +197,14 @@ function setFields(fields, focusTo) {
         txt += "ondragover='onDragOver(this);' ";
         txt += "contentEditable=true class=field>{0}</div>".format(f);
         txt += "</td></tr>";
+
+        // add media play button for each file
+        t = getReplayButtons(m);
+        if (t) {
+            txt += "<tr><td id=m{0} class='fmedia'>Play: {1}</td></tr>".format(i,t);
+        }else {
+            txt += "<tr><td id=m{0} class='fmedia'></td></tr>".format(i);
+        }
     }
     $("#fields").html("<table cellpadding=0 width=100%%>"+txt+"</table>");
     if (!focusTo) {
@@ -200,6 +214,24 @@ function setFields(fields, focusTo) {
         $("#f"+focusTo).focus();
     }
 };
+
+function getReplayButtons(mediaArr) {
+    txt = "";
+    for (var i=0; i<mediaArr.length; i++) {
+        txt += "<a href='javascript:onReplay(\"{0}\");'>{1}</a> ".format(mediaArr[i],i);
+    }
+    return txt;
+}
+
+
+function appendReplayButton(col, fname) {
+    cnt = $("#m"+col+" a").length;
+    if (cnt==0) {
+        $("#m"+col).append("Play: ");
+    }
+    $("#m"+col).append("<a href='javascript:onReplay(\"{0}\");'>{1}</a> ".format(fname,cnt));
+}
+
 
 function setBackgrounds(cols) {
     for (var i=0; i<cols.length; i++) {

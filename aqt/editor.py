@@ -41,6 +41,8 @@ _html = ccbc.html.editor
 
 # caller is responsible for resetting note on reset
 class Editor(object):
+    RE_SOUND = re.compile(r"\[sound:([^]]+)\]")
+
     def __init__(self, mw, widget, parentWindow, addMode=False):
         self.mw = mw
         self.widget = widget
@@ -313,6 +315,12 @@ class Editor(object):
             flds['sticky'] = not flds['sticky']
             self.mw.progress.timer(100, onUpdate, False)
 
+        elif str.startswith("play"):
+            (cmd, fname) = str.split(":", 1)
+            anki.sound.clearAudioQueue()
+            anki.sound.play(fname)
+            return
+
         # focus lost or key/button pressed?
         elif str.startswith("blur") or str.startswith("key"):
             (type, txt) = str.split(":", 1)
@@ -450,12 +458,14 @@ class Editor(object):
         data = []
         for fld, val in self.note.items():
             s = False
+            t = self.mw.col.media.escapeImages(str(val))
+            m = self.RE_SOUND.findall(t)
             #Addon: frozen fields
             for f in self.note.model()["flds"]:
                 if f['name']==fld:
                     s=f['sticky']
                     break #inner loop
-            data.append((fld,s,self.mw.col.media.escapeImages(str(val))))
+            data.append((fld,s,t,m))
         self.web.eval("setFields(%s, %d);" % (json.dumps(data), field))
         self.web.eval("setFonts(%s);" % (json.dumps(self.fonts())))
 
@@ -784,8 +794,8 @@ to a cloze type first, via Edit>Change Note Type."""))
             name = urllib.parse.quote(fname)
             return '<img src="%s">' % name
         else:
-            if not self.mw.pm.profile.get("ccbc.noAutoPlay", False):
-                anki.sound.play(fname)
+            self.web.eval("appendReplayButton(%d,'%s');" % (
+                self.currentField,fname));
             return '[sound:%s]' % fname
 
     def urlToFile(self, url):
@@ -1113,6 +1123,10 @@ class EditorWebView(AnkiWebView):
             self.eval("mouseDown--;")
 
     def dropEvent(self, evt):
+        # tell the drop target to take focus so the drop contents are saved
+        self.eval("dropTarget.focus();")
+        self.setFocus()
+
         oldmime = evt.mimeData()
         # coming from this program?
         if evt.source():
@@ -1131,9 +1145,6 @@ class EditorWebView(AnkiWebView):
                          evt.mouseButtons(), evt.keyboardModifiers())
         evt.accept()
         QWebView.dropEvent(self, new)
-        # tell the drop target to take focus so the drop contents are saved
-        self.eval("dropTarget.focus();")
-        self.setFocus()
 
     def mungeClip(self, mode=QClipboard.Clipboard):
         clip = self.editor.mw.app.clipboard()
