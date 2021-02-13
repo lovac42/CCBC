@@ -219,7 +219,7 @@ function setFields(fields, focusTo) {
 function getReplayButtons(mediaArr) {
     e = "";
     for (var i=0; i<mediaArr.length; i++) {
-        m = mediaArr[i].replace("'","&#39;");
+        m = mediaArr[i].replace(/'/g,"&#39;");
         e += "<a href='javascript:onReplay(\"{0}\");' title='{1}'>{2}</a> ".format(m,m,i);
     }
     if (e) {
@@ -230,7 +230,7 @@ function getReplayButtons(mediaArr) {
 
 
 function appendReplayButton(col, fname) {
-    m = unescape(fname).replace("'","&#39;");
+    m = unescape(fname).replace(/'/g,"&#39;");
     cnt = $("#m"+col+" a").length;
     if (cnt==0) {
         $("#m"+col).addClass("fmedia");
