@@ -212,7 +212,9 @@ create table meta (dirMod int, lastUsn int); insert into meta values (0, 0);
                 for match in re.finditer(reg, string):
                     fname = match.group("fname")
                     isLocal = not re.match("(https?|ftp)://", fname.lower())
-                    if isLocal or includeRemote:
+                    if isLocal:
+                        l.append(fname.replace("&amp;","&"))
+                    elif includeRemote:
                         l.append(fname)
         return l
 
