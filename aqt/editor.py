@@ -800,7 +800,7 @@ to a cloze type first, via Edit>Change Note Type."""))
         else:
             self.web.eval("appendReplayButton(%d,'%s');" % (
                 self.currentField, name))
-            return '[sound:%s]' % fname
+            return '[sound:%s]' % fname.replace('&','&amp;')
 
     def urlToFile(self, url):
         l = url.lower()
