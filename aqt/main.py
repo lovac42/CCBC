@@ -296,7 +296,8 @@ Debug info:
             # the custom exception handler won't catch these if we immediately
             # unload, so we have to manually handle it
             if "invalidColVersion" == str(e):
-                showWarning("Profiles created with newer versions of Anki requires downgrading first.")
+                showWarning("""\
+This profile requires a newer version of Anki to open. Did you forget to use the Downgrade button prior to switching Anki versions?""")
                 sys.exit(1)
             if "invalidTempFolder" in repr(str(e)):
                 showWarning(self.errorHandler.tempFolderMsg())
