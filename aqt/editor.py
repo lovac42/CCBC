@@ -310,10 +310,14 @@ class Editor(object):
 
         # addon: frizen fields
         if str.startswith("sticky"):
-            (cmd, txt) = str.split(":", 1)
-            flds = self.note.model()['flds'][int(txt)]
+            (cmd, num) = str.split(":", 1)
+            num = int(num)
+            flds = self.note.model()['flds'][num]
             flds['sticky'] = not flds['sticky']
-            self.mw.progress.timer(100, onUpdate, False)
+            if flds['sticky']:
+                self.web.eval("$('#s%d').addClass('sticky');"%(num))
+            else:
+                self.web.eval("$('#s%d').removeClass('sticky');"%(num))
 
         elif str == "stop":
             anki.sound.clearAudioQueue()
@@ -334,6 +338,11 @@ class Editor(object):
             # reverse the url quoting we added to get images to display
             txt = self.mw.col.media.escapeImages(txt, unescape=True)
             self.note.fields[self.currentField] = txt
+
+            media = self.RE_SOUND.findall(txt)
+            self.web.eval("setReplayButtons(%s,%d);"%(
+                json.dumps(media),self.currentField))
+
             if not self.addMode:
                 self.note.flush()
                 self.mw.requireReset()
@@ -558,12 +567,12 @@ class Editor(object):
         html = tt.toString()
         tt.close()
 
-        self.note.fields[self.currentField] = html
-        self.loadNote() # performance issue on large notes.
-
-        # bug: jquery auto escapes &amp; chars inside img srcs
-        # self.web.eval("setFieldHtml(%s,%d);"%(
-            # json.dumps(html),self.currentField))
+        html = self.mw.col.media.escapeImages(html)
+        self.web.eval("setFieldHtml(%s,%d);"%(
+            json.dumps(html),self.currentField))
+        media = self.RE_SOUND.findall(html)
+        self.web.eval("setReplayButtons(%s,%d);"%(
+            json.dumps(media),self.currentField))
 
         # focus field so it's saved
         self.web.setFocus()
@@ -911,7 +920,7 @@ to a cloze type first, via Edit>Change Note Type."""))
                     continue
                     # strip all other attributes, including implicit max-width
 
-                fname=self.mw.col.media.handle_resource(src)
+                fname=self.mw.col.media.handle_resource(src, unescape=True)
                 if fname:
                     tag['src'] = fname
 

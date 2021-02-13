@@ -82,6 +82,9 @@ class TidyTags(HTMLParser):
             return
         self.data.append(data)
 
+    # def handle_entityref(self, ref):
+        # self.data.append("&%s;" % ref)
+
     def handle_comment(self, data):
         self.data.append('<!-- %s -->'%data)
 
@@ -90,6 +93,12 @@ class TidyTags(HTMLParser):
 
 
     # UTILS:
+
+    def feed(self, html, escape_charrefs=True):
+        # avoided using convert_charrefs due to <img> path not escaping correctly.
+        if escape_charrefs:
+            html=html.replace('&','&amp;')
+        super().feed(html)
 
     def toString(self):
         return ''.join(self.data)

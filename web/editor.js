@@ -194,7 +194,7 @@ function setFields(fields, focusTo) {
         if(s){
           c="sticky";
         }
-        txt += "<tr><td onClick='javascript:onSticky({0},this);' class='fname {1}'>{2}</td></tr><tr><td width=100%%>".format(i,c,n);
+        txt += "<tr><td id=s{0} onClick='javascript:onSticky({1},this);' class='fname {2}'>{3}</td></tr><tr><td width=100%%>".format(i,i,c,n);
 
         txt += "<div id=f{0} onkeydown='onKey();' onmouseup='onKey();'".format(i);
         txt += " onfocus='onFocus(this);' onblur='onBlur();' class=field ";
@@ -215,6 +215,16 @@ function setFields(fields, focusTo) {
     }
 };
 
+
+function setReplayButtons(mediaArr, fieldNum) {
+    if (!mediaArr) { //clear and exit
+        $("#m"+fieldNum).removeClass("fmedia").html();
+        return;
+    }
+    t = getReplayButtons(mediaArr);
+    t = "<td id=m{0}{1}</td>".format(fieldNum,t);
+    $("#m"+fieldNum).parent().html(t);
+}
 
 function getReplayButtons(mediaArr) {
     e = "";

@@ -49,7 +49,7 @@ class ExtMediaManager(MediaManager):
             self._illegalCharReg = re.compile(r'[][><:"?*^\\|\0\r\n]')
 
 
-    def handle_resource(self, src):
+    def handle_resource(self, src, unescape=False):
         protocal=''
         src = urllib.parse.unquote(src)
         if src.startswith("//"):
@@ -62,6 +62,8 @@ class ExtMediaManager(MediaManager):
         elif isDataURL(src):
             src = RE_CR_LF_TAB.sub('', src)
             src = self.inlinedImageToFilename(src)
+        if unescape:
+            return urllib.parse.quote(src)
         return src
 
 
