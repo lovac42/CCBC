@@ -26,6 +26,10 @@
     padding: 2px;
 }
 
+.fmedia:before {
+    content: "Play: ";
+}
+
 .fmedia a {
     color: darkgray;
     text-decoration: none;

@@ -315,6 +315,10 @@ class Editor(object):
             flds['sticky'] = not flds['sticky']
             self.mw.progress.timer(100, onUpdate, False)
 
+        elif str == "stop":
+            anki.sound.clearAudioQueue()
+            return
+
         elif str.startswith("play"):
             (cmd, fname) = str.split(":", 1)
             anki.sound.clearAudioQueue()
@@ -790,12 +794,12 @@ to a cloze type first, via Edit>Change Note Type."""))
 
     def fnameToLink(self, fname):
         ext = fname.split(".")[-1].lower()
+        name = urllib.parse.quote(fname)
         if ext in pics:
-            name = urllib.parse.quote(fname)
             return '<img src="%s">' % name
         else:
             self.web.eval("appendReplayButton(%d,'%s');" % (
-                self.currentField,fname));
+                self.currentField, name))
             return '[sound:%s]' % fname
 
     def urlToFile(self, url):

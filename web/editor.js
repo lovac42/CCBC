@@ -166,6 +166,10 @@ function onReplay(fname) {
     py.run("play:"+fname);
 }
 
+function onStop() {
+    py.run("stop");
+}
+
 function onSticky(id, el) {
     el.class="fname";
     py.run("sticky:"+id);
@@ -200,11 +204,7 @@ function setFields(fields, focusTo) {
 
         // add media play button for each file
         t = getReplayButtons(m);
-        if (t) {
-            txt += "<tr><td id=m{0} class='fmedia'>Play: {1}</td></tr>".format(i,t);
-        }else {
-            txt += "<tr><td id=m{0} class='fmedia'></td></tr>".format(i);
-        }
+        txt += "<tr><td id=m{0}{1}</td></tr>".format(i,t);
     }
     $("#fields").html("<table cellpadding=0 width=100%%>"+txt+"</table>");
     if (!focusTo) {
@@ -215,21 +215,30 @@ function setFields(fields, focusTo) {
     }
 };
 
+
 function getReplayButtons(mediaArr) {
-    txt = "";
+    e = "";
     for (var i=0; i<mediaArr.length; i++) {
-        txt += "<a href='javascript:onReplay(\"{0}\");'>{1}</a> ".format(mediaArr[i],i);
+        m = mediaArr[i].replace("'","&#39;");
+        e += "<a href='javascript:onReplay(\"{0}\");' title='{1}'>{2}</a> ".format(m,m,i);
     }
-    return txt;
+    if (e) {
+        return " class='fmedia'><a href='javascript:onStop();' title='Stop'>ST</a> "+e;
+    }
+    return ">";
 }
 
 
 function appendReplayButton(col, fname) {
+    m = unescape(fname).replace("'","&#39;");
     cnt = $("#m"+col+" a").length;
     if (cnt==0) {
-        $("#m"+col).append("Play: ");
+        $("#m"+col).addClass("fmedia");
+        $("#m"+col).append("<a href='javascript:onStop();' title='Stop'>ST</a> ");
+    } else {
+        cnt--; //offset ST link
     }
-    $("#m"+col).append("<a href='javascript:onReplay(\"{0}\");'>{1}</a> ".format(fname,cnt));
+    $("#m"+col).append("<a href='javascript:onReplay(\"{0}\");' title={1}>{2}</a> ".format(m,m,cnt));
 }
 
 
