@@ -5,6 +5,9 @@
 # License: GNU AGPL, version 3 or later;
 # http://www.gnu.org/copyleft/agpl.html
 
+# *Modified* with bug fixes.
+# This file has been modified for bug fixes, and not related to the original.
+
 """Add-on for Anki 2 to add AnkiDroid-style replay buttons."""
 
 # part of the code has been integrated into the reviewer/clayout/browser,
@@ -33,12 +36,7 @@ def play_button_filter(qa_html, qa_type, *args, **kwargs):
 <a href='javascript:py.link("ankiplay:%s");' \
 title="%s" class="replaybutton browserhide ir-filter"><span><svg viewBox="0 0 32 32">\
 <polygon points="11,25 25,16 11,7"/>Replay</svg></span></a>\
-<span style="display: none;">&#91;sound:%s&#93;</span>\
-"""%(sound.group(0), sound.group(1), title, sound.group(1))
-        # The &#91; &#93; are the square brackets that we want to
-        # appear as brackets and not trigger the playing of the
-        # sound. The span inside the a around the svg is there to
-        # bring this closer in line with AnkiDroid.
+"""%(sound.group(0), sound.group(1).replace("'","&#39;"), title)
 
     s,cnt=RE_PLAYBTN.subn(add_button, qa_html)
     if not cnt:
