@@ -520,7 +520,7 @@ def onAdvCopyEdit(browser):
     dialog.exec_()
 
 def setupMenu(browser):
-    menu = browser.form.menuEdit
+    menu = browser.form.menu_Notes
     menu.addSeparator()
     a = menu.addAction('Advanced Copy...')
     a.setShortcut(QKeySequence("Ctrl+Alt+C"))
