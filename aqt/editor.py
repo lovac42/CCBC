@@ -1438,5 +1438,6 @@ class EditorWebView(AnkiWebView):
             img.close()
             b = os.path.getsize(src)/1024
             return w,h,b
-        except FileNotFoundError:
+        except (FileNotFoundError, OSError):
+            # SVG, etc...
             return None
