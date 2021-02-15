@@ -319,11 +319,11 @@ class Editor(object):
             else:
                 self.web.eval("$('#s%d').removeClass('sticky');"%(num))
 
-        elif str == "stop":
+        elif str == "ankistop":
             anki.sound.clearAudioQueue()
             return
 
-        elif str.startswith("play"):
+        elif str.startswith("ankiplay"):
             (cmd, fname) = str.split(":", 1)
             anki.sound.clearAudioQueue()
             anki.sound.play(fname)

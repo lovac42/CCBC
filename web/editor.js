@@ -163,11 +163,11 @@ function wrapInternal(front, back, plainText) {
 };
 
 function onReplay(fname) {
-    py.run("play:"+fname);
+    py.run("ankiplay:"+fname);
 }
 
 function onStop() {
-    py.run("stop");
+    py.run("ankistop");
 }
 
 function onSticky(id, el) {
